@@ -1,47 +1,32 @@
-// models/Chat.js
-const mongoose = require("mongoose");
 
-const messageSchema = new mongoose.Schema({
-  sender: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
-  },
-  content: {
-    type: String,
-    required: true,
-    trim: true,
-  },
-  timestamp: {
-    type: Date,
-    default: Date.now,
-  },
-  read: {
-    type: Boolean,
-    default: false,
-  },
-  messageType: {
-    type: String,
-    enum: ["text", "image", "system"],
-    default: "text",
-  },
-});
+// ============================================
+// models/Chat.js - FIXED
+// ============================================
+const mongoose = require("mongoose");
 
 const chatSchema = new mongoose.Schema(
   {
-    participants: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-        required: true,
-      },
-    ],
+    participants: {
+      type: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+          required: true,
+        },
+      ],
+      validate: {
+        validator: function(v) {
+          return v.length === 2; // ✅ Must have exactly 2 participants
+        },
+        message: 'Chat must have exactly 2 participants'
+      }
+    },
     listing: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Listing",
       required: true,
     },
-    messages: [messageSchema],
+    // ✅ REMOVED: messages array (will use separate Message model)
     lastMessage: {
       content: String,
       timestamp: { type: Date, default: Date.now },
@@ -49,6 +34,11 @@ const chatSchema = new mongoose.Schema(
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
       },
+    },
+    unreadCount: {
+      type: Map,
+      of: Number,
+      default: {}
     },
     isActive: {
       type: Boolean,
@@ -64,5 +54,8 @@ const chatSchema = new mongoose.Schema(
 chatSchema.index({ participants: 1 });
 chatSchema.index({ listing: 1 });
 chatSchema.index({ "lastMessage.timestamp": -1 });
+
+// ✅ Ensure no duplicate chats for same participants + listing
+chatSchema.index({ participants: 1, listing: 1 }, { unique: true });
 
 module.exports = mongoose.model("Chat", chatSchema);

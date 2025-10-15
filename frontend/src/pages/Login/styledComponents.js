@@ -1,12 +1,13 @@
-import styled from 'styled-components';
+import styled from "styled-components";
 
 export const LoginContainer = styled.div`
-  min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   padding: 2rem 1rem;
+  margin-top: 80px; /* ✅ Match header height */
+  min-height: calc(100vh - 80px);
 `;
 
 export const LoginCard = styled.div`

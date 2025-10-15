@@ -1,4 +1,7 @@
+// ============================================
 // src/utils/constants.js
+// ============================================
+
 export const CATEGORIES = [
   { value: 'produce', label: 'Fresh Produce' },
   { value: 'canned-goods', label: 'Canned Goods' },

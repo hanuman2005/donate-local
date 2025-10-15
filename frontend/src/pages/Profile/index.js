@@ -123,23 +123,34 @@ const Profile = () => {
     }
   };
 
+  // Replace handleSave function:
   const handleSave = async () => {
     try {
       setLoading(true);
       setError("");
 
-      let updatedData = { ...formData };
+      let avatarUrl = user.avatar;
 
       // Upload avatar if changed
       if (avatarFile) {
-        const uploadResponse = await uploadAPI.uploadImage(avatarFile);
-        updatedData.avatar = uploadResponse.data.imageUrl;
+        const uploadFormData = new FormData();
+        uploadFormData.append("image", avatarFile);
+        const uploadResponse = await usersAPI.updateProfileImage(
+          uploadFormData
+        );
+        avatarUrl = uploadResponse.data.imageUrl || uploadResponse.data.url;
       }
 
-      const response = await usersAPI.updateProfile(updatedData);
+      // Update profile data
+      const updatedData = {
+        ...formData,
+        avatar: avatarUrl,
+      };
 
-      if (response.data.success) {
-        updateUser(response.data.user);
+      const response = await usersAPI.updateProfile(user._id, updatedData);
+
+      if (response.data) {
+        updateUser(response.data.user || response.data);
         setSuccess("Profile updated successfully!");
         setIsEditing(false);
         setAvatarFile(null);
@@ -251,7 +262,7 @@ const Profile = () => {
         <ProfileContent>
           <TabContainer>
             <Tab
-              $active={activeTab === "profile"}
+              $active={activeTab === "profile"} 
               onClick={() => setActiveTab("profile")}
             >
               Profile Info

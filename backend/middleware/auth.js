@@ -1,52 +1,100 @@
-// middleware/auth.js
+// middleware/auth.js - FIXED
+
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
+// Protect routes - verify JWT token
 const auth = async (req, res, next) => {
-  try {
-    let token = req.header('Authorization');
-    
-    if (!token) {
-      return res.status(401).json({ message: 'No token provided' });
-    }
+  let token;
 
-    if (token.startsWith('Bearer ')) {
-      token = token.slice(7);
-    }
+  // Check for token in header
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith('Bearer')
+  ) {
+    try {
+      // Get token from header
+      token = req.headers.authorization.split(' ')[1];
+      
+      console.log('🔑 Token received:', token.substring(0, 20) + '...');
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findById(decoded.userId).select('-password');
-    
-    if (!user) {
-      return res.status(401).json({ message: 'User not found' });
-    }
+      // Verify token
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      
+      console.log('✅ Token decoded:', decoded);
 
-    if (!user.isActive) {
-      return res.status(401).json({ message: 'Account is deactivated' });
-    }
+      // ✅ FIXED: Handle both userId and id from token
+      const userId = decoded.userId || decoded.id;
+      
+      if (!userId) {
+        console.error('❌ No userId in decoded token');
+        return res.status(401).json({
+          success: false,
+          message: 'Invalid token format',
+        });
+      }
 
-    req.user = user;
-    next();
-  } catch (error) {
-    if (error.name === 'JsonWebTokenError') {
-      return res.status(401).json({ message: 'Invalid token' });
+      // Get user from database
+      req.user = await User.findById(userId).select('-password');
+
+      if (!req.user) {
+        console.error('❌ User not found for id:', userId);
+        return res.status(401).json({
+          success: false,
+          message: 'User not found',
+        });
+      }
+
+      if (!req.user.isActive) {
+        console.error('❌ User account is deactivated');
+        return res.status(401).json({
+          success: false,
+          message: 'Account is deactivated',
+        });
+      }
+
+      console.log('✅ User authenticated:', req.user.email);
+      next();
+    } catch (error) {
+      console.error('❌ Auth middleware error:', error.message);
+      
+      if (error.name === 'JsonWebTokenError') {
+        return res.status(401).json({
+          success: false,
+          message: 'Invalid token',
+        });
+      }
+      
+      if (error.name === 'TokenExpiredError') {
+        return res.status(401).json({
+          success: false,
+          message: 'Token expired',
+        });
+      }
+
+      return res.status(401).json({
+        success: false,
+        message: 'Not authorized to access this route',
+      });
     }
-    if (error.name === 'TokenExpiredError') {
-      return res.status(401).json({ message: 'Token expired' });
-    }
-    res.status(500).json({ message: 'Server error in authentication' });
+  } else {
+    console.error('❌ No token provided');
+    return res.status(401).json({
+      success: false,
+      message: 'No token provided',
+    });
   }
 };
 
-// Admin middleware
-const adminAuth = async (req, res, next) => {
-  try {
-    if (req.user.userType !== 'admin') {
-      return res.status(403).json({ message: 'Admin access required' });
-    }
+// Admin authorization
+const adminAuth = (req, res, next) => {
+  if (req.user && req.user.role === 'admin') {
     next();
-  } catch (error) {
-    res.status(500).json({ message: 'Server error in admin authentication' });
+  } else {
+    return res.status(403).json({
+      success: false,
+      message: 'Not authorized as an admin',
+    });
   }
 };
 

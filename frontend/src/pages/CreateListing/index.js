@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { listingsAPI, uploadAPI } from '../../services/api';
+import { listingsAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import LoadingSpinner from '../../components/Common/LoadingSpinner';
 import {
@@ -56,9 +56,9 @@ const CreateListing = () => {
     { value: 'produce', label: 'Fresh Produce' },
     { value: 'dairy', label: 'Dairy Products' },
     { value: 'bakery', label: 'Bakery Items' },
-    { value: 'canned', label: 'Canned Goods' },
-    { value: 'frozen', label: 'Frozen Foods' },
-    { value: 'household', label: 'Household Items' },
+    { value: 'canned-goods', label: 'Canned Goods' },
+    { value: 'household-items', label: 'Household Items' },
+    { value: 'clothing', label: 'Clothing' },
     { value: 'other', label: 'Other' }
   ];
 
@@ -78,7 +78,6 @@ const CreateListing = () => {
       [name]: value
     }));
     
-    // Clear messages when user starts typing
     if (error) setError('');
     if (success) setSuccess('');
   };
@@ -91,13 +90,12 @@ const CreateListing = () => {
       return;
     }
 
-    // Validate file types and sizes
     const validFiles = files.filter(file => {
       if (!file.type.startsWith('image/')) {
         setError('Please select only image files');
         return false;
       }
-      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+      if (file.size > 5 * 1024 * 1024) {
         setError('Each image must be smaller than 5MB');
         return false;
       }
@@ -110,7 +108,6 @@ const CreateListing = () => {
 
     setImages(prev => [...prev, ...validFiles]);
 
-    // Create preview URLs
     validFiles.forEach(file => {
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -122,7 +119,6 @@ const CreateListing = () => {
       reader.readAsDataURL(file);
     });
 
-    // Clear the input
     e.target.value = '';
   };
 
@@ -162,24 +158,32 @@ const CreateListing = () => {
     setError('');
 
     try {
-      let imageUrls = [];
-
-      // Upload images if any
-      if (images.length > 0) {
-        const uploadResponse = await uploadAPI.uploadMultiple(images);
-        imageUrls = uploadResponse.data.imageUrls || [];
-      }
-
-      // Create listing data
-      const listingData = {
-        ...formData,
-        images: imageUrls,
-        donor: user._id
-      };
-
-      const response = await listingsAPI.create(listingData);
+      // Create FormData for multipart/form-data
+      const formDataToSend = new FormData();
       
-      if (response.data.success) {
+      // Append all form fields
+      formDataToSend.append('title', formData.title);
+      formDataToSend.append('description', formData.description);
+      formDataToSend.append('category', formData.category);
+      formDataToSend.append('quantity', formData.quantity);
+      formDataToSend.append('unit', formData.unit);
+      if (formData.expiryDate) {
+        formDataToSend.append('expiryDate', formData.expiryDate);
+      }
+      formDataToSend.append('pickupLocation', formData.pickupLocation);
+      if (formData.additionalNotes) {
+        formDataToSend.append('additionalNotes', formData.additionalNotes);
+      }
+      formDataToSend.append('donor', user._id);
+
+      // Append images
+      images.forEach((image, index) => {
+        formDataToSend.append('images', image);
+      });
+
+      const response = await listingsAPI.create(formDataToSend);
+      
+      if (response.data) {
         setSuccess('Listing created successfully!');
         setTimeout(() => {
           navigate('/dashboard');
@@ -209,7 +213,6 @@ const CreateListing = () => {
           {error && <ErrorMessage>{error}</ErrorMessage>}
           {success && <SuccessMessage>{success}</SuccessMessage>}
 
-          {/* Basic Information */}
           <FormSection>
             <SectionTitle>Basic Information</SectionTitle>
             
@@ -289,7 +292,6 @@ const CreateListing = () => {
             </FormRow>
           </FormSection>
 
-          {/* Additional Details */}
           <FormSection>
             <SectionTitle>Additional Details</SectionTitle>
             
@@ -333,7 +335,6 @@ const CreateListing = () => {
             </FormGroup>
           </FormSection>
 
-          {/* Images */}
           <FormSection>
             <SectionTitle>Images (Optional)</SectionTitle>
             
@@ -371,7 +372,7 @@ const CreateListing = () => {
           </FormSection>
 
           <ButtonRow>
-            <CancelButton type="button" onClick={handleCancel}>
+            <CancelButton type="button" onClick={handleCancel} disabled={loading}>
               Cancel
             </CancelButton>
             <SubmitButton type="submit" disabled={loading}>

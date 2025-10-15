@@ -1,3 +1,4 @@
+
 // src/hooks/useGeolocation.js
 import { useState, useEffect } from 'react';
 
@@ -5,6 +6,13 @@ export const useGeolocation = () => {
   const [location, setLocation] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  // Check geolocation support on mount
+  useEffect(() => {
+    if (!navigator.geolocation) {
+      setError('Geolocation is not supported by this browser');
+    }
+  }, []);
 
   const getCurrentLocation = () => {
     if (!navigator.geolocation) {
@@ -19,12 +27,27 @@ export const useGeolocation = () => {
       (position) => {
         setLocation({
           latitude: position.coords.latitude,
-          longitude: position.coords.longitude
+          longitude: position.coords.longitude,
+          accuracy: position.coords.accuracy
         });
         setLoading(false);
       },
       (error) => {
-        setError(error.message);
+        let errorMessage = 'Unable to retrieve location';
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage = 'Location permission denied';
+            break;
+          case error.POSITION_UNAVAILABLE:
+            errorMessage = 'Location information unavailable';
+            break;
+          case error.TIMEOUT:
+            errorMessage = 'Location request timed out';
+            break;
+          default:
+            errorMessage = error.message;
+        }
+        setError(errorMessage);
         setLoading(false);
       },
       {
@@ -34,10 +57,6 @@ export const useGeolocation = () => {
       }
     );
   };
-
-  useEffect(() => {
-    getCurrentLocation();
-  }, []);
 
   return { location, error, loading, getCurrentLocation };
 };

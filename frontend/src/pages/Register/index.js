@@ -88,15 +88,16 @@ const Register = () => {
     setIsSubmitting(true);
 
     try {
-      const { confirmPassword, firstName, lastName, userType, phone, ...rest } =
-        formData;
+      const { confirmPassword, ...rest } = formData;
 
+      // ✅ FIXED: Send firstName and lastName separately
       const payload = {
-        name: `${firstName} ${lastName}`,
+        firstName: rest.firstName,
+        lastName: rest.lastName,
         email: rest.email,
         password: rest.password,
-        phone: phone,
-        userType: userType, // must be "donor", "recipient", or "both"
+        phoneNumber: rest.phone,
+        userType: rest.userType, // "donor", "recipient", or "both"
         address: {
           street: rest.address,
           city: "",

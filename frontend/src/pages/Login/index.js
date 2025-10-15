@@ -65,6 +65,7 @@ const Login = () => {
       if (result.success) {
         navigate(from, { replace: true });
       }
+      console.log("Login result:", result);
     } catch (err) {
       console.error('Login error:', err);
     } finally {

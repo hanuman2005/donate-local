@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { listingsAPI } from "../../services/api";
 import Map from "../../components/Map";
 import ListingCard from "../../components/ListingCard";
+import FiltersPanel from "../../components/FilterPanel";
+import Footer from "../../components/Footer";
 import LoadingSpinner from "../../components/Common/LoadingSpinner";
 import {
   HomeContainer,
@@ -12,11 +13,6 @@ import {
   HeroTitle,
   HeroSubtitle,
   CTAButton,
-  SearchSection,
-  SearchContainer,
-  SearchInput,
-  FilterContainer,
-  FilterSelect,
   ContentSection,
   MapSection,
   ListingsSection,
@@ -29,47 +25,15 @@ import {
 } from "./styledComponents";
 
 const Home = () => {
-  const [listings, setListings] = useState([]);
   const [filteredListings, setFilteredListings] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [loading, setLoading] = useState(false);
   const [userLocation, setUserLocation] = useState(null);
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const categories = [
-    { value: "all", label: "All Categories" },
-    { value: "produce", label: "Fresh Produce" },
-    { value: "canned", label: "Canned Goods" },
-    { value: "dairy", label: "Dairy Products" },
-    { value: "bakery", label: "Bakery Items" },
-    { value: "household", label: "Household Items" },
-    { value: "other", label: "Other" },
-  ];
-
   useEffect(() => {
-    fetchListings();
     getCurrentLocation();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  useEffect(() => {
-    filterListings();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [listings, searchTerm, selectedCategory]);
-
-  const fetchListings = async () => {
-    try {
-      setLoading(true);
-      const response = await listingsAPI.getAll({ limit: 20 });
-      setListings(response.data.listings || []);
-    } catch (error) {
-      console.error("Error fetching listings:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const getCurrentLocation = () => {
     if (navigator.geolocation) {
@@ -87,34 +51,8 @@ const Home = () => {
     }
   };
 
-  const filterListings = () => {
-    let filtered = [...listings];
-
-    // Filter by search term
-    if (searchTerm) {
-      filtered = filtered.filter(
-        (listing) =>
-          listing.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          listing.description.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    // Filter by category
-    if (selectedCategory !== "all") {
-      filtered = filtered.filter(
-        (listing) => listing.category === selectedCategory
-      );
-    }
-
-    setFilteredListings(filtered);
-  };
-
   const handleGetStarted = () => {
-    if (user) {
-      navigate("/dashboard");
-    } else {
-      navigate("/register");
-    }
+    navigate(user ? "/dashboard" : "/register");
   };
 
   if (loading) {
@@ -137,34 +75,18 @@ const Home = () => {
         </HeroContent>
       </HeroSection>
 
-      {/* Search and Filter Section */}
-      <SearchSection>
-        <SearchContainer>
-          <SearchInput
-            type="text"
-            placeholder="Search for food and resources..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          <FilterContainer>
-            <FilterSelect
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-            >
-              {categories.map((category) => (
-                <option key={category.value} value={category.value}>
-                  {category.label}
-                </option>
-              ))}
-            </FilterSelect>
-          </FilterContainer>
-        </SearchContainer>
-      </SearchSection>
+      {/* Filters Panel */}
+      <FiltersPanel
+        onResults={(results) => {
+          setFilteredListings(results);
+          setLoading(false);
+        }}
+      />
 
       {/* Stats Section */}
       <StatsSection>
         <StatCard>
-          <StatNumber>{listings.length}</StatNumber>
+          <StatNumber>{filteredListings.length}</StatNumber>
           <StatLabel>Active Listings</StatLabel>
         </StatCard>
         <StatCard>
@@ -215,6 +137,7 @@ const Home = () => {
           )}
         </ListingsSection>
       </ContentSection>
+      <Footer />
     </HomeContainer>
   );
 };

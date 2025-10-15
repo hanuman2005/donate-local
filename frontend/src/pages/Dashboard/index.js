@@ -77,9 +77,10 @@ const Dashboard = () => {
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
+      // Change line 49:
       const [userListingsRes, chatsRes] = await Promise.all([
         listingsAPI.getUserListings(),
-        chatAPI.getUserChats(), // ✅ corrected from getChats()
+        chatAPI.getUserChats(), // ✅ Fixed from getChats()
       ]);
 
       setUserListings(userListingsRes.data.listings || []);
@@ -143,8 +144,9 @@ const Dashboard = () => {
         </WelcomeSection>
 
         <QuickActions>
-          <ActionButton $primary onClick={handleCreateListing}> {/* ✅ changed to $primary */}
-            + Create Listing
+          <ActionButton $primary onClick={handleCreateListing}>
+            {" "}
+            {/* ✅ changed to $primary */}+ Create Listing
           </ActionButton>
           <ActionButton onClick={handleViewProfile}>View Profile</ActionButton>
         </QuickActions>
@@ -175,10 +177,18 @@ const Dashboard = () => {
             <SectionHeader>
               <SectionTitle>Discover Resources</SectionTitle>
               <TabContainer>
-                <Tab $active={activeTab === "nearby"} onClick={() => setActiveTab("nearby")}> {/* ✅ changed to $active */}
+                <Tab
+                  $active={activeTab === "nearby"}
+                  onClick={() => setActiveTab("nearby")}
+                >
+                  {" "}
+                  {/* ✅ changed to $active */}
                   Map View
                 </Tab>
-                <Tab $active={activeTab === "list"} onClick={() => setActiveTab("list")}>
+                <Tab
+                  $active={activeTab === "list"}
+                  onClick={() => setActiveTab("list")}
+                >
                   List View
                 </Tab>
               </TabContainer>
@@ -242,7 +252,9 @@ const Dashboard = () => {
                   <EmptyStateText>
                     You haven't created any listings yet
                   </EmptyStateText>
-                  <ActionButton $primary onClick={handleCreateListing}> {/* ✅ changed to $primary */}
+                  <ActionButton $primary onClick={handleCreateListing}>
+                    {" "}
+                    {/* ✅ changed to $primary */}
                     Create Your First Listing
                   </ActionButton>
                 </EmptyState>

@@ -1,6 +1,10 @@
-// controllers/chatController.js
-const Chat = require('../models/Chat');
-const Listing = require('../models/Listing');
+// ============================================
+// controllers/chatController.js - FIXED
+// ============================================
+const Chat = require("../models/Chat");
+const Message = require("../models/Message"); // ✅ Use separate Message model
+const Listing = require("../models/Listing");
+const User = require("../models/User");
 
 // Create or get existing chat
 const createOrGetChat = async (req, res) => {
@@ -11,40 +15,51 @@ const createOrGetChat = async (req, res) => {
     // Verify listing exists
     const listing = await Listing.findById(listingId);
     if (!listing) {
-      return res.status(404).json({ message: 'Listing not found' });
+      return res.status(404).json({
+        success: false,
+        message: "Listing not found",
+      });
+    }
+
+    // Verify participant exists
+    const participant = await User.findById(participantId);
+    if (!participant) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
     }
 
     // Check if chat already exists
     let chat = await Chat.findOne({
       listing: listingId,
-      participants: { $all: [currentUserId, participantId] }
-    }).populate('participants', 'name profileImage')
-      .populate('listing', 'title images status');
+      participants: { $all: [currentUserId, participantId] },
+    })
+      .populate("participants", "firstName lastName avatar")
+      .populate("listing", "title images status");
 
     if (!chat) {
       // Create new chat
       chat = new Chat({
         participants: [currentUserId, participantId],
         listing: listingId,
-        messages: [],
-        isActive: true
+        isActive: true,
       });
 
       await chat.save();
-      await chat.populate('participants', 'name profileImage');
-      await chat.populate('listing', 'title images status');
+      await chat.populate("participants", "firstName lastName avatar");
+      await chat.populate("listing", "title images status");
     }
 
     res.json({
       success: true,
-      chat
+      chat,
     });
-
   } catch (error) {
-    console.error('Create/Get chat error:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Server error handling chat' 
+    console.error("Create/Get chat error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error handling chat",
     });
   }
 };
@@ -56,136 +71,155 @@ const getUserChats = async (req, res) => {
 
     const chats = await Chat.find({
       participants: userId,
-      isActive: true
-    }).populate('participants', 'name profileImage')
-      .populate('listing', 'title images status')
-      .populate('lastMessage.sender', 'name')
-      .sort({ 'lastMessage.timestamp': -1 });
+      isActive: true,
+    })
+      .populate("participants", "firstName lastName avatar")
+      .populate("listing", "title images status")
+      .populate("lastMessage.sender", "firstName lastName")
+      .sort({ "lastMessage.timestamp": -1 });
 
     res.json({
       success: true,
-      chats
+      chats,
     });
-
   } catch (error) {
-    console.error('Get user chats error:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Server error fetching chats' 
+    console.error("Get user chats error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error fetching chats",
     });
   }
 };
 
-// Get chat messages
+// ✅ FIXED: Get chat messages from separate Message collection
 const getChatMessages = async (req, res) => {
   try {
     const { chatId } = req.params;
     const { page = 1, limit = 50 } = req.query;
 
     const chat = await Chat.findById(chatId)
-      .populate('participants', 'name profileImage')
-      .populate('listing', 'title images status')
-      .populate('messages.sender', 'name profileImage');
+      .populate("participants", "firstName lastName avatar")
+      .populate("listing", "title images status");
 
     if (!chat) {
-      return res.status(404).json({ message: 'Chat not found' });
+      return res.status(404).json({
+        success: false,
+        message: "Chat not found",
+      });
     }
 
     // Check if user is participant
     const isParticipant = chat.participants.some(
-      participant => participant._id.toString() === req.user._id.toString()
+      (participant) => participant._id.toString() === req.user._id.toString()
     );
 
     if (!isParticipant) {
-      return res.status(403).json({ message: 'Access denied to this chat' });
+      return res.status(403).json({
+        success: false,
+        message: "Access denied to this chat",
+      });
     }
 
-    // Get paginated messages
+    // Get messages from separate collection
     const skip = (parseInt(page) - 1) * parseInt(limit);
-    const messages = chat.messages
-      .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
-      .slice(skip, skip + parseInt(limit))
-      .reverse();
+
+    const messages = await Message.find({ chat: chatId })
+      .populate("sender", "firstName lastName avatar")
+      .sort({ timestamp: -1 })
+      .skip(skip)
+      .limit(parseInt(limit));
+
+    const total = await Message.countDocuments({ chat: chatId });
 
     res.json({
       success: true,
       chat: {
-        ...chat.toObject(),
-        messages
-      }
+        _id: chat._id,
+        participants: chat.participants,
+        listing: chat.listing,
+        lastMessage: chat.lastMessage,
+      },
+      messages: messages.reverse(), // Oldest first
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+        pages: Math.ceil(total / limit),
+      },
     });
-
   } catch (error) {
-    console.error('Get chat messages error:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Server error fetching messages' 
+    console.error("Get chat messages error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error fetching messages",
     });
   }
 };
 
-// Send message
+// ✅ FIXED: Send message to separate Message collection
 const sendMessage = async (req, res) => {
   try {
     const { chatId } = req.params;
-    const { content, messageType = 'text' } = req.body;
+    const { content, messageType = "text" } = req.body;
     const senderId = req.user._id;
 
     const chat = await Chat.findById(chatId);
 
     if (!chat) {
-      return res.status(404).json({ message: 'Chat not found' });
+      return res.status(404).json({
+        success: false,
+        message: "Chat not found",
+      });
     }
 
     // Check if user is participant
     const isParticipant = chat.participants.some(
-      participant => participant.toString() === senderId.toString()
+      (participant) => participant.toString() === senderId.toString()
     );
 
     if (!isParticipant) {
-      return res.status(403).json({ message: 'Access denied to this chat' });
+      return res.status(403).json({
+        success: false,
+        message: "Access denied to this chat",
+      });
     }
 
-    // Create new message
-    const newMessage = {
+    // Create new message in separate collection
+    const newMessage = new Message({
+      chat: chatId,
       sender: senderId,
       content,
       messageType,
       timestamp: new Date(),
-      read: false
-    };
+      read: false,
+    });
 
-    // Add message to chat
-    chat.messages.push(newMessage);
-    
-    // Update last message
+    await newMessage.save();
+    await newMessage.populate("sender", "firstName lastName avatar");
+
+    // Update last message in chat
     chat.lastMessage = {
       content,
       timestamp: new Date(),
-      sender: senderId
+      sender: senderId,
     };
 
     await chat.save();
 
-    // Populate the new message
-    await chat.populate('messages.sender', 'name profileImage');
-    const populatedMessage = chat.messages[chat.messages.length - 1];
-
     res.json({
       success: true,
-      message: populatedMessage
+      message: newMessage,
     });
-
   } catch (error) {
-    console.error('Send message error:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Server error sending message' 
+    console.error("Send message error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error sending message",
     });
   }
 };
 
-// Mark messages as read
+// ✅ FIXED: Mark messages as read in separate collection
 const markMessagesAsRead = async (req, res) => {
   try {
     const { chatId } = req.params;
@@ -194,28 +228,33 @@ const markMessagesAsRead = async (req, res) => {
     const chat = await Chat.findById(chatId);
 
     if (!chat) {
-      return res.status(404).json({ message: 'Chat not found' });
+      return res.status(404).json({
+        success: false,
+        message: "Chat not found",
+      });
     }
 
     // Mark unread messages from other participants as read
-    chat.messages.forEach(message => {
-      if (message.sender.toString() !== userId.toString() && !message.read) {
-        message.read = true;
+    await Message.updateMany(
+      {
+        chat: chatId,
+        sender: { $ne: userId },
+        read: false,
+      },
+      {
+        $set: { read: true },
       }
-    });
-
-    await chat.save();
+    );
 
     res.json({
       success: true,
-      message: 'Messages marked as read'
+      message: "Messages marked as read",
     });
-
   } catch (error) {
-    console.error('Mark messages as read error:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Server error marking messages as read' 
+    console.error("Mark messages as read error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error marking messages as read",
     });
   }
 };
@@ -225,5 +264,5 @@ module.exports = {
   getUserChats,
   getChatMessages,
   sendMessage,
-  markMessagesAsRead
+  markMessagesAsRead,
 };

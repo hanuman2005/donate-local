@@ -1,14 +1,23 @@
-// models/User.js
+// ============================================
+// models/User.js - FIXED
+// ============================================
 const mongoose = require("mongoose");
-const bcrypt = require("bcryptjs");
+const bcrypt = require("bcrypt");
 
 const userSchema = new mongoose.Schema(
   {
-    name: {
+    // ✅ FIXED: Split name into firstName and lastName to match frontend
+    firstName: {
       type: String,
-      required: [true, "Name is required"],
+      required: [true, "First name is required"],
       trim: true,
-      maxlength: [50, "Name cannot exceed 50 characters"],
+      maxlength: [50, "First name cannot exceed 50 characters"],
+    },
+    lastName: {
+      type: String,
+      required: [true, "Last name is required"],
+      trim: true,
+      maxlength: [50, "Last name cannot exceed 50 characters"],
     },
     email: {
       type: String,
@@ -49,16 +58,36 @@ const userSchema = new mongoose.Schema(
       },
       coordinates: {
         type: [Number], // [longitude, latitude]
-        default: [0, 0],
+        validate: {
+          validator: function(v) {
+            return v.length === 2 && 
+                   v[0] >= -180 && v[0] <= 180 && // longitude
+                   v[1] >= -90 && v[1] <= 90;     // latitude
+          },
+          message: 'Invalid coordinates'
+        }
       },
     },
-    profileImage: {
+    // ✅ FIXED: Renamed to 'avatar' to match frontend
+    avatar: {
       type: String,
       default: "",
     },
+    // ✅ ADDED: Bio field
+    bio: {
+      type: String,
+      maxlength: [500, "Bio cannot exceed 500 characters"],
+      default: "",
+    },
     rating: {
-      average: { type: Number, default: 0 },
-      count: { type: Number, default: 0 },
+      average: { type: Number, default: 0, min: 0, max: 5 },
+      count: { type: Number, default: 0, min: 0 },
+    },
+    // ✅ ADDED: Count of listings for frontend
+    listingsCount: {
+      type: Number,
+      default: 0,
+      min: 0,
     },
     isVerified: {
       type: Boolean,
@@ -76,13 +105,20 @@ const userSchema = new mongoose.Schema(
 
 // Index for geospatial queries
 userSchema.index({ location: "2dsphere" });
+userSchema.index({ email: 1 });
+userSchema.set('toObject', {
+  transform: function (doc, ret) {
+    delete ret.password;
+    return ret;
+  }
+});
 
 // Hash password before saving
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
 
   try {
-    const salt = await bcrypt.genSalt(12);
+    const salt = await bcrypt.genSalt(10); // ✅ Reduced from 12 to 10 for better performance
     this.password = await bcrypt.hash(this.password, salt);
     next();
   } catch (error) {
@@ -102,4 +138,11 @@ userSchema.methods.toJSON = function () {
   return user;
 };
 
+// ✅ ADDED: Virtual for full name
+userSchema.virtual('name').get(function() {
+  return `${this.firstName} ${this.lastName}`;
+});
+
 module.exports = mongoose.model("User", userSchema);
+
+

@@ -19,6 +19,12 @@ const GlobalStyles = createGlobalStyle`
     line-height: 1.6;
   }
 
+  /* Modal scroll lock */
+  body.modal-open {
+    overflow: hidden;
+    padding-right: 15px;
+  }
+
   html {
     scroll-behavior: smooth;
   }

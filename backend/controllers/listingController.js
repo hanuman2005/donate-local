@@ -1,11 +1,13 @@
-// controllers/listingController.js
+// ============================================
+// controllers/listingController.js - COMPLETE & FIXED
+// ============================================
 const { validationResult } = require("express-validator");
 const Listing = require("../models/Listing");
 const User = require("../models/User");
 const cloudinary = require("../config/cloudinary");
+const notificationHelper = require("../utils/notificationHelper");
 
-// Create listing
-// Create listing
+// ✅ Create listing - FIXED
 const createListing = async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -22,47 +24,46 @@ const createListing = async (req, res) => {
       description,
       category,
       quantity,
-      coordinates,
+      unit,
+      pickupLocation,
       address,
       expiryDate,
-      pickupInstructions,
+      additionalNotes,
+      urgency,
     } = req.body;
 
-    // Guard: coordinates must be valid
-    if (!coordinates || coordinates.length !== 2) {
-      return res.status(400).json({
-        success: false,
-        message: "Valid coordinates [longitude, latitude] are required",
-      });
-    }
-
-    // Handle image uploads
     let images = [];
     if (req.files && req.files.length > 0) {
-      images = req.files.map((file) => ({
-        url: file.path,
-        publicId: file.filename,
-      }));
+      images = req.files.map((file) => file.path);
     }
+
+    const defaultCoordinates = [0, 0];
 
     const listing = new Listing({
       title,
       description,
       category,
-      quantity,
+      quantity: parseFloat(quantity),
+      unit: unit || "items",
       images,
       donor: req.user._id,
       location: {
         type: "Point",
-        coordinates: [parseFloat(coordinates[0]), parseFloat(coordinates[1])],
+        coordinates: defaultCoordinates,
       },
+      pickupLocation,
       address,
       expiryDate: expiryDate ? new Date(expiryDate) : undefined,
-      pickupInstructions,
+      additionalNotes,
+      urgency: urgency || 1,
     });
 
     await listing.save();
-    await listing.populate("donor", "name profileImage rating");
+    await listing.populate("donor", "firstName lastName avatar rating");
+
+    await User.findByIdAndUpdate(req.user._id, {
+      $inc: { listingsCount: 1 },
+    });
 
     return res.status(201).json({
       success: true,
@@ -74,18 +75,16 @@ const createListing = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Server error creating listing",
+      error: error.message,
     });
   }
 };
 
-// Get all listings with optional filters
+// ✅ Get all listings - FIXED
 const getListings = async (req, res) => {
   try {
     const {
       category,
-      latitude,
-      longitude,
-      radius = 10, // km
       status = "available",
       page = 1,
       limit = 20,
@@ -94,36 +93,22 @@ const getListings = async (req, res) => {
 
     let query = { status };
 
-    // Category filter
     if (category && category !== "all") {
       query.category = category;
     }
 
-    // Text search
     if (search) {
       query.$or = [
         { title: { $regex: search, $options: "i" } },
         { description: { $regex: search, $options: "i" } },
+        { pickupLocation: { $regex: search, $options: "i" } },
       ];
-    }
-
-    // Location-based search
-    if (latitude && longitude) {
-      query.location = {
-        $near: {
-          $geometry: {
-            type: "Point",
-            coordinates: [parseFloat(longitude), parseFloat(latitude)],
-          },
-          $maxDistance: radius * 1000, // Convert km to meters
-        },
-      };
     }
 
     const skip = (parseInt(page) - 1) * parseInt(limit);
 
     const listings = await Listing.find(query)
-      .populate("donor", "name profileImage rating")
+      .populate("donor", "firstName lastName avatar rating")
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(parseInt(limit));
@@ -149,16 +134,19 @@ const getListings = async (req, res) => {
   }
 };
 
-// Get single listing by ID
+// ✅ Get single listing by ID - NEW
 const getListingById = async (req, res) => {
   try {
     const listing = await Listing.findById(req.params.id)
-      .populate("donor", "name profileImage rating phone")
-      .populate("assignedTo", "name profileImage rating")
-      .populate("interestedUsers.user", "name profileImage");
+      .populate("donor", "firstName lastName avatar rating phone")
+      .populate("assignedTo", "firstName lastName avatar rating")
+      .populate("interestedUsers.user", "firstName lastName avatar");
 
     if (!listing) {
-      return res.status(404).json({ message: "Listing not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Listing not found",
+      });
     }
 
     // Increment view count
@@ -178,20 +166,23 @@ const getListingById = async (req, res) => {
   }
 };
 
-// Update listing
+// ✅ Update listing - NEW
 const updateListing = async (req, res) => {
   try {
     const listing = await Listing.findById(req.params.id);
 
     if (!listing) {
-      return res.status(404).json({ message: "Listing not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Listing not found",
+      });
     }
 
-    // Check if user is the owner
     if (listing.donor.toString() !== req.user._id.toString()) {
-      return res
-        .status(403)
-        .json({ message: "Not authorized to update this listing" });
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to update this listing",
+      });
     }
 
     const {
@@ -199,31 +190,33 @@ const updateListing = async (req, res) => {
       description,
       category,
       quantity,
+      unit,
       status,
-      pickupInstructions,
+      additionalNotes,
       expiryDate,
+      pickupLocation,
     } = req.body;
 
-    // Handle new image uploads
     let newImages = [];
     if (req.files && req.files.length > 0) {
-      newImages = req.files.map((file) => ({
-        url: file.path,
-        publicId: file.filename,
-      }));
+      newImages = req.files.map((file) => file.path);
     }
 
     const updateData = {
       title: title || listing.title,
       description: description || listing.description,
       category: category || listing.category,
-      quantity: quantity || listing.quantity,
+      quantity: quantity ? parseFloat(quantity) : listing.quantity,
+      unit: unit || listing.unit,
       status: status || listing.status,
-      pickupInstructions: pickupInstructions || listing.pickupInstructions,
+      additionalNotes:
+        additionalNotes !== undefined
+          ? additionalNotes
+          : listing.additionalNotes,
       expiryDate: expiryDate ? new Date(expiryDate) : listing.expiryDate,
+      pickupLocation: pickupLocation || listing.pickupLocation,
     };
 
-    // Add new images to existing ones
     if (newImages.length > 0) {
       updateData.images = [...listing.images, ...newImages];
     }
@@ -232,7 +225,7 @@ const updateListing = async (req, res) => {
       req.params.id,
       updateData,
       { new: true, runValidators: true }
-    ).populate("donor", "name profileImage rating");
+    ).populate("donor", "firstName lastName avatar rating");
 
     res.json({
       success: true,
@@ -248,34 +241,44 @@ const updateListing = async (req, res) => {
   }
 };
 
-// Delete listing
+// ✅ Delete listing - NEW
 const deleteListing = async (req, res) => {
   try {
     const listing = await Listing.findById(req.params.id);
 
     if (!listing) {
-      return res.status(404).json({ message: "Listing not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Listing not found",
+      });
     }
 
-    // Check if user is the owner or admin
     if (
       listing.donor.toString() !== req.user._id.toString() &&
       req.user.userType !== "admin"
     ) {
-      return res
-        .status(403)
-        .json({ message: "Not authorized to delete this listing" });
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to delete this listing",
+      });
     }
 
     // Delete images from Cloudinary
     if (listing.images && listing.images.length > 0) {
-      const deletePromises = listing.images.map((image) =>
-        cloudinary.uploader.destroy(image.publicId)
-      );
-      await Promise.all(deletePromises);
+      const deletePromises = listing.images.map((imageUrl) => {
+        const parts = imageUrl.split("/");
+        const filename = parts[parts.length - 1];
+        const publicId = filename.split(".")[0];
+        return cloudinary.uploader.destroy(`food-distribution/${publicId}`);
+      });
+      await Promise.allSettled(deletePromises);
     }
 
     await Listing.findByIdAndDelete(req.params.id);
+
+    await User.findByIdAndUpdate(listing.donor, {
+      $inc: { listingsCount: -1 },
+    });
 
     res.json({
       success: true,
@@ -290,7 +293,7 @@ const deleteListing = async (req, res) => {
   }
 };
 
-// Express interest in listing
+// ✅ Express interest - NEW
 const expressInterest = async (req, res) => {
   try {
     const { message } = req.body;
@@ -300,33 +303,37 @@ const expressInterest = async (req, res) => {
     const listing = await Listing.findById(listingId);
 
     if (!listing) {
-      return res.status(404).json({ message: "Listing not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Listing not found",
+      });
     }
 
-    // Check if listing is available
     if (listing.status !== "available") {
-      return res.status(400).json({ message: "Listing is not available" });
+      return res.status(400).json({
+        success: false,
+        message: "Listing is not available",
+      });
     }
 
-    // Check if user is not the donor
     if (listing.donor.toString() === userId.toString()) {
-      return res
-        .status(400)
-        .json({ message: "Cannot express interest in your own listing" });
+      return res.status(400).json({
+        success: false,
+        message: "Cannot express interest in your own listing",
+      });
     }
 
-    // Check if user already expressed interest
     const alreadyInterested = listing.interestedUsers.some(
       (interest) => interest.user.toString() === userId.toString()
     );
 
     if (alreadyInterested) {
-      return res
-        .status(400)
-        .json({ message: "Already expressed interest in this listing" });
+      return res.status(400).json({
+        success: false,
+        message: "Already expressed interest in this listing",
+      });
     }
 
-    // Add to interested users
     listing.interestedUsers.push({
       user: userId,
       message: message || "Interested in this item",
@@ -334,7 +341,10 @@ const expressInterest = async (req, res) => {
     });
 
     await listing.save();
-    await listing.populate("interestedUsers.user", "name profileImage");
+    await listing.populate("interestedUsers.user", "firstName lastName avatar");
+
+    // ✅ FIXED: Pass req.io
+    await notificationHelper.onInterestExpressed(listing, req.user, req.io);
 
     res.json({
       success: true,
@@ -350,7 +360,7 @@ const expressInterest = async (req, res) => {
   }
 };
 
-// Assign listing to user
+// ✅ Assign listing - ADD req.io
 const assignListing = async (req, res) => {
   try {
     const { recipientId } = req.body;
@@ -359,22 +369,33 @@ const assignListing = async (req, res) => {
     const listing = await Listing.findById(listingId);
 
     if (!listing) {
-      return res.status(404).json({ message: "Listing not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Listing not found",
+      });
     }
 
-    // Check if user is the donor
     if (listing.donor.toString() !== req.user._id.toString()) {
-      return res
-        .status(403)
-        .json({ message: "Not authorized to assign this listing" });
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to assign this listing",
+      });
     }
 
-    // Update listing
     listing.assignedTo = recipientId;
     listing.status = "pending";
     await listing.save();
 
-    await listing.populate("assignedTo", "name profileImage email phone");
+    await listing.populate(
+      "assignedTo",
+      "firstName lastName avatar email phone"
+    );
+
+    // ✅ FIXED: Pass req.io
+    const recipient = await User.findById(recipientId);
+    if (recipient) {
+      await notificationHelper.onListingAssigned(listing, recipient, req.io);
+    }
 
     res.json({
       success: true,
@@ -390,27 +411,39 @@ const assignListing = async (req, res) => {
   }
 };
 
-// Mark listing as completed
+// ✅ Complete listing - ADD req.io
 const completeListing = async (req, res) => {
   try {
     const listingId = req.params.id;
 
-    const listing = await Listing.findById(listingId);
+    const listing = await Listing.findById(listingId).populate("assignedTo");
 
     if (!listing) {
-      return res.status(404).json({ message: "Listing not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Listing not found",
+      });
     }
 
-    // Check if user is the donor
     if (listing.donor.toString() !== req.user._id.toString()) {
-      return res
-        .status(403)
-        .json({ message: "Not authorized to complete this listing" });
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to complete this listing",
+      });
     }
 
     listing.status = "completed";
     listing.completedAt = new Date();
     await listing.save();
+
+    // ✅ FIXED: Pass req.io
+    if (listing.assignedTo) {
+      await notificationHelper.onListingCompleted(
+        listing,
+        listing.assignedTo,
+        req.io
+      );
+    }
 
     res.json({
       success: true,
@@ -426,7 +459,7 @@ const completeListing = async (req, res) => {
   }
 };
 
-// Get user's listings
+// ✅ Get user's listings
 const getUserListings = async (req, res) => {
   try {
     const { status, type = "donated" } = req.query;
@@ -443,8 +476,8 @@ const getUserListings = async (req, res) => {
     }
 
     const listings = await Listing.find(query)
-      .populate("donor", "name profileImage rating")
-      .populate("assignedTo", "name profileImage rating")
+      .populate("donor", "firstName lastName avatar rating")
+      .populate("assignedTo", "firstName lastName avatar rating")
       .sort({ createdAt: -1 });
 
     res.json({
@@ -459,49 +492,109 @@ const getUserListings = async (req, res) => {
     });
   }
 };
+
+// ✅ Get nearby listings
 const getNearbyListings = async (req, res) => {
   try {
     const { lat, lng, radius = 10 } = req.query;
 
     if (!lat || !lng) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Missing coordinates" });
+      return res.status(400).json({
+        success: false,
+        message: "Latitude and longitude are required",
+      });
     }
 
     const listings = await Listing.find({
+      status: "available",
       location: {
         $near: {
           $geometry: {
             type: "Point",
             coordinates: [parseFloat(lng), parseFloat(lat)],
           },
-          $maxDistance: parseFloat(radius) * 1000, // meters
+          $maxDistance: parseFloat(radius) * 1000,
         },
       },
-    }).populate("donor", "name profileImage rating");
+    })
+      .populate("donor", "firstName lastName avatar rating")
+      .limit(50);
 
-    res.json({ success: true, listings });
+    res.json({
+      success: true,
+      listings,
+    });
   } catch (error) {
     console.error("Nearby listings error:", error);
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Server error fetching nearby listings",
-      });
+    res.status(500).json({
+      success: false,
+      message: "Server error fetching nearby listings",
+    });
   }
 };
+
+// ✅ Search listings
+const searchListings = async (req, res) => {
+  try {
+    const { category, urgency, expiryBefore, sortBy, lat, lng, maxDistance } =
+      req.query;
+
+    const query = { status: "available" };
+
+    if (category) query.category = category;
+    if (urgency) query.urgency = { $gte: parseInt(urgency) };
+    if (expiryBefore) query.expiryDate = { $lte: new Date(expiryBefore) };
+
+    if (lat && lng && maxDistance) {
+      query.location = {
+        $near: {
+          $geometry: {
+            type: "Point",
+            coordinates: [parseFloat(lng), parseFloat(lat)],
+          },
+          $maxDistance: parseInt(maxDistance),
+        },
+      };
+    }
+
+    let sort = {};
+    if (sortBy === "newest") sort.createdAt = -1;
+    else if (sortBy === "oldest") sort.createdAt = 1;
+    else if (sortBy === "popular") sort.views = -1;
+
+    const listings = await Listing.find(query)
+      .sort(sort)
+      .populate("donor", "firstName lastName avatar rating")
+      .limit(100);
+
+    res.status(200).json({
+      success: true,
+      listings,
+    });
+  } catch (error) {
+    console.error("Search error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error during search",
+    });
+  }
+};
+
+// ✅ Express interest - ADD req.io
 
 module.exports = {
   createListing,
   getListings,
   getListingById,
   updateListing,
+  expressInterest, // ✅ Updated
+  assignListing, // ✅ Updated
+  completeListing,
   deleteListing,
   expressInterest,
   assignListing,
   completeListing,
   getUserListings,
   getNearbyListings,
+  searchListings,
 };
