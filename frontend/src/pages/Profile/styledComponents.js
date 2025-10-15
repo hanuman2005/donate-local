@@ -5,7 +5,8 @@ export const ProfileContainer = styled.div`
   max-width: 900px;
   margin: 0 auto;
   padding: 2rem 1rem;
-  min-height: 100vh;
+   margin-top: 80px;  /* ✅ Match header height */
+  min-height: calc(100vh - 80px);
 `;
 
 export const ProfileCard = styled.div`

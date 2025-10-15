@@ -1,14 +1,15 @@
 import styled from 'styled-components';
 
 export const HeaderContainer = styled.header`
-  background: white;
-  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
-  position: fixed;
+  position: fixed;  /* ✅ Make header fixed */
   top: 0;
   left: 0;
   right: 0;
-  z-index: 100;
-  backdrop-filter: blur(10px);
+  background: white;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  z-index: 1000;  /* ✅ Ensure header stays on top */
+  height: 80px;  /* ✅ Set fixed height */
+    backdrop-filter: blur(10px);
 `;
 
 export const HeaderContent = styled.div`
@@ -258,5 +259,60 @@ export const MobileNavLink = styled.span`
   &:hover {
     color: #667eea;
     background: rgba(102, 126, 234, 0.1);
+  }
+`;
+export const NotificationBell = styled.button`
+  position: relative;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 1.5rem;
+  padding: 0.5rem;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    background: rgba(102, 126, 234, 0.1);
+    transform: scale(1.1);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  @media (max-width: 768px) {
+    display: none;
+  }
+`;
+
+export const NotificationBadge = styled.span`
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  background: #ef4444;
+  color: white;
+  border-radius: 10px;
+  padding: 2px 6px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  min-width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  animation: pulse 2s infinite;
+
+  @keyframes pulse {
+    0%, 100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.1);
+    }
   }
 `;

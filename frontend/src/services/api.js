@@ -5,7 +5,7 @@ const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000/api";
 
 const api = axios.create({
   baseURL: API_URL,
-  timeout: 10000,
+  timeout: 30000, // 30 seconds (better for file uploads)
   headers: {
     "Content-Type": "application/json",
   },
@@ -31,10 +31,27 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
+    // Handle 401 Unauthorized - but avoid infinite loops
     if (error.response?.status === 401) {
-      localStorage.removeItem("token");
-      window.location.href = "/login";
+      const currentPath = window.location.pathname;
+
+      // Only redirect if not already on auth pages
+      if (currentPath !== "/login" && currentPath !== "/register") {
+        localStorage.removeItem("token");
+        delete api.defaults.headers.common["Authorization"];
+
+        // Store the attempted URL for redirect after login
+        sessionStorage.setItem("redirectAfterLogin", currentPath);
+
+        window.location.href = "/login";
+      }
     }
+
+    // Handle network errors
+    if (!error.response) {
+      console.error("Network error:", error.message);
+    }
+
     return Promise.reject(error);
   }
 );
@@ -51,24 +68,26 @@ export const listingsAPI = {
   create: (data) =>
     api.post("/listings", data, {
       headers: { "Content-Type": "multipart/form-data" },
+      timeout: 60000, // 60s for large uploads
     }),
   getAll: (params) => api.get("/listings", { params }),
   getById: (id) => api.get(`/listings/${id}`),
   update: (id, data) =>
     api.put(`/listings/${id}`, data, {
       headers: { "Content-Type": "multipart/form-data" },
+      timeout: 60000,
     }),
   delete: (id) => api.delete(`/listings/${id}`),
   expressInterest: (id, data) => api.post(`/listings/${id}/interest`, data),
   assign: (id, data) => api.post(`/listings/${id}/assign`, data),
   complete: (id) => api.put(`/listings/${id}/complete`),
   getUserListings: (params) => api.get("/listings/user", { params }),
-  getNearby: (lat, lng, radius) => // ✅ fixed
+  getNearby: (lat, lng, radius) =>
     api.get("/listings/nearby", {
       params: { lat, lng, radius },
     }),
+  search: (params) => api.get("/listings/search", { params }),
 };
-
 
 export const chatAPI = {
   createOrGet: (data) => api.post("/chat", data),
@@ -85,20 +104,66 @@ export const usersAPI = {
   updateProfileImage: (data) =>
     api.put("/users/profile-image", data, {
       headers: { "Content-Type": "multipart/form-data" },
+      timeout: 60000,
     }),
   search: (params) => api.get("/users/search", { params }),
 };
 
+// Add to uploadAPI
 export const uploadAPI = {
-  // for generic file uploads if needed
-  uploadFile: (endpoint, data) =>
+  uploadFile: (endpoint, data, onProgress) =>
     api.post(endpoint, data, {
       headers: { "Content-Type": "multipart/form-data" },
+      timeout: 60000,
+      onUploadProgress: (progressEvent) => {
+        if (onProgress) {
+          const percentCompleted = Math.round(
+            (progressEvent.loaded * 100) / progressEvent.total
+          );
+          onProgress(percentCompleted);
+        }
+      },
     }),
 
-  // convenience wrappers
-  listing: (data) => listingsAPI.create(data),
-  profileImage: (data) => usersAPI.updateProfileImage(data),
+  // Add these methods:
+  uploadMultiple: (files, onProgress) => {
+    const formData = new FormData();
+    files.forEach((file, index) => {
+      formData.append("images", file);
+    });
+    return api.post("/upload/multiple", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+      timeout: 60000,
+      onUploadProgress: (progressEvent) => {
+        if (onProgress) {
+          const percentCompleted = Math.round(
+            (progressEvent.loaded * 100) / progressEvent.total
+          );
+          onProgress(percentCompleted);
+        }
+      },
+    });
+  },
+
+  uploadImage: (file, onProgress) => {
+    const formData = new FormData();
+    formData.append("image", file);
+    return api.post("/upload/image", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+      timeout: 60000,
+      onUploadProgress: (progressEvent) => {
+        if (onProgress) {
+          const percentCompleted = Math.round(
+            (progressEvent.loaded * 100) / progressEvent.total
+          );
+          onProgress(percentCompleted);
+        }
+      },
+    });
+  },
+
+  listing: (data, onProgress) => listingsAPI.create(data),
+  profileImage: (data, onProgress) => usersAPI.updateProfileImage(data),
 };
 
 export default api;

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { chatAPI } from '../../services/api';
+import { calculateDistance, formatDistance } from '../../utils/helpers';
 import {
   CardContainer,
   ImageContainer,
@@ -34,16 +35,17 @@ const ListingCard = ({
   onContact = null 
 }) => {
   const [isLoading, setIsLoading] = useState(false);
+  const [imageError, setImageError] = useState(false);
   const { user } = useAuth();
 
   const getCategoryEmoji = (category) => {
     const emojis = {
       produce: '🥕',
+      'canned-goods': '🥫',
       dairy: '🥛',
       bakery: '🍞',
-      canned: '🥫',
-      frozen: '🧊',
-      household: '🏠',
+      'household-items': '🏠',
+      clothing: '👕',
       other: '📦'
     };
     return emojis[category] || emojis.other;
@@ -57,12 +59,19 @@ const ListingCard = ({
     });
   };
 
-  const calculateDistance = () => {
+  const getDistance = () => {
     if (!userLocation || !listing.location?.coordinates) return null;
     
-    // Simple distance calculation (in reality, use proper geolocation)
-    const distance = Math.random() * 10 + 0.5; // Mock distance
-    return distance < 1 ? '< 1 km' : `${distance.toFixed(1)} km`;
+    const coords = listing.location.coordinates;
+    // GeoJSON format is [longitude, latitude]
+    const distance = calculateDistance(
+      userLocation.latitude,
+      userLocation.longitude,
+      coords[1], // latitude
+      coords[0]  // longitude
+    );
+    
+    return formatDistance(distance);
   };
 
   const handleContact = async () => {
@@ -70,12 +79,22 @@ const ListingCard = ({
     
     setIsLoading(true);
     try {
-      const response = await chatAPI.createChat(listing.donor._id || listing.donor, listing._id);
+      // Get donor ID - handle both populated and non-populated cases
+      const donorId = typeof listing.donor === 'object' 
+        ? listing.donor._id 
+        : listing.donor;
+
+      // Use createOrGet to create or retrieve existing chat
+      const response = await chatAPI.createOrGet({
+        participantId: donorId,
+        listingId: listing._id
+      });
+
       if (onContact) {
         onContact(response.data.chat);
       } else {
         // Navigate to chat or show success message
-        console.log('Chat created:', response.data.chat);
+        console.log('Chat created/retrieved:', response.data.chat);
       }
     } catch (error) {
       console.error('Error creating chat:', error);
@@ -104,40 +123,37 @@ const ListingCard = ({
 
   const getStatusColor = (status) => {
     const colors = {
-      active: '#48bb78',
+      available: '#48bb78',
       pending: '#ed8936',
       completed: '#4299e1',
+      cancelled: '#e53e3e',
       expired: '#e53e3e'
     };
-    return colors[status] || colors.active;
+    return colors[status] || colors.available;
   };
 
-  const distance = showDistance ? calculateDistance() : null;
+  const distance = showDistance ? getDistance() : null;
   const expiryDate = formatDate(listing.expiryDate);
+  const hasImage = listing.images && listing.images.length > 0 && !imageError;
 
   return (
     <CardContainer>
       <ImageContainer>
-        {listing.images && listing.images.length > 0 ? (
+        {hasImage ? (
           <CardImage 
             src={listing.images[0]} 
             alt={listing.title}
-            onError={(e) => {
-              e.target.style.display = 'none';
-              e.target.nextSibling.style.display = 'flex';
-            }}
+            onError={() => setImageError(true)}
           />
-        ) : null}
-        
-        <ImagePlaceholder style={{ 
-          display: (listing.images && listing.images.length > 0) ? 'none' : 'flex' 
-        }}>
-          <span>{getCategoryEmoji(listing.category)}</span>
-          <p>No Image</p>
-        </ImagePlaceholder>
+        ) : (
+          <ImagePlaceholder>
+            <span>{getCategoryEmoji(listing.category)}</span>
+            <p>No Image</p>
+          </ImagePlaceholder>
+        )}
 
         <StatusBadge color={getStatusColor(listing.status)}>
-          {listing.status || 'active'}
+          {listing.status || 'available'}
         </StatusBadge>
 
         <CategoryBadge>
@@ -150,7 +166,7 @@ const ListingCard = ({
         <CardDescription>
           {listing.description?.length > 100 
             ? `${listing.description.substring(0, 100)}...`
-            : listing.description
+            : listing.description || 'No description provided'
           }
         </CardDescription>
 
@@ -177,7 +193,7 @@ const ListingCard = ({
           <MetaItem>
             <MetaIcon>👤</MetaIcon>
             <MetaText>
-              {typeof listing.donor === 'object' 
+              {typeof listing.donor === 'object' && listing.donor
                 ? `${listing.donor.firstName} ${listing.donor.lastName}`
                 : 'Anonymous'
               }
@@ -204,6 +220,7 @@ const ListingCard = ({
             <ContactButton 
               onClick={handleContact}
               disabled={isLoading || !user}
+              title={!user ? 'Please login to contact' : 'Contact donor'}
             >
               {isLoading ? (
                 <LoadingSpinner />

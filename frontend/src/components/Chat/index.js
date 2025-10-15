@@ -32,11 +32,13 @@ import {
 } from "./styledComponents";
 
 // ----------------- Utility Functions -------------------
-const formatTime = (timestamp) =>
-  new Date(timestamp).toLocaleTimeString("en-US", {
+const formatTime = (timestamp) => {
+  if (!timestamp) return '';
+  return new Date(timestamp).toLocaleTimeString("en-US", {
     hour: "2-digit",
     minute: "2-digit",
   });
+};
 
 const groupMessagesByDate = (messages) => {
   const groups = {};
@@ -49,15 +51,14 @@ const groupMessagesByDate = (messages) => {
 };
 
 const getOtherParticipant = (chat, userId) => {
-  if (!chat.participants) return null;
+  if (!chat?.participants) return null;
   return chat.participants.find((p) => p._id !== userId);
 };
 
 const getLastMessage = (chat) => {
-  if (!chat.lastMessage) return "No messages yet";
-  return chat.lastMessage.content.length > 50
-    ? `${chat.lastMessage.content.substring(0, 50)}...`
-    : chat.lastMessage.content;
+  if (!chat?.lastMessage) return "No messages yet";
+  const content = chat.lastMessage.content || '';
+  return content.length > 50 ? `${content.substring(0, 50)}...` : content;
 };
 
 // ----------------- Main Component -------------------
@@ -74,36 +75,56 @@ const Chat = ({
   const messagesEndRef = useRef(null);
 
   const { user } = useAuth();
-  const { socket, joinChat, leaveChat, sendMessage, onMessage, offMessage } =
-    useSocket();
+  const { socket, isConnected, joinChat, leaveChat } = useSocket();
 
   // ----------------- Socket Events -------------------
   useEffect(() => {
-    if (!currentChat || !socket) return;
+    if (!currentChat || !socket || !isConnected) return;
 
+    // Join the chat room
     joinChat(currentChat._id);
 
-    const handleIncomingMessage = (message) => {
+    // Listen for new messages
+    const handleNewMessage = (message) => {
       if (message.chat === currentChat._id) {
         setMessages((prev) => {
-          // prevent duplicates (match by content & sender & timestamp or ID)
-          const exists = prev.some(
-            (m) =>
-              (m._id && message._id && m._id === message._id) ||
-              (m.tempId && message.tempId && m.tempId === message.tempId)
-          );
-          return exists ? prev : [...prev, message];
+          // Prevent duplicates by checking _id or tempId
+          const exists = prev.some((m) => {
+            if (m._id && message._id) return m._id === message._id;
+            if (m.tempId && message.tempId) return m.tempId === message.tempId;
+            // Check by content + sender + approximate time (within 2 seconds)
+            return (
+              m.content === message.content &&
+              (m.sender === message.sender || m.sender?._id === message.sender) &&
+              Math.abs(new Date(m.timestamp) - new Date(message.timestamp)) < 2000
+            );
+          });
+          
+          if (exists) {
+            // Replace optimistic message with real one
+            return prev.map((m) => {
+              if (m.tempId && message.content === m.content) {
+                return message;
+              }
+              return m;
+            });
+          }
+          
+          return [...prev, message];
         });
       }
     };
 
-    onMessage(handleIncomingMessage);
+    socket.on("newMessage", handleNewMessage);
+    socket.on("receiveMessage", handleNewMessage); // Backup event name
 
+    // Cleanup
     return () => {
       leaveChat(currentChat._id);
-      offMessage(handleIncomingMessage);
+      socket.off("newMessage", handleNewMessage);
+      socket.off("receiveMessage", handleNewMessage);
     };
-  }, [currentChat, socket, joinChat, leaveChat, onMessage, offMessage]);
+  }, [currentChat, socket, isConnected, joinChat, leaveChat]);
 
   // ----------------- Scroll to latest -------------------
   useEffect(() => {
@@ -113,6 +134,8 @@ const Chat = ({
   // ----------------- Load messages API -------------------
   const loadMessages = useCallback(
     async (chatId) => {
+      if (!chatId) return;
+      
       setLoading(true);
       try {
         const response = await chatAPI.getMessages(chatId);
@@ -122,6 +145,7 @@ const Chat = ({
         }
       } catch (error) {
         console.error("Error loading messages:", error);
+        setMessages([]);
       } finally {
         setLoading(false);
       }
@@ -129,18 +153,25 @@ const Chat = ({
     [currentChat?._id]
   );
 
+  // Load messages when selectedChat changes
   useEffect(() => {
-    if (selectedChat && selectedChat !== currentChat) {
+    if (selectedChat && selectedChat._id !== currentChat?._id) {
       setCurrentChat(selectedChat);
       loadMessages(selectedChat._id);
     }
-  }, [selectedChat, currentChat, loadMessages]);
+  }, [selectedChat, currentChat?._id, loadMessages]);
 
   // ----------------- Select chat -------------------
   const handleChatSelect = (chat) => {
+    if (chat._id === currentChat?._id) return;
+    
     setCurrentChat(chat);
+    setMessages([]);
     loadMessages(chat._id);
-    if (onChatSelect) onChatSelect(chat);
+    
+    if (onChatSelect) {
+      onChatSelect(chat);
+    }
   };
 
   // ----------------- Send Message -------------------
@@ -149,10 +180,11 @@ const Chat = ({
     if (!newMessage.trim() || !currentChat) return;
 
     const messageText = newMessage.trim();
+    const tempId = `temp-${Date.now()}-${Math.random()}`;
 
-    // optimistic message object
+    // Optimistic message object
     const optimisticMessage = {
-      tempId: "temp-" + Date.now(),
+      tempId,
       content: messageText,
       sender: user._id,
       chat: currentChat._id,
@@ -160,19 +192,31 @@ const Chat = ({
       pending: true,
     };
 
+    // Add optimistic message immediately
     setMessages((prev) => [...prev, optimisticMessage]);
     setNewMessage("");
 
     try {
-      await chatAPI.sendMessage(currentChat._id, messageText);
-      // Also send through socket
-      sendMessage(currentChat._id, optimisticMessage);
+      // Send via API - backend will broadcast via socket to all participants
+      const response = await chatAPI.sendMessage(currentChat._id, {
+        content: messageText,
+      });
+
+      // Replace optimistic message with real one
+      if (response.data.message) {
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.tempId === tempId ? response.data.message : m
+          )
+        );
+      }
     } catch (error) {
       console.error("Error sending message:", error);
-      // mark message as failed
+      
+      // Mark message as failed
       setMessages((prev) =>
         prev.map((m) =>
-          m.tempId === optimisticMessage.tempId ? { ...m, failed: true } : m
+          m.tempId === tempId ? { ...m, failed: true, pending: false } : m
         )
       );
     }
@@ -186,6 +230,8 @@ const Chat = ({
           {chats.length > 0 ? (
             chats.slice(0, 5).map((chat) => {
               const otherUser = getOtherParticipant(chat, user._id);
+              if (!otherUser) return null;
+
               return (
                 <ChatItem
                   key={chat._id}
@@ -193,18 +239,18 @@ const Chat = ({
                   active={currentChat?._id === chat._id}
                 >
                   <ChatAvatar>
-                    {otherUser?.avatar ? (
+                    {otherUser.avatar ? (
                       <img src={otherUser.avatar} alt={otherUser.firstName} />
                     ) : (
                       <span>
-                        {otherUser?.firstName?.[0]}
-                        {otherUser?.lastName?.[0]}
+                        {otherUser.firstName?.[0] || '?'}
+                        {otherUser.lastName?.[0] || ''}
                       </span>
                     )}
                   </ChatAvatar>
                   <ChatInfo>
                     <ChatName>
-                      {otherUser?.firstName} {otherUser?.lastName}
+                      {otherUser.firstName} {otherUser.lastName}
                     </ChatName>
                     <ChatLastMessage>{getLastMessage(chat)}</ChatLastMessage>
                   </ChatInfo>
@@ -225,6 +271,8 @@ const Chat = ({
   }
 
   // ----------------- Full Mode -------------------
+  const otherUser = currentChat ? getOtherParticipant(currentChat, user._id) : null;
+
   return (
     <ChatContainer>
       {/* Sidebar */}
@@ -243,66 +291,74 @@ const Chat = ({
         </div>
 
         <ChatList>
-          {chats.map((chat) => {
-            const otherUser = getOtherParticipant(chat, user._id);
-            return (
-              <ChatItem
-                key={chat._id}
-                onClick={() => handleChatSelect(chat)}
-                active={currentChat?._id === chat._id}
-              >
-                <ChatAvatar>
-                  {otherUser?.avatar ? (
-                    <img src={otherUser.avatar} alt={otherUser.firstName} />
-                  ) : (
-                    <span>
-                      {otherUser?.firstName?.[0]}
-                      {otherUser?.lastName?.[0]}
-                    </span>
+          {chats.length > 0 ? (
+            chats.map((chat) => {
+              const chatOtherUser = getOtherParticipant(chat, user._id);
+              if (!chatOtherUser) return null;
+
+              return (
+                <ChatItem
+                  key={chat._id}
+                  onClick={() => handleChatSelect(chat)}
+                  active={currentChat?._id === chat._id}
+                >
+                  <ChatAvatar>
+                    {chatOtherUser.avatar ? (
+                      <img src={chatOtherUser.avatar} alt={chatOtherUser.firstName} />
+                    ) : (
+                      <span>
+                        {chatOtherUser.firstName?.[0] || '?'}
+                        {chatOtherUser.lastName?.[0] || ''}
+                      </span>
+                    )}
+                  </ChatAvatar>
+                  <ChatInfo>
+                    <ChatName>
+                      {chatOtherUser.firstName} {chatOtherUser.lastName}
+                    </ChatName>
+                    <ChatLastMessage>{getLastMessage(chat)}</ChatLastMessage>
+                    {chat.lastMessage && (
+                      <ChatTime>
+                        {formatTime(chat.lastMessage.timestamp)}
+                      </ChatTime>
+                    )}
+                  </ChatInfo>
+                  {chat.unreadCount > 0 && (
+                    <ChatBadge>{chat.unreadCount}</ChatBadge>
                   )}
-                </ChatAvatar>
-                <ChatInfo>
-                  <ChatName>
-                    {otherUser?.firstName} {otherUser?.lastName}
-                  </ChatName>
-                  <ChatLastMessage>{getLastMessage(chat)}</ChatLastMessage>
-                  <ChatTime>
-                    {chat.lastMessage && formatTime(chat.lastMessage.timestamp)}
-                  </ChatTime>
-                </ChatInfo>
-                {chat.unreadCount > 0 && (
-                  <ChatBadge>{chat.unreadCount}</ChatBadge>
-                )}
-              </ChatItem>
-            );
-          })}
+                </ChatItem>
+              );
+            })
+          ) : (
+            <EmptyState>
+              <p>No conversations yet</p>
+            </EmptyState>
+          )}
         </ChatList>
       </ChatSidebar>
 
       {/* Main Chat Area */}
       <ChatMain>
-        {currentChat ? (
+        {currentChat && otherUser ? (
           <>
             <ChatHeader>
               <ChatAvatar>
-                {getOtherParticipant(currentChat, user._id)?.avatar ? (
-                  <img
-                    src={getOtherParticipant(currentChat, user._id).avatar}
-                    alt="User"
-                  />
+                {otherUser.avatar ? (
+                  <img src={otherUser.avatar} alt={otherUser.firstName} />
                 ) : (
                   <span>
-                    {getOtherParticipant(currentChat, user._id)?.firstName?.[0]}
-                    {getOtherParticipant(currentChat, user._id)?.lastName?.[0]}
+                    {otherUser.firstName?.[0] || '?'}
+                    {otherUser.lastName?.[0] || ''}
                   </span>
                 )}
               </ChatAvatar>
               <ChatHeaderInfo>
                 <ChatHeaderName>
-                  {getOtherParticipant(currentChat, user._id)?.firstName}{" "}
-                  {getOtherParticipant(currentChat, user._id)?.lastName}
+                  {otherUser.firstName} {otherUser.lastName}
                 </ChatHeaderName>
-                <ChatHeaderStatus>Online</ChatHeaderStatus>
+                <ChatHeaderStatus>
+                  {isConnected ? 'Online' : 'Offline'}
+                </ChatHeaderStatus>
               </ChatHeaderInfo>
             </ChatHeader>
 
@@ -318,6 +374,10 @@ const Chat = ({
                 >
                   <LoadingSpinner />
                 </div>
+              ) : messages.length === 0 ? (
+                <EmptyState>
+                  <p>No messages yet. Start the conversation!</p>
+                </EmptyState>
               ) : (
                 Object.entries(groupMessagesByDate(messages)).map(
                   ([date, dayMessages]) => (
@@ -338,27 +398,35 @@ const Chat = ({
                         })}
                       </div>
 
-                      {dayMessages.map((message, index) => (
-                        <MessageBubble
-                          key={message._id || message.tempId || index}
-                          isOwn={
-                            message.sender === user._id ||
-                            message.sender._id === user._id
-                          }
-                        >
-                          <MessageContent>
-                            {message.content}
-                            {message.failed && (
-                              <span style={{ color: "red", marginLeft: 8 }}>
-                                (failed)
-                              </span>
-                            )}
-                          </MessageContent>
-                          <MessageTime>
-                            {formatTime(message.timestamp)}
-                          </MessageTime>
-                        </MessageBubble>
-                      ))}
+                      {dayMessages.map((message, index) => {
+                        const isOwn =
+                          message.sender === user._id ||
+                          message.sender?._id === user._id;
+
+                        return (
+                          <MessageBubble
+                            key={message._id || message.tempId || index}
+                            isOwn={isOwn}
+                          >
+                            <MessageContent isOwn={isOwn}>
+                              {message.content}
+                              {message.pending && !message.failed && (
+                                <span style={{ marginLeft: 8, opacity: 0.6 }}>
+                                  ⏳
+                                </span>
+                              )}
+                              {message.failed && (
+                                <span style={{ color: "#ef4444", marginLeft: 8 }}>
+                                  ✗ Failed
+                                </span>
+                              )}
+                            </MessageContent>
+                            <MessageTime>
+                              {formatTime(message.timestamp)}
+                            </MessageTime>
+                          </MessageBubble>
+                        );
+                      })}
                     </MessageGroup>
                   )
                 )
@@ -368,7 +436,7 @@ const Chat = ({
 
             {/* Input */}
             <InputContainer>
-              <form onSubmit={handleSendMessage}>
+              <form onSubmit={handleSendMessage} style={{ width: '100%' }}>
                 <MessageInput>
                   <MessageTextarea
                     value={newMessage}
@@ -381,8 +449,13 @@ const Chat = ({
                         handleSendMessage(e);
                       }
                     }}
+                    disabled={!isConnected}
                   />
-                  <SendButton type="submit" disabled={!newMessage.trim()}>
+                  <SendButton 
+                    type="submit" 
+                    disabled={!newMessage.trim() || !isConnected}
+                    title={!isConnected ? "Disconnected from chat server" : "Send message"}
+                  >
                     📤
                   </SendButton>
                 </MessageInput>

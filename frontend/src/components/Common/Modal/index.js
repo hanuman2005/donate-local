@@ -9,6 +9,9 @@ import {
   ModalFooter
 } from './styledComponents';
 
+// Track how many modals are open
+let modalCount = 0;
+
 const Modal = ({ 
   isOpen, 
   onClose, 
@@ -16,27 +19,38 @@ const Modal = ({
   children, 
   footer = null,
   size = 'medium',
-  closeOnOverlayClick = true 
+  closeOnOverlayClick = true,
+  closeOnEscape = true
 }) => {
-  // Close modal on escape key
+  // Handle escape key and body scroll lock
   useEffect(() => {
-    const handleEscape = (e) => {
-      if (e.key === 'Escape' && isOpen) {
-        onClose();
-      }
-    };
-
     if (isOpen) {
-      document.addEventListener('keydown', handleEscape);
-      // Prevent body scrolling when modal is open
-      document.body.style.overflow = 'hidden';
-    }
+      modalCount++;
+      
+      // Only lock scroll if this is the first modal
+      if (modalCount === 1) {
+        document.body.classList.add('modal-open');
+      }
 
-    return () => {
-      document.removeEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'unset';
-    };
-  }, [isOpen, onClose]);
+      const handleEscape = (e) => {
+        if (closeOnEscape && e.key === 'Escape') {
+          onClose();
+        }
+      };
+
+      document.addEventListener('keydown', handleEscape);
+
+      return () => {
+        document.removeEventListener('keydown', handleEscape);
+        modalCount--;
+        
+        // Only unlock scroll if no modals are open
+        if (modalCount === 0) {
+          document.body.classList.remove('modal-open');
+        }
+      };
+    }
+  }, [isOpen, onClose, closeOnEscape]);
 
   if (!isOpen) return null;
 
@@ -52,7 +66,10 @@ const Modal = ({
         {title && (
           <ModalHeader>
             <ModalTitle>{title}</ModalTitle>
-            <ModalCloseButton onClick={onClose}>
+            <ModalCloseButton 
+              onClick={onClose}
+              aria-label="Close modal"
+            >
               ×
             </ModalCloseButton>
           </ModalHeader>

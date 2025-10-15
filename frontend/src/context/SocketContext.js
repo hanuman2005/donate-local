@@ -1,8 +1,7 @@
-// src/context/SocketContext.js
 import React, { createContext, useContext, useEffect, useRef, useState } from "react";
 import io from "socket.io-client";
 import { toast } from "react-toastify";
-import { useAuthContext } from "./AuthContext";
+import { useAuth } from "./AuthContext";
 
 const SocketContext = createContext();
 
@@ -14,18 +13,29 @@ export const useSocket = () => {
   return context;
 };
 
+// Maximum number of notifications to keep in memory
+const MAX_NOTIFICATIONS = 50;
+
 export const SocketProvider = ({ children }) => {
   const [onlineUsers, setOnlineUsers] = useState([]);
   const [notifications, setNotifications] = useState([]);
   const [isConnected, setIsConnected] = useState(false);
-  const { user } = useAuthContext();
+  const { user } = useAuth();
 
   const socketRef = useRef(null);
 
   useEffect(() => {
     if (user) {
       const token = localStorage.getItem("token");
-      const newSocket = io(process.env.REACT_APP_SOCKET_URL, {
+      
+      // Get socket URL with fallback
+      const socketUrl = process.env.REACT_APP_SOCKET_URL || 'http://localhost:5000';
+      
+      if (!process.env.REACT_APP_SOCKET_URL) {
+        console.warn('REACT_APP_SOCKET_URL not set, using default: http://localhost:5000');
+      }
+
+      const newSocket = io(socketUrl, {
         auth: { token },
         reconnection: true,
         reconnectionAttempts: 5,
@@ -35,20 +45,26 @@ export const SocketProvider = ({ children }) => {
       socketRef.current = newSocket;
 
       newSocket.on("connect", () => {
-        console.log("Connected to server");
+        console.log("✅ Connected to socket server");
         setIsConnected(true);
       });
 
       newSocket.on("disconnect", () => {
-        console.log("Disconnected from server");
+        console.log("❌ Disconnected from socket server");
         setIsConnected(false);
       });
 
+      newSocket.on("connect_error", (error) => {
+        console.error("Socket connection error:", error);
+        toast.error("Unable to connect to chat server");
+      });
+
       newSocket.on("userOnline", (data) => {
-        setOnlineUsers((prev) => [
-          ...prev.filter((u) => u.userId !== data.userId),
-          data,
-        ]);
+        setOnlineUsers((prev) => {
+          // Remove duplicate and add updated user
+          const filtered = prev.filter((u) => u.userId !== data.userId);
+          return [...filtered, data];
+        });
       });
 
       newSocket.on("userOffline", (data) => {
@@ -56,15 +72,25 @@ export const SocketProvider = ({ children }) => {
       });
 
       newSocket.on("newNotification", (notification) => {
-        setNotifications((prev) => [notification, ...prev]);
+        setNotifications((prev) => {
+          // Add new notification and limit array size
+          const updated = [notification, ...prev];
+          return updated.slice(0, MAX_NOTIFICATIONS);
+        });
         toast.info(notification.message);
       });
 
-      newSocket.on("error", (error) =>
-        toast.error(error?.message || error || "Socket error")
-      );
+      newSocket.on("error", (error) => {
+        const message = error?.message || error || "Socket error occurred";
+        console.error("Socket error:", message);
+        toast.error(message);
+      });
 
+      // Cleanup function
       return () => {
+        newSocket.off("connect");
+        newSocket.off("disconnect");
+        newSocket.off("connect_error");
         newSocket.off("userOnline");
         newSocket.off("userOffline");
         newSocket.off("newNotification");
@@ -72,6 +98,7 @@ export const SocketProvider = ({ children }) => {
         newSocket.close();
       };
     } else {
+      // User logged out - cleanup socket
       if (socketRef.current) {
         socketRef.current.close();
         socketRef.current = null;
@@ -82,33 +109,48 @@ export const SocketProvider = ({ children }) => {
     }
   }, [user]);
 
-  // Emitters
+  // Socket emitters with error handling
   const joinChat = (chatId) => {
-    if (socketRef.current) {
+    if (socketRef.current && isConnected) {
       socketRef.current.emit("joinChat", chatId);
+    } else {
+      console.warn("Cannot join chat: Socket not connected");
     }
   };
 
   const leaveChat = (chatId) => {
-    if (socketRef.current) {
+    if (socketRef.current && isConnected) {
       socketRef.current.emit("leaveChat", chatId);
+    } else {
+      console.warn("Cannot leave chat: Socket not connected");
     }
   };
 
-  const sendMessage = (data) => {
-    if (socketRef.current) {
-      socketRef.current.emit("sendMessage", data);
+  const sendMessage = (data, callback) => {
+    if (socketRef.current && isConnected) {
+      socketRef.current.emit("sendMessage", data, (response) => {
+        if (response?.error) {
+          toast.error("Failed to send message");
+          console.error("Message send error:", response.error);
+        }
+        callback?.(response);
+      });
+    } else {
+      toast.error("Not connected to chat server");
+      callback?.({ error: "Not connected" });
     }
   };
 
   const markAsRead = (chatId) => {
-    if (socketRef.current) {
+    if (socketRef.current && isConnected) {
       socketRef.current.emit("markAsRead", { chatId });
+    } else {
+      console.warn("Cannot mark as read: Socket not connected");
     }
   };
 
   const emitTyping = (chatId, isTyping) => {
-    if (socketRef.current) {
+    if (socketRef.current && isConnected) {
       socketRef.current.emit("typing", { chatId, isTyping });
     }
   };

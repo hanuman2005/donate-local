@@ -1,7 +1,8 @@
-import styled from 'styled-components';
+import styled from "styled-components";
 
 export const CreateListingContainer = styled.div`
-  min-height: 100vh;
+  margin-top: 80px; /* ✅ Match header height */
+  min-height: calc(100vh - 80px);
   padding: 2rem 1rem;
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
 `;

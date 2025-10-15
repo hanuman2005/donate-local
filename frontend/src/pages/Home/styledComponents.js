@@ -1,7 +1,8 @@
-import styled from 'styled-components';
+import styled from "styled-components";
 
 export const HomeContainer = styled.div`
-  min-height: 100vh;
+  margin-top: 80px; /* ✅ Match header height */
+  min-height: calc(100vh - 80px);
 `;
 
 export const HeroSection = styled.section`
@@ -13,7 +14,7 @@ export const HeroSection = styled.section`
   overflow: hidden;
 
   &::before {
-    content: '';
+    content: "";
     position: absolute;
     top: 0;
     left: 0;

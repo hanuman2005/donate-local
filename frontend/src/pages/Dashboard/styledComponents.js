@@ -3,8 +3,9 @@ import styled from "styled-components";
 export const DashboardContainer = styled.div`
   max-width: 1400px;
   margin: 0 auto;
+  margin-top: 80px; /* Match header height */
   padding: 2rem 1rem;
-  min-height: 100vh;
+  min-height: calc(100vh - 80px);
 
   @media (max-width: 768px) {
     padding: 1rem;

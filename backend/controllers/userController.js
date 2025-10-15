@@ -1,4 +1,7 @@
-// controllers/userController.js
+
+// ============================================
+// controllers/userController.js - FIXED
+// ============================================
 const User = require('../models/User');
 const Rating = require('../models/Rating');
 const Listing = require('../models/Listing');
@@ -7,10 +10,13 @@ const Listing = require('../models/Listing');
 const getUserProfile = async (req, res) => {
   try {
     const user = await User.findById(req.params.id)
-      .select('-password -email');
+      .select('-password');
 
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
     }
 
     // Get user's recent listings
@@ -22,16 +28,24 @@ const getUserProfile = async (req, res) => {
     res.json({
       success: true,
       user: {
-        ...user.toObject(),
+        _id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        avatar: user.avatar,
+        bio: user.bio,
+        rating: user.rating,
+        listingsCount: user.listingsCount,
+        isVerified: user.isVerified,
+        userType: user.userType,
         recentListings
       }
     });
 
   } catch (error) {
     console.error('Get user profile error:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Server error fetching user profile' 
+    res.status(500).json({
+      success: false,
+      message: 'Server error fetching user profile'
     });
   }
 };
@@ -45,23 +59,32 @@ const rateUser = async (req, res) => {
 
     // Validate rating
     if (rating < 1 || rating > 5) {
-      return res.status(400).json({ message: 'Rating must be between 1 and 5' });
+      return res.status(400).json({
+        success: false,
+        message: 'Rating must be between 1 and 5'
+      });
     }
 
     // Check if listing exists
     const listing = await Listing.findById(listingId);
     if (!listing) {
-      return res.status(404).json({ message: 'Listing not found' });
+      return res.status(404).json({
+        success: false,
+        message: 'Listing not found'
+      });
     }
 
     // Check if rating already exists
-    const existingRating = await Rating.findOne({ 
-      rater: raterId, 
-      listing: listingId 
+    const existingRating = await Rating.findOne({
+      rater: raterId,
+      listing: listingId
     });
 
     if (existingRating) {
-      return res.status(400).json({ message: 'You have already rated this transaction' });
+      return res.status(400).json({
+        success: false,
+        message: 'You have already rated this transaction'
+      });
     }
 
     // Determine rating type
@@ -71,7 +94,10 @@ const rateUser = async (req, res) => {
     } else if (listing.assignedTo && listing.assignedTo.toString() === raterId.toString()) {
       ratingType = 'donor';
     } else {
-      return res.status(403).json({ message: 'You are not part of this transaction' });
+      return res.status(403).json({
+        success: false,
+        message: 'You are not part of this transaction'
+      });
     }
 
     // Create rating
@@ -103,9 +129,9 @@ const rateUser = async (req, res) => {
 
   } catch (error) {
     console.error('Rate user error:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Server error submitting rating' 
+    res.status(500).json({
+      success: false,
+      message: 'Server error submitting rating'
     });
   }
 };
@@ -119,7 +145,7 @@ const getUserRatings = async (req, res) => {
     const skip = (parseInt(page) - 1) * parseInt(limit);
 
     const ratings = await Rating.find({ rated: userId })
-      .populate('rater', 'name profileImage')
+      .populate('rater', 'firstName lastName avatar')
       .populate('listing', 'title category')
       .sort({ createdAt: -1 })
       .skip(skip)
@@ -127,9 +153,15 @@ const getUserRatings = async (req, res) => {
 
     const total = await Rating.countDocuments({ rated: userId });
 
+    // ✅ FIXED: Add raterName for frontend compatibility
+    const ratingsWithNames = ratings.map(rating => ({
+      ...rating.toObject(),
+      raterName: rating.rater ? `${rating.rater.firstName} ${rating.rater.lastName}` : 'Anonymous'
+    }));
+
     res.json({
       success: true,
-      ratings,
+      ratings: ratingsWithNames,
       pagination: {
         page: parseInt(page),
         limit: parseInt(limit),
@@ -140,37 +172,47 @@ const getUserRatings = async (req, res) => {
 
   } catch (error) {
     console.error('Get user ratings error:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Server error fetching ratings' 
+    res.status(500).json({
+      success: false,
+      message: 'Server error fetching ratings'
     });
   }
 };
 
-// Update user profile image
+// ✅ FIXED: Update profile image field name
 const updateProfileImage = async (req, res) => {
   try {
     if (!req.file) {
-      return res.status(400).json({ message: 'No image file provided' });
+      return res.status(400).json({
+        success: false,
+        message: 'No image file provided'
+      });
     }
 
     const user = await User.findByIdAndUpdate(
       req.user._id,
-      { profileImage: req.file.path },
+      { avatar: req.file.path }, // ✅ Changed from profileImage to avatar
       { new: true }
     );
 
     res.json({
       success: true,
       message: 'Profile image updated successfully',
-      user
+      imageUrl: req.file.path,
+      user: {
+        _id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        avatar: user.avatar,
+        email: user.email,
+      }
     });
 
   } catch (error) {
     console.error('Update profile image error:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Server error updating profile image' 
+    res.status(500).json({
+      success: false,
+      message: 'Server error updating profile image'
     });
   }
 };
@@ -184,7 +226,8 @@ const searchUsers = async (req, res) => {
 
     if (query) {
       searchQuery.$or = [
-        { name: { $regex: query, $options: 'i' } }
+        { firstName: { $regex: query, $options: 'i' } },
+        { lastName: { $regex: query, $options: 'i' } }
       ];
     }
 
@@ -198,7 +241,7 @@ const searchUsers = async (req, res) => {
     const skip = (parseInt(page) - 1) * parseInt(limit);
 
     const users = await User.find(searchQuery)
-      .select('name profileImage rating userType location')
+      .select('firstName lastName avatar rating userType location listingsCount')
       .skip(skip)
       .limit(parseInt(limit));
 
@@ -217,9 +260,9 @@ const searchUsers = async (req, res) => {
 
   } catch (error) {
     console.error('Search users error:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Server error searching users' 
+    res.status(500).json({
+      success: false,
+      message: 'Server error searching users'
     });
   }
 };
