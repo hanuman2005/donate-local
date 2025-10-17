@@ -40,7 +40,7 @@ const Dashboard = () => {
   const [nearbyListings, setNearbyListings] = useState([]);
   const [chats, setChats] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("nearby");
+  const [activeTab, setActiveTab] = useState("list"); // ✅ Changed default to "list"
   const [userLocation, setUserLocation] = useState(null);
   const [selectedChat, setSelectedChat] = useState(null);
 
@@ -61,48 +61,46 @@ const Dashboard = () => {
             lat: position.coords.latitude,
             lng: position.coords.longitude,
           };
+          console.log('📍 User location:', location);
           setUserLocation(location);
-          fetchNearbyListings(location);
+          // Don't refetch - we already have all listings
         },
         (error) => {
-          console.error("Error getting location:", error);
-          fetchNearbyListings();
+          console.error("⚠️ Error getting location:", error);
         }
       );
     } else {
-      fetchNearbyListings();
+      console.warn("⚠️ Geolocation not supported");
     }
   };
 
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      // Change line 49:
-      const [userListingsRes, chatsRes] = await Promise.all([
+      console.log('🔄 Fetching dashboard data...');
+      
+      const [userListingsRes, nearbyRes, chatsRes] = await Promise.all([
         listingsAPI.getUserListings(),
-        chatAPI.getUserChats(), // ✅ Fixed from getChats()
+        listingsAPI.getAll({ limit: 20, status: 'available' }), // ✅ Get all listings
+        chatAPI.getUserChats(),
       ]);
 
-      setUserListings(userListingsRes.data.listings || []);
-      setChats(chatsRes.data.chats || []);
+      // ✅ Handle both response formats
+      const myListings = userListingsRes.data.listings || userListingsRes.data.data || [];
+      const allListings = nearbyRes.data.listings || nearbyRes.data.data || [];
+      const myChats = chatsRes.data.chats || chatsRes.data.data || [];
+      
+      console.log('✅ My listings:', myListings.length);
+      console.log('✅ All listings:', allListings.length);
+      console.log('✅ My chats:', myChats.length);
+      
+      setUserListings(myListings);
+      setNearbyListings(allListings);
+      setChats(myChats);
     } catch (error) {
-      console.error("Error fetching dashboard data:", error);
+      console.error("❌ Error fetching dashboard data:", error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchNearbyListings = async (location = null) => {
-    try {
-      let response;
-      if (location) {
-        response = await listingsAPI.getNearby(location.lat, location.lng, 10); // ✅ ensure getNearby accepts lat, lng, radius
-      } else {
-        response = await listingsAPI.getAll({ limit: 10 });
-      }
-      setNearbyListings(response.data.listings || []);
-    } catch (error) {
-      console.error("Error fetching nearby listings:", error);
     }
   };
 
@@ -124,7 +122,7 @@ const Dashboard = () => {
 
   const stats = {
     activeListings: userListings.filter(
-      (listing) => listing.status === "active"
+      (listing) => listing.status === "available"
     ).length,
     totalListings: userListings.length,
     activeChats: chats.length,
@@ -145,8 +143,7 @@ const Dashboard = () => {
 
         <QuickActions>
           <ActionButton $primary onClick={handleCreateListing}>
-            {" "}
-            {/* ✅ changed to $primary */}+ Create Listing
+            + Create Listing
           </ActionButton>
           <ActionButton onClick={handleViewProfile}>View Profile</ActionButton>
         </QuickActions>
@@ -155,15 +152,15 @@ const Dashboard = () => {
       <StatsRow>
         <StatCard>
           <StatValue>{stats.activeListings}</StatValue>
-          <StatLabel>Active Listings</StatLabel>
+          <StatLabel>My Active Listings</StatLabel>
         </StatCard>
         <StatCard>
           <StatValue>{stats.totalListings}</StatValue>
-          <StatLabel>Total Listings</StatLabel>
+          <StatLabel>My Total Listings</StatLabel>
         </StatCard>
         <StatCard>
-          <StatValue>{stats.activeChats}</StatValue>
-          <StatLabel>Active Chats</StatLabel>
+          <StatValue>{nearbyListings.length}</StatValue>
+          <StatLabel>Available Listings</StatLabel>
         </StatCard>
         <StatCard>
           <StatValue>{stats.completedDeals}</StatValue>
@@ -175,38 +172,28 @@ const Dashboard = () => {
         <MainSection>
           <Section>
             <SectionHeader>
-              <SectionTitle>Discover Resources</SectionTitle>
+              <SectionTitle>Discover Resources ({nearbyListings.length} available)</SectionTitle>
               <TabContainer>
-                <Tab
-                  $active={activeTab === "nearby"}
-                  onClick={() => setActiveTab("nearby")}
-                >
-                  {" "}
-                  {/* ✅ changed to $active */}
-                  Map View
-                </Tab>
                 <Tab
                   $active={activeTab === "list"}
                   onClick={() => setActiveTab("list")}
                 >
                   List View
                 </Tab>
+                <Tab
+                  $active={activeTab === "nearby"}
+                  onClick={() => setActiveTab("nearby")}
+                >
+                  Map View
+                </Tab>
               </TabContainer>
             </SectionHeader>
 
             <TabContent>
-              {activeTab === "nearby" ? (
-                <MapContainer>
-                  <Map
-                    listings={nearbyListings}
-                    userLocation={userLocation}
-                    height="500px"
-                  />
-                </MapContainer>
-              ) : (
+              {activeTab === "list" ? (
                 <ListingsGrid>
                   {nearbyListings.length > 0 ? (
-                    nearbyListings.map((listing) => (
+                    nearbyListings.slice(0, 6).map((listing) => (
                       <ListingCard
                         key={listing._id}
                         listing={listing}
@@ -218,13 +205,29 @@ const Dashboard = () => {
                     <EmptyState>
                       <EmptyStateIcon>📍</EmptyStateIcon>
                       <EmptyStateText>
-                        No listings found in your area
+                        No listings available at the moment
                       </EmptyStateText>
                     </EmptyState>
                   )}
                 </ListingsGrid>
+              ) : (
+                <MapContainer>
+                  <Map
+                    listings={nearbyListings}
+                    userLocation={userLocation}
+                    height="500px"
+                  />
+                </MapContainer>
               )}
             </TabContent>
+
+            {nearbyListings.length > 6 && (
+              <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
+                <ViewAllButton onClick={() => navigate('/listings')}>
+                  View All {nearbyListings.length} Listings →
+                </ViewAllButton>
+              </div>
+            )}
           </Section>
 
           <Section>
@@ -253,8 +256,6 @@ const Dashboard = () => {
                     You haven't created any listings yet
                   </EmptyStateText>
                   <ActionButton $primary onClick={handleCreateListing}>
-                    {" "}
-                    {/* ✅ changed to $primary */}
                     Create Your First Listing
                   </ActionButton>
                 </EmptyState>
@@ -267,7 +268,9 @@ const Dashboard = () => {
           <Section>
             <SectionHeader>
               <SectionTitle>Messages</SectionTitle>
-              <ViewAllButton>View All</ViewAllButton>
+              <ViewAllButton onClick={() => navigate('/chat')}>
+                View All
+              </ViewAllButton>
             </SectionHeader>
 
             {chats.length > 0 ? (
