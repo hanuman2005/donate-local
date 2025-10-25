@@ -137,6 +137,8 @@ const getListings = async (req, res) => {
 // ✅ Get single listing by ID - NEW
 const getListingById = async (req, res) => {
   try {
+    console.log('🔍 Fetching listing:', req.params.id);
+    
     const listing = await Listing.findById(req.params.id)
       .populate("donor", "firstName lastName avatar rating phone")
       .populate("assignedTo", "firstName lastName avatar rating")
@@ -149,19 +151,22 @@ const getListingById = async (req, res) => {
       });
     }
 
-    // Increment view count
-    listing.views += 1;
-    await listing.save();
+    // ✅ FIXED: Increment views without validation
+    await Listing.findByIdAndUpdate(
+      req.params.id,
+      { $inc: { views: 1 } },
+      { validateBeforeSave: false } // Skip validation
+    );
 
-    res.json({
-      success: true,
-      listing,
-    });
+    console.log('✅ Returning listing');
+    res.json(listing);
+    
   } catch (error) {
-    console.error("Get listing error:", error);
+    console.error("❌ Get listing error:", error);
     res.status(500).json({
       success: false,
       message: "Server error fetching listing",
+      error: error.message
     });
   }
 };

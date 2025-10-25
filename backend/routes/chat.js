@@ -12,9 +12,9 @@ const {
 const router = express.Router();
 
 // Routes
-router.post("/", auth, createOrGetChat);
+router.post("/create-or-get", auth, createOrGetChat); // ✅ FIXED: Added /create-or-get path
 router.get("/", auth, getUserChats);
-router.get("/:chatId", auth, getChatMessages);
+router.get("/:chatId/messages", auth, getChatMessages); // ✅ FIXED: Added /messages to path
 router.post("/:chatId/messages", auth, sendMessage);
 router.put("/:chatId/read", auth, markMessagesAsRead);
 
