@@ -7,11 +7,13 @@ import ListingCard from "../../components/ListingCard";
 import LoadingSpinner from "../../components/Common/LoadingSpinner";
 
 const ListingsContainer = styled.div`
+  background: var(--bg-primary); // ✅ ADD
+  color: var(--text-primary);
   min-height: calc(100vh - 80px);
   padding: 2rem;
   max-width: 1400px;
   margin: 0 auto;
-  margin-top: 100px;
+  margin-top: 20px;
 `;
 
 const Title = styled.h1`
@@ -45,16 +47,17 @@ const Listings = () => {
   const fetchListings = async () => {
     try {
       setLoading(true);
-      console.log('🔄 Fetching listings...');
-      
+      console.log("🔄 Fetching listings...");
+
       const response = await api.get("/listings");
-      console.log('📥 Response:', response.data);
-      
+      console.log("📥 Response:", response.data);
+
       // ✅ FIXED: Backend returns { success, listings, pagination }
       // NOT { data: [...] }
-      const fetchedListings = response.data.listings || response.data.data || [];
-      
-      console.log('✅ Listings fetched:', fetchedListings.length);
+      const fetchedListings =
+        response.data.listings || response.data.data || [];
+
+      console.log("✅ Listings fetched:", fetchedListings.length);
       setListings(fetchedListings);
       setError(null);
     } catch (err) {
@@ -77,19 +80,19 @@ const Listings = () => {
   if (error) {
     return (
       <ListingsContainer>
-        <EmptyState style={{ color: '#e53e3e' }}>
+        <EmptyState style={{ color: "#e53e3e" }}>
           ❌ {error}
           <br />
-          <button 
+          <button
             onClick={fetchListings}
             style={{
-              marginTop: '1rem',
-              padding: '0.5rem 1rem',
-              background: '#f093fb',
-              color: 'white',
-              border: 'none',
-              borderRadius: '8px',
-              cursor: 'pointer'
+              marginTop: "1rem",
+              padding: "0.5rem 1rem",
+              background: "#f093fb",
+              color: "white",
+              border: "none",
+              borderRadius: "8px",
+              cursor: "pointer",
             }}
           >
             Try Again
@@ -104,16 +107,22 @@ const Listings = () => {
       <Title>🍎 Available Food Donations</Title>
       {listings.length === 0 ? (
         <EmptyState>
-          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📦</div>
+          <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>📦</div>
           <div>No listings available at the moment.</div>
-          <div style={{ fontSize: '0.9rem', marginTop: '0.5rem', color: '#a0aec0' }}>
+          <div
+            style={{
+              fontSize: "0.9rem",
+              marginTop: "0.5rem",
+              color: "#a0aec0",
+            }}
+          >
             Check back later or create your own listing!
           </div>
         </EmptyState>
       ) : (
         <>
-          <div style={{ marginBottom: '1rem', color: '#718096' }}>
-            Found {listings.length} listing{listings.length !== 1 ? 's' : ''}
+          <div style={{ marginBottom: "1rem", color: "#718096" }}>
+            Found {listings.length} listing{listings.length !== 1 ? "s" : ""}
           </div>
           <Grid>
             {listings.map((listing) => (

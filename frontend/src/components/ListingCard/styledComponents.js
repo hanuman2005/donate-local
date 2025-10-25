@@ -1,7 +1,9 @@
-import styled from 'styled-components';
+import styled from "styled-components";
 
 export const CardContainer = styled.div`
-  background: white;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
   border-radius: 16px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
   overflow: hidden;
@@ -60,7 +62,7 @@ export const StatusBadge = styled.div`
   position: absolute;
   top: 12px;
   left: 12px;
-  background: ${props => props.color || '#48bb78'};
+  background: ${(props) => props.color || "#48bb78"};
   color: white;
   padding: 4px 8px;
   border-radius: 12px;
@@ -96,13 +98,13 @@ export const CardContent = styled.div`
 export const CardTitle = styled.h3`
   font-size: 1.25rem;
   font-weight: 600;
-  color: #2d3748;
+  color: var(--text-primary);
   line-height: 1.3;
   margin: 0;
 `;
 
 export const CardDescription = styled.p`
-  color: #64748b;
+  color: var(--text-secondary);
   line-height: 1.5;
   margin: 0;
   font-size: 0.95rem;
@@ -250,7 +252,11 @@ export const LoadingSpinner = styled.div`
   animation: spin 1s linear infinite;
 
   @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
   }
 `;

@@ -1,15 +1,16 @@
-import styled from 'styled-components';
+import styled from "styled-components";
 
 export const HeaderContainer = styled.header`
-  position: fixed;  /* ✅ Make header fixed */
+  position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  background: white;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  z-index: 1000;  /* ✅ Ensure header stays on top */
-  height: 80px;  /* ✅ Set fixed height */
-    backdrop-filter: blur(10px);
+  z-index: 1000;
+  height: 80px;
+  backdrop-filter: blur(10px);
 `;
 
 export const HeaderContent = styled.div`
@@ -58,8 +59,8 @@ export const Navigation = styled.nav`
 `;
 
 export const NavLink = styled.span`
-  color: ${props => props.$active ? '#667eea' : '#64748b'};
-  font-weight: ${props => props.$active ? '600' : '500'};
+  color: var(--text-primary);
+  font-weight: ${(props) => (props.$active ? "600" : "500")};
   text-decoration: none;
   padding: 0.5rem 1rem;
   border-radius: 8px;
@@ -71,7 +72,9 @@ export const NavLink = styled.span`
     background: rgba(102, 126, 234, 0.1);
   }
 
-  ${props => props.$active && `
+  ${(props) =>
+    props.$active &&
+    `
     &::after {
       content: '';
       position: absolute;
@@ -125,7 +128,7 @@ export const UserAvatar = styled.div`
 
 export const UserName = styled.span`
   font-weight: 600;
-  color: #2d3748;
+  color: var(--text-primary);
   font-size: 0.95rem;
 
   @media (max-width: 900px) {
@@ -248,8 +251,8 @@ export const MobileMenu = styled.div`
 `;
 
 export const MobileNavLink = styled.span`
-  color: ${props => props.$active ? '#667eea' : '#64748b'};
-  font-weight: ${props => props.$active ? '600' : '500'};
+  color: ${(props) => (props.$active ? "#667eea" : "#64748b")};
+  font-weight: ${(props) => (props.$active ? "600" : "500")};
   text-decoration: none;
   padding: 0.75rem 1rem;
   border-radius: 8px;
@@ -308,7 +311,8 @@ export const NotificationBadge = styled.span`
   animation: pulse 2s infinite;
 
   @keyframes pulse {
-    0%, 100% {
+    0%,
+    100% {
       transform: scale(1);
     }
     50% {

@@ -5,7 +5,7 @@ const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000/api";
 
 const api = axios.create({
   baseURL: API_URL,
-  timeout: 30000, // 30 seconds (better for file uploads)
+  timeout: 30000,
   headers: {
     "Content-Type": "application/json",
   },
@@ -31,27 +31,18 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
-    // Handle 401 Unauthorized - but avoid infinite loops
     if (error.response?.status === 401) {
       const currentPath = window.location.pathname;
-
-      // Only redirect if not already on auth pages
       if (currentPath !== "/login" && currentPath !== "/register") {
         localStorage.removeItem("token");
         delete api.defaults.headers.common["Authorization"];
-
-        // Store the attempted URL for redirect after login
         sessionStorage.setItem("redirectAfterLogin", currentPath);
-
         window.location.href = "/login";
       }
     }
-
-    // Handle network errors
     if (!error.response) {
       console.error("Network error:", error.message);
     }
-
     return Promise.reject(error);
   }
 );
@@ -68,7 +59,7 @@ export const listingsAPI = {
   create: (data) =>
     api.post("/listings", data, {
       headers: { "Content-Type": "multipart/form-data" },
-      timeout: 60000, // 60s for large uploads
+      timeout: 60000,
     }),
   getAll: (params) => api.get("/listings", { params }),
   getById: (id) => api.get(`/listings/${id}`),
@@ -90,15 +81,17 @@ export const listingsAPI = {
 };
 
 export const chatAPI = {
-  createOrGet: (data) => api.post("/chat", data),
   getUserChats: () => api.get("/chat"),
-  getMessages: (chatId, params) => api.get(`/chat/${chatId}`, { params }),
+  getMessages: (chatId) => api.get(`/chat/${chatId}/messages`),
   sendMessage: (chatId, data) => api.post(`/chat/${chatId}/messages`, data),
-  markAsRead: (chatId) => api.put(`/chat/${chatId}/read`),
+  createOrGet: (data) => api.post("/chat/create-or-get", data),
+  getChat: (chatId) => api.get(`/chat/${chatId}`),
 };
 
 export const usersAPI = {
   getProfile: (id) => api.get(`/users/${id}`),
+  // ✅ ADDED: updateProfile method
+  updateProfile: (data) => api.put("/users/profile", data),
   rate: (id, data) => api.post(`/users/${id}/rate`, data),
   getRatings: (id, params) => api.get(`/users/${id}/ratings`, { params }),
   updateProfileImage: (data) =>
@@ -109,7 +102,6 @@ export const usersAPI = {
   search: (params) => api.get("/users/search", { params }),
 };
 
-// Add to uploadAPI
 export const uploadAPI = {
   uploadFile: (endpoint, data, onProgress) =>
     api.post(endpoint, data, {
@@ -125,7 +117,6 @@ export const uploadAPI = {
       },
     }),
 
-  // Add these methods:
   uploadMultiple: (files, onProgress) => {
     const formData = new FormData();
     files.forEach((file, index) => {
