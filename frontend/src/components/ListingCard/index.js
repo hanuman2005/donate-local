@@ -1,9 +1,9 @@
-import React, { useState,useEffect } from 'react';
-import { useNavigate } from 'react-router-dom'; // ✅ ADD THIS
-import { useAuth } from '../../context/AuthContext';
-import { chatAPI } from '../../services/api';
-import { toast } from 'react-toastify'; // ✅ ADD THIS
-import { calculateDistance, formatDistance } from '../../utils/helpers';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom"; // ✅ ADD THIS
+import { useAuth } from "../../context/AuthContext";
+import { chatAPI } from "../../services/api";
+import { toast } from "react-toastify"; // ✅ ADD THIS
+import { calculateDistance, formatDistance } from "../../utils/helpers";
 import {
   CardContainer,
   ImageContainer,
@@ -24,17 +24,17 @@ import {
   OwnerActions,
   EditButton,
   DeleteButton,
-  LoadingSpinner
-} from './styledComponents';
+  LoadingSpinner,
+} from "./styledComponents";
 
-const ListingCard = ({ 
-  listing, 
-  isOwner = false, 
-  showDistance = false, 
+const ListingCard = ({
+  listing,
+  isOwner = false,
+  showDistance = false,
   userLocation = null,
   onEdit = null,
   onDelete = null,
-  onContact = null 
+  onContact = null,
 }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [imageError, setImageError] = useState(false);
@@ -43,43 +43,43 @@ const ListingCard = ({
 
   // ✅ Add debug log
   useEffect(() => {
-    console.log('ListingCard mounted - User:', user);
-    console.log('Auth loading:', authLoading);
+    console.log("ListingCard mounted - User:", user);
+    console.log("Auth loading:", authLoading);
   }, [user, authLoading]); // ✅ ADD THIS
 
   const getCategoryEmoji = (category) => {
     const emojis = {
-      produce: '🥕',
-      'canned-goods': '🥫',
-      dairy: '🥛',
-      bakery: '🍞',
-      'household-items': '🏠',
-      clothing: '👕',
-      other: '📦'
+      produce: "🥕",
+      "canned-goods": "🥫",
+      dairy: "🥛",
+      bakery: "🍞",
+      "household-items": "🏠",
+      clothing: "👕",
+      other: "📦",
     };
     return emojis[category] || emojis.other;
   };
 
   const formatDate = (dateString) => {
     if (!dateString) return null;
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric'
+    return new Date(dateString).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
     });
   };
 
   const getDistance = () => {
     if (!userLocation || !listing.location?.coordinates) return null;
-    
+
     const coords = listing.location.coordinates;
     // GeoJSON format is [longitude, latitude]
     const distance = calculateDistance(
       userLocation.latitude,
       userLocation.longitude,
       coords[1], // latitude
-      coords[0]  // longitude
+      coords[0] // longitude
     );
-    
+
     return formatDistance(distance);
   };
 
@@ -88,117 +88,91 @@ const ListingCard = ({
     navigate(`/listings/${listing._id}`);
   };
 
-  // ✅ FIXED: Contact handler with comprehensive null checks
+  // Find the handleContact function and update it:
+
   const handleContact = async (e) => {
-    // ✅ Prevent any default behavior
     if (e) {
       e.preventDefault();
       e.stopPropagation();
     }
 
-    console.log('🔍 handleContact called');
-    console.log('👤 Current user object:', user);
-    console.log('📦 Full listing object:', listing);
-    console.log('📦 Listing.donor:', listing.donor);
-    console.log('🏷️ isOwner:', isOwner);
+    console.log("🔍 handleContact called");
+    console.log("👤 Current user:", user);
+    console.log("📦 Listing:", listing);
 
-    // ✅ CRITICAL: Check if user exists and has _id
-    if (!user) {
-      console.error('❌ User is null');
-      toast.error('Please login to contact the donor');
-      setTimeout(() => navigate('/login'), 1000);
+    // Check if user is logged in
+    if (!user || !user._id) {
+      console.error("❌ User not logged in");
+      toast.info("Please login to contact the donor");
+      navigate("/login");
       return;
     }
 
-    if (!user._id) {
-      console.error('❌ User exists but has no _id:', user);
-      toast.error('Session error. Please login again.');
-      setTimeout(() => navigate('/login'), 1000);
-      return;
-    }
-
-    // ✅ FIXED: Better donor ID extraction
+    // Extract donor ID
     let donorId = null;
-    
     if (listing.donor) {
-      if (typeof listing.donor === 'object') {
+      if (typeof listing.donor === "object") {
         donorId = listing.donor._id;
-      } else if (typeof listing.donor === 'string') {
+      } else if (typeof listing.donor === "string") {
         donorId = listing.donor;
       }
     }
-    
-    console.log('🔍 Extracted Donor ID:', donorId);
-    console.log('🔍 Donor ID type:', typeof donorId);
-    console.log('🔍 Current User ID:', user._id);
 
-    // ✅ Check if donor ID exists
+    console.log("🔍 Donor ID:", donorId);
+    console.log("🔍 User ID:", user._id);
+
+    // Check if donor exists
     if (!donorId) {
-      console.error('❌ Donor ID is missing from listing');
-      console.error('Full listing:', JSON.stringify(listing, null, 2));
-      toast.error('Unable to contact donor. Listing information incomplete.');
+      console.error("❌ Donor ID missing");
+      toast.error("Unable to contact donor. Listing information incomplete.");
       return;
     }
 
     // Check if trying to contact own listing
     if (donorId.toString() === user._id.toString()) {
-      console.warn('⚠️ User trying to contact own listing');
-      toast.info('This is your own listing');
+      console.warn("⚠️ Cannot contact own listing");
+      toast.info("This is your own listing");
       return;
     }
 
-    if (isOwner) {
-      console.warn('⚠️ isOwner flag is true');
-      toast.info('This is your own listing');
-      return;
-    }
-    
     setIsLoading(true);
     try {
-      console.log('🔄 Creating chat with params:', {
-        participantId: donorId,
-        listingId: listing._id
-      });
+      console.log("🔄 Creating/getting chat...");
 
-      // Use createOrGet to create or retrieve existing chat
+      // Create or get existing chat
       const response = await chatAPI.createOrGet({
         participantId: donorId,
-        listingId: listing._id
+        listingId: listing._id,
       });
 
-      console.log('✅ Chat API response:', response.data);
+      console.log("✅ Chat response:", response.data);
 
-      if (onContact) {
-        onContact(response.data.chat || response.data.data?.chat);
+      // Extract chat data
+      const chatData =
+        response.data.chat || response.data.data?.chat || response.data;
+      const chatId = chatData._id || chatData.id;
+
+      console.log("📨 Chat ID:", chatId);
+
+      if (chatId) {
+        toast.success("Opening chat...");
+        // Navigate to chat page with the specific chat
+        navigate(`/chat/${chatId}`);
       } else {
-        // Navigate to chat page
-        const chatData = response.data.chat || response.data.data?.chat;
-        const chatId = chatData?._id;
-        
-        console.log('📨 Chat data:', chatData);
-        console.log('🆔 Chat ID:', chatId);
-        
-        if (chatId) {
-          toast.success('Opening chat...');
-          navigate(`/chat/${chatId}`);
-        } else {
-          console.error('❌ No chat ID in response');
-          toast.success('Contact request sent!');
-        }
+        console.error("❌ No chat ID in response");
+        toast.error("Failed to create chat. Please try again.");
       }
     } catch (error) {
-      console.error('❌ Error creating chat:', error);
-      console.error('Error details:', {
-        message: error.message,
-        response: error.response?.data,
-        status: error.response?.status
-      });
-      toast.error(error.response?.data?.message || 'Failed to contact donor. Please try again.');
+      console.error("❌ Error creating chat:", error);
+      console.error("Error response:", error.response?.data);
+      toast.error(
+        error.response?.data?.message ||
+          "Failed to contact donor. Please try again."
+      );
     } finally {
       setIsLoading(false);
     }
   };
-
   const handleEdit = () => {
     if (onEdit) {
       onEdit(listing);
@@ -213,8 +187,8 @@ const ListingCard = ({
       onDelete(listing);
     } else {
       // Show delete confirmation
-      if (window.confirm('Are you sure you want to delete this listing?')) {
-        console.log('Delete listing:', listing._id);
+      if (window.confirm("Are you sure you want to delete this listing?")) {
+        console.log("Delete listing:", listing._id);
         // TODO: Implement delete API call
       }
     }
@@ -222,11 +196,11 @@ const ListingCard = ({
 
   const getStatusColor = (status) => {
     const colors = {
-      available: '#48bb78',
-      pending: '#ed8936',
-      completed: '#4299e1',
-      cancelled: '#e53e3e',
-      expired: '#e53e3e'
+      available: "#48bb78",
+      pending: "#ed8936",
+      completed: "#4299e1",
+      cancelled: "#e53e3e",
+      expired: "#e53e3e",
     };
     return colors[status] || colors.available;
   };
@@ -239,8 +213,8 @@ const ListingCard = ({
     <CardContainer>
       <ImageContainer>
         {hasImage ? (
-          <CardImage 
-            src={listing.images[0]} 
+          <CardImage
+            src={listing.images[0]}
             alt={listing.title}
             onError={() => setImageError(true)}
           />
@@ -252,7 +226,7 @@ const ListingCard = ({
         )}
 
         <StatusBadge color={getStatusColor(listing.status)}>
-          {listing.status || 'available'}
+          {listing.status || "available"}
         </StatusBadge>
 
         <CategoryBadge>
@@ -263,16 +237,17 @@ const ListingCard = ({
       <CardContent>
         <CardTitle>{listing.title}</CardTitle>
         <CardDescription>
-          {listing.description?.length > 100 
+          {listing.description?.length > 100
             ? `${listing.description.substring(0, 100)}...`
-            : listing.description || 'No description provided'
-          }
+            : listing.description || "No description provided"}
         </CardDescription>
 
         <CardMeta>
           <MetaItem>
             <MetaIcon>📦</MetaIcon>
-            <MetaText>{listing.quantity} {listing.unit || 'items'}</MetaText>
+            <MetaText>
+              {listing.quantity} {listing.unit || "items"}
+            </MetaText>
           </MetaItem>
 
           {distance && (
@@ -292,10 +267,9 @@ const ListingCard = ({
           <MetaItem>
             <MetaIcon>👤</MetaIcon>
             <MetaText>
-              {typeof listing.donor === 'object' && listing.donor
+              {typeof listing.donor === "object" && listing.donor
                 ? `${listing.donor.firstName} ${listing.donor.lastName}`
-                : 'Anonymous'
-              }
+                : "Anonymous"}
             </MetaText>
           </MetaItem>
         </CardMeta>
@@ -304,40 +278,32 @@ const ListingCard = ({
       <CardFooter>
         {isOwner ? (
           <OwnerActions>
-            <EditButton onClick={handleEdit}>
-              ✏️ Edit
-            </EditButton>
-            <DeleteButton onClick={handleDelete}>
-              🗑️ Delete
-            </DeleteButton>
+            <EditButton onClick={handleEdit}>✏️ Edit</EditButton>
+            <DeleteButton onClick={handleDelete}>🗑️ Delete</DeleteButton>
           </OwnerActions>
         ) : (
           <>
-            <ViewButton onClick={handleViewDetails}>
-              👁️ View Details
-            </ViewButton>
-            
+            <ViewButton onClick={handleViewDetails}>👁️ View Details</ViewButton>
+
             {/* ✅ Only show contact button if not loading auth */}
             {authLoading ? (
-              <ContactButton disabled>
-                ⏳ Loading...
-              </ContactButton>
+              <ContactButton disabled>⏳ Loading...</ContactButton>
             ) : !user ? (
-              <ContactButton 
+              <ContactButton
                 onClick={() => {
-                  toast.info('Please login first');
-                  navigate('/login');
+                  toast.info("Please login first");
+                  navigate("/login");
                 }}
               >
                 🔒 Login to Contact
               </ContactButton>
             ) : (
-              <ContactButton 
+              <ContactButton
                 onClick={handleContact}
                 disabled={isLoading}
                 title="Contact donor"
               >
-                {isLoading ? <LoadingSpinner /> : '💬 Contact'}
+                {isLoading ? <LoadingSpinner /> : "💬 Contact"}
               </ContactButton>
             )}
           </>

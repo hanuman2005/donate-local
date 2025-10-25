@@ -1,36 +1,34 @@
-// ============================================
-// src/pages/Notifications/index.jsx
-// ============================================
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
 import { useSocket } from '../../context/SocketContext';
 import api from '../../services/api';
-import LoadingSpinner from '../../components/Common/LoadingSpinner';
 import {
   NotificationsContainer,
-  NotificationsCard,
-  Header,
+  Header, 
   HeaderTop,
   Title,
-  UnreadBadge,
+  UnreadBadge,  
   MarkAllButton,
   FilterContainer,
-  FilterButton,
+  FilterButton, 
   NotificationsList,
-  NotificationItem,
+  NotificationCard,
   NotificationIcon,
   NotificationContent,
   NotificationHeader,
   NotificationTitle,
   NotificationTime,
   NotificationMessage,
-  NotificationSender,
-  SenderAvatar,
-  SenderName,
+  NotificationActions,
+  ActionButton,
+  DateGroup,
+  DateLabel,
   EmptyState,
-  EmptyStateIcon,
-  EmptyStateText,
+  EmptyIcon,
+  EmptyText,
+  EmptySubtext,
+  LoadingContainer,
+  Spinner
 } from './styledComponents';
 
 const Notifications = () => {
@@ -39,14 +37,12 @@ const Notifications = () => {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
   const navigate = useNavigate();
-  const { user } = useAuth();
   const { socket } = useSocket();
 
   useEffect(() => {
     fetchNotifications();
   }, [filter]);
 
-  // Listen for real-time notifications
   useEffect(() => {
     if (socket) {
       socket.on('newNotification', (notification) => {
@@ -79,7 +75,10 @@ const Notifications = () => {
   const markAsRead = async (notificationId) => {
     try {
       await api.put(`/notifications/${notificationId}/read`);
-      fetchNotifications();
+      setNotifications(prev => 
+        prev.map(n => n._id === notificationId ? { ...n, read: true } : n)
+      );
+      setUnreadCount(prev => Math.max(0, prev - 1));
     } catch (error) {
       console.error('Error marking as read:', error);
     }
@@ -88,9 +87,19 @@ const Notifications = () => {
   const markAllAsRead = async () => {
     try {
       await api.put('/notifications/read-all');
-      fetchNotifications();
+      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+      setUnreadCount(0);
     } catch (error) {
       console.error('Error marking all as read:', error);
+    }
+  };
+
+  const deleteNotification = async (notificationId) => {
+    try {
+      await api.delete(`/notifications/${notificationId}`);
+      setNotifications(prev => prev.filter(n => n._id !== notificationId));
+    } catch (error) {
+      console.error('Error deleting notification:', error);
     }
   };
 
@@ -126,110 +135,266 @@ const Notifications = () => {
     if (diffMins < 1) return 'Just now';
     if (diffMins < 60) return `${diffMins}m ago`;
     if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
+    if (diffDays === 0) return 'Today';
+    if (diffDays === 1) return 'Yesterday';
+    if (diffDays < 7) return `${diffDays} days ago`;
     return notifDate.toLocaleDateString();
   };
 
+  const groupByDate = (notifs) => {
+    const groups = {
+      today: [],
+      yesterday: [],
+      thisWeek: [],
+      older: []
+    };
+
+    notifs.forEach(notif => {
+      const date = new Date(notif.createdAt);
+      const now = new Date();
+      const diffDays = Math.floor((now - date) / 86400000);
+
+      if (diffDays === 0) groups.today.push(notif);
+      else if (diffDays === 1) groups.yesterday.push(notif);
+      else if (diffDays < 7) groups.thisWeek.push(notif);
+      else groups.older.push(notif);
+    });
+
+    return groups;
+  };
+
   if (loading) {
-    return <LoadingSpinner fullPage />;
+    return (
+      <NotificationsContainer>
+        <LoadingContainer>
+          <Spinner />
+        </LoadingContainer>
+      </NotificationsContainer>
+    );
   }
+
+  const groupedNotifications = groupByDate(notifications);
 
   return (
     <NotificationsContainer>
-      <NotificationsCard>
-        <Header>
-          <HeaderTop>
-            <Title>
-              Notifications
-              {unreadCount > 0 && (
-                <UnreadBadge>{unreadCount}</UnreadBadge>
-              )}
-            </Title>
-            
-            {unreadCount > 0 && (
-              <MarkAllButton onClick={markAllAsRead}>
-                Mark all as read
-              </MarkAllButton>
-            )}
-          </HeaderTop>
-
-          <FilterContainer>
-            <FilterButton
-              $active={filter === 'all'}
-              onClick={() => setFilter('all')}
-            >
-              All
-            </FilterButton>
-            <FilterButton
-              $active={filter === 'unread'}
-              onClick={() => setFilter('unread')}
-            >
-              Unread ({unreadCount})
-            </FilterButton>
-          </FilterContainer>
-        </Header>
-
-        <NotificationsList>
-          {notifications.length === 0 ? (
-            <EmptyState>
-              <EmptyStateIcon>🔔</EmptyStateIcon>
-              <EmptyStateText>
-                {filter === 'unread' 
-                  ? "No unread notifications"
-                  : "No notifications yet"}
-              </EmptyStateText>
-              <p style={{ color: '#a0aec0', margin: 0 }}>
-                You're all caught up!
-              </p>
-            </EmptyState>
-          ) : (
-            notifications.map((notif) => (
-              <NotificationItem
-                key={notif._id}
-                $read={notif.read}
-                onClick={() => handleNotificationClick(notif)}
-              >
-                <NotificationIcon>
-                  {getNotificationIcon(notif.type)}
-                </NotificationIcon>
-                
-                <NotificationContent>
-                  <NotificationHeader>
-                    <NotificationTitle>
-                      {notif.title}
-                    </NotificationTitle>
-                    <NotificationTime>
-                      {formatTime(notif.createdAt)}
-                    </NotificationTime>
-                  </NotificationHeader>
-                  
-                  <NotificationMessage>
-                    {notif.message}
-                  </NotificationMessage>
-                  
-                  {notif.sender && (
-                    <NotificationSender>
-                      <SenderAvatar>
-                        {notif.sender.avatar ? (
-                          <img src={notif.sender.avatar} alt={notif.sender.firstName} />
-                        ) : (
-                          <span>
-                            {notif.sender.firstName?.[0]}
-                            {notif.sender.lastName?.[0]}
-                          </span>
-                        )}
-                      </SenderAvatar>
-                      <SenderName>
-                        {notif.sender.firstName} {notif.sender.lastName}
-                      </SenderName>
-                    </NotificationSender>
-                  )}
-                </NotificationContent>
-              </NotificationItem>
-            ))
+      <Header>
+        <HeaderTop>
+          <Title>
+            🔔 Notifications
+            {unreadCount > 0 && <UnreadBadge>{unreadCount}</UnreadBadge>}
+          </Title>
+          
+          {unreadCount > 0 && (
+            <MarkAllButton onClick={markAllAsRead}>
+              ✓ Mark all as read
+            </MarkAllButton>
           )}
-        </NotificationsList>
-      </NotificationsCard>
+        </HeaderTop>
+
+        <FilterContainer>
+          <FilterButton
+            $active={filter === 'all'}
+            onClick={() => setFilter('all')}
+          >
+            All Notifications
+          </FilterButton>
+          <FilterButton
+            $active={filter === 'unread'}
+            onClick={() => setFilter('unread')}
+          >
+            Unread ({unreadCount})
+          </FilterButton>
+        </FilterContainer>
+      </Header>
+
+      <NotificationsList>
+        {notifications.length === 0 ? (
+          <EmptyState>
+            <EmptyIcon>🔔</EmptyIcon>
+            <EmptyText>
+              {filter === 'unread' ? 'All caught up!' : 'No notifications yet'}
+            </EmptyText>
+            <EmptySubtext>
+              {filter === 'unread' 
+                ? 'You have no unread notifications' 
+                : "We'll notify you when something important happens"}
+            </EmptySubtext>
+          </EmptyState>
+        ) : (
+          <>
+            {groupedNotifications.today.length > 0 && (
+              <DateGroup>
+                <DateLabel>📅 Today</DateLabel>
+                {groupedNotifications.today.map((notif) => (
+                  <NotificationCard
+                    key={notif._id}
+                    $read={notif.read}
+                    onClick={() => handleNotificationClick(notif)}
+                  >
+                    <NotificationIcon type={notif.type}>
+                      {getNotificationIcon(notif.type)}
+                    </NotificationIcon>
+                    
+                    <NotificationContent>
+                      <NotificationHeader>
+                        <NotificationTitle>{notif.title}</NotificationTitle>
+                        <NotificationTime>{formatTime(notif.createdAt)}</NotificationTime>
+                      </NotificationHeader>
+                      
+                      <NotificationMessage>{notif.message}</NotificationMessage>
+                      
+                      <NotificationActions>
+                        {notif.actionUrl && (
+                          <ActionButton $primary onClick={() => navigate(notif.actionUrl)}>
+                            View Details
+                          </ActionButton>
+                        )}
+                        {!notif.read && (
+                          <ActionButton onClick={(e) => {
+                            e.stopPropagation();
+                            markAsRead(notif._id);
+                          }}>
+                            Mark as Read
+                          </ActionButton>
+                        )}
+                        <ActionButton onClick={(e) => {
+                          e.stopPropagation();
+                          deleteNotification(notif._id);
+                        }}>
+                          Delete
+                        </ActionButton>
+                      </NotificationActions>
+                    </NotificationContent>
+                  </NotificationCard>
+                ))}
+              </DateGroup>
+            )}
+
+            {groupedNotifications.yesterday.length > 0 && (
+              <DateGroup>
+                <DateLabel>📅 Yesterday</DateLabel>
+                {groupedNotifications.yesterday.map((notif) => (
+                  <NotificationCard
+                    key={notif._id}
+                    $read={notif.read}
+                    onClick={() => handleNotificationClick(notif)}
+                  >
+                    <NotificationIcon type={notif.type}>
+                      {getNotificationIcon(notif.type)}
+                    </NotificationIcon>
+                    
+                    <NotificationContent>
+                      <NotificationHeader>
+                        <NotificationTitle>{notif.title}</NotificationTitle>
+                        <NotificationTime>{formatTime(notif.createdAt)}</NotificationTime>
+                      </NotificationHeader>
+                      
+                      <NotificationMessage>{notif.message}</NotificationMessage>
+                      
+                      <NotificationActions>
+                        {notif.actionUrl && (
+                          <ActionButton $primary onClick={() => navigate(notif.actionUrl)}>
+                            View Details
+                          </ActionButton>
+                        )}
+                        {!notif.read && (
+                          <ActionButton onClick={(e) => {
+                            e.stopPropagation();
+                            markAsRead(notif._id);
+                          }}>
+                            Mark as Read
+                          </ActionButton>
+                        )}
+                        <ActionButton onClick={(e) => {
+                          e.stopPropagation();
+                          deleteNotification(notif._id);
+                        }}>
+                          Delete
+                        </ActionButton>
+                      </NotificationActions>
+                    </NotificationContent>
+                  </NotificationCard>
+                ))}
+              </DateGroup>
+            )}
+
+            {groupedNotifications.thisWeek.length > 0 && (
+              <DateGroup>
+                <DateLabel>📅 This Week</DateLabel>
+                {groupedNotifications.thisWeek.map((notif) => (
+                  <NotificationCard
+                    key={notif._id}
+                    $read={notif.read}
+                    onClick={() => handleNotificationClick(notif)}
+                  >
+                    <NotificationIcon type={notif.type}>
+                      {getNotificationIcon(notif.type)}
+                    </NotificationIcon>
+                    
+                    <NotificationContent>
+                      <NotificationHeader>
+                        <NotificationTitle>{notif.title}</NotificationTitle>
+                        <NotificationTime>{formatTime(notif.createdAt)}</NotificationTime>
+                      </NotificationHeader>
+                      
+                      <NotificationMessage>{notif.message}</NotificationMessage>
+                      
+                      <NotificationActions>
+                        {notif.actionUrl && (
+                          <ActionButton $primary onClick={() => navigate(notif.actionUrl)}>
+                            View Details
+                          </ActionButton>
+                        )}
+                        <ActionButton onClick={(e) => {
+                          e.stopPropagation();
+                          deleteNotification(notif._id);
+                        }}>
+                          Delete
+                        </ActionButton>
+                      </NotificationActions>
+                    </NotificationContent>
+                  </NotificationCard>
+                ))}
+              </DateGroup>
+            )}
+
+            {groupedNotifications.older.length > 0 && (
+              <DateGroup>
+                <DateLabel>📅 Older</DateLabel>
+                {groupedNotifications.older.map((notif) => (
+                  <NotificationCard
+                    key={notif._id}
+                    $read={notif.read}
+                    onClick={() => handleNotificationClick(notif)}
+                  >
+                    <NotificationIcon type={notif.type}>
+                      {getNotificationIcon(notif.type)}
+                    </NotificationIcon>
+                    
+                    <NotificationContent>
+                      <NotificationHeader>
+                        <NotificationTitle>{notif.title}</NotificationTitle>
+                        <NotificationTime>{formatTime(notif.createdAt)}</NotificationTime>
+                      </NotificationHeader>
+                      
+                      <NotificationMessage>{notif.message}</NotificationMessage>
+                      
+                      <NotificationActions>
+                        <ActionButton onClick={(e) => {
+                          e.stopPropagation();
+                          deleteNotification(notif._id);
+                        }}>
+                          Delete
+                        </ActionButton>
+                      </NotificationActions>
+                    </NotificationContent>
+                  </NotificationCard>
+                ))}
+              </DateGroup>
+            )}
+          </>
+        )}
+      </NotificationsList>
     </NotificationsContainer>
   );
 };

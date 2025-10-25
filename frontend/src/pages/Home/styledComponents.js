@@ -1,8 +1,9 @@
 import styled from "styled-components";
 
 export const HomeContainer = styled.div`
-  margin-top: 80px; /* ✅ Match header height */
   min-height: calc(100vh - 80px);
+  background: var(--bg-primary); // ✅ ADD
+  color: var(--text-primary);
 `;
 
 export const HeroSection = styled.section`
@@ -216,4 +217,62 @@ export const ListingsGrid = styled.div`
     grid-template-columns: 1fr;
     gap: 1.5rem;
   }
+`;
+// New styled components for About section
+export const AboutSection = styled.section`
+  padding: 5rem 2rem;
+  background: var(--bg-primary); // ✅ ADD
+  color: var(--text-primary);
+`;
+
+export const AboutGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 3rem;
+  margin-top: 3rem;
+`;
+
+export const FeatureCard = styled.div`
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  padding: 2.5rem;
+  border-radius: 20px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  text-align: center;
+
+  &:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 40px rgba(102, 126, 234, 0.2);
+  }
+`;
+
+export const FeatureIcon = styled.div`
+  font-size: 4rem;
+  margin-bottom: 1.5rem;
+`;
+
+export const FeatureTitle = styled.h3`
+  font-size: 1.5rem;
+  color: #2d3748;
+  margin-bottom: 1rem;
+  font-weight: 700;
+`;
+
+export const FeatureDescription = styled.p`
+  font-size: 1rem;
+  color: #718096;
+  line-height: 1.7;
+`;
+
+export const AboutTitle = styled(SectionTitle)`
+  margin-bottom: 0.5rem;
+`;
+
+export const AboutSubtitle = styled.p`
+  font-size: 1.2rem;
+  text-align: center;
+  color: #718096;
+  max-width: 700px;
+  margin: 0 auto 3rem;
+  line-height: 1.6;
 `;

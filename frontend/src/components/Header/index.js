@@ -1,10 +1,11 @@
 // ============================================
-// src/components/Header/index.jsx - WITH NOTIFICATIONS
+// src/components/Header/index.jsx - WITH ROLE-BASED ACCESS
 // ============================================
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useSocket } from "../../context/SocketContext";
+import ThemeToggle from "../ThemeToggle";
 import api from "../../services/api";
 import {
   HeaderContainer,
@@ -38,38 +39,38 @@ const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Fetch unread notifications count
+  // ✅ Check if user is donor
+  const isDonor = user?.userType === 'donor';
+
   useEffect(() => {
     if (user) {
       fetchUnreadCount();
     }
   }, [user]);
 
-  // Listen for real-time notifications
   useEffect(() => {
     if (socket && user) {
-      socket.on('newNotification', () => {
+      socket.on("newNotification", () => {
         fetchUnreadCount();
       });
 
       return () => {
-        socket.off('newNotification');
+        socket.off("newNotification");
       };
     }
   }, [socket, user]);
 
   const fetchUnreadCount = async () => {
     try {
-      const response = await api.get('/notifications', {
-        params: { unreadOnly: true, limit: 1 }
+      const response = await api.get("/notifications", {
+        params: { unreadOnly: true, limit: 1 },
       });
       setUnreadCount(response.data.unreadCount || 0);
     } catch (error) {
-      console.error('Error fetching unread count:', error);
+      console.error("Error fetching unread count:", error);
     }
   };
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -86,16 +87,15 @@ const Header = () => {
     };
   }, [isDropdownOpen]);
 
-  // Lock body scroll when mobile menu is open
   useEffect(() => {
     if (isMobileMenuOpen) {
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = "unset";
     }
 
     return () => {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = "unset";
     };
   }, [isMobileMenuOpen]);
 
@@ -146,14 +146,6 @@ const Header = () => {
             Listings
           </NavLink>
 
-          <NavLink as={Link} to="/about" $active={isActive("/about")}>
-            About
-          </NavLink>
-
-          <NavLink as={Link} to="/contact" $active={isActive("/contact")}>
-            Contact
-          </NavLink>
-
           {user && (
             <>
               <NavLink
@@ -163,25 +155,30 @@ const Header = () => {
               >
                 Dashboard
               </NavLink>
-              <NavLink
-                as={Link}
-                to="/create-listing"
-                $active={isActive("/create-listing")}
-              >
-                Create Listing
-              </NavLink>
+              {/* ✅ FIXED: Only show for donors */}
+              {isDonor && (
+                <NavLink
+                  as={Link}
+                  to="/create-listing"
+                  $active={isActive("/create-listing")}
+                >
+                  Create Listing
+                </NavLink>
+              )}
             </>
           )}
         </Navigation>
 
         <UserSection>
+          <ThemeToggle showLabel={false} />
           {user ? (
             <>
-              {/* Notification Bell */}
               <NotificationBell onClick={handleNotificationsClick}>
                 🔔
                 {unreadCount > 0 && (
-                  <NotificationBadge>{unreadCount > 9 ? '9+' : unreadCount}</NotificationBadge>
+                  <NotificationBadge>
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </NotificationBadge>
                 )}
               </NotificationBell>
 
@@ -197,7 +194,7 @@ const Header = () => {
                   role="button"
                   tabIndex={0}
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
+                    if (e.key === "Enter" || e.key === " ") {
                       setIsDropdownOpen(!isDropdownOpen);
                     }
                   }}
@@ -210,8 +207,8 @@ const Header = () => {
                       />
                     ) : (
                       <span>
-                        {user.firstName?.[0] || '?'}
-                        {user.lastName?.[0] || ''}
+                        {user.firstName?.[0] || "?"}
+                        {user.lastName?.[0] || ""}
                       </span>
                     )}
                   </UserAvatar>
@@ -234,19 +231,22 @@ const Header = () => {
                     <DropdownItem onClick={handleNotificationsClick}>
                       <span>🔔</span> Notifications
                       {unreadCount > 0 && (
-                        <NotificationBadge style={{ marginLeft: 'auto' }}>
+                        <NotificationBadge style={{ marginLeft: "auto" }}>
                           {unreadCount}
                         </NotificationBadge>
                       )}
                     </DropdownItem>
-                    <DropdownItem
-                      onClick={() => {
-                        setIsDropdownOpen(false);
-                        navigate("/create-listing");
-                      }}
-                    >
-                      <span>➕</span> Create Listing
-                    </DropdownItem>
+                    {/* ✅ FIXED: Only show for donors */}
+                    {isDonor && (
+                      <DropdownItem
+                        onClick={() => {
+                          setIsDropdownOpen(false);
+                          navigate("/create-listing");
+                        }}
+                      >
+                        <span>➕</span> Create Listing
+                      </DropdownItem>
+                    )}
                     <div
                       style={{
                         borderTop: "1px solid #e2e8f0",
@@ -302,25 +302,6 @@ const Header = () => {
           >
             Listings
           </MobileNavLink>
-
-          <MobileNavLink
-            as={Link}
-            to="/about"
-            onClick={closeMobileMenu}
-            $active={isActive("/about")}
-          >
-            About
-          </MobileNavLink>
-
-          <MobileNavLink
-            as={Link}
-            to="/contact"
-            onClick={closeMobileMenu}
-            $active={isActive("/contact")}
-          >
-            Contact
-          </MobileNavLink>
-
           {user ? (
             <>
               <MobileNavLink
@@ -339,19 +320,22 @@ const Header = () => {
               >
                 🔔 Notifications
                 {unreadCount > 0 && (
-                  <NotificationBadge style={{ marginLeft: '0.5rem' }}>
+                  <NotificationBadge style={{ marginLeft: "0.5rem" }}>
                     {unreadCount}
                   </NotificationBadge>
                 )}
               </MobileNavLink>
-              <MobileNavLink
-                as={Link}
-                to="/create-listing"
-                onClick={closeMobileMenu}
-                $active={isActive("/create-listing")}
-              >
-                Create Listing
-              </MobileNavLink>
+              {/* ✅ FIXED: Only show for donors */}
+              {isDonor && (
+                <MobileNavLink
+                  as={Link}
+                  to="/create-listing"
+                  onClick={closeMobileMenu}
+                  $active={isActive("/create-listing")}
+                >
+                  Create Listing
+                </MobileNavLink>
+              )}
               <MobileNavLink
                 as={Link}
                 to="/profile"

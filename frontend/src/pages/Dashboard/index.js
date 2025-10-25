@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { listingsAPI, chatAPI } from "../../services/api";
@@ -33,83 +33,100 @@ import {
   EmptyState,
   EmptyStateIcon,
   EmptyStateText,
+  LoadingContainer,
+  LoadingText,
+  GradientText,
+  ImpactStat,
+  ImpactIcon,
+  ImpactText,
+  ImpactValue,
 } from "./styledComponents";
 
 const Dashboard = () => {
-  const [userListings, setUserListings] = useState([]);
-  const [nearbyListings, setNearbyListings] = useState([]);
+  const [myListings, setMyListings] = useState([]);
+  const [availableListings, setAvailableListings] = useState([]);
+  const [interestedListings, setInterestedListings] = useState([]);
   const [chats, setChats] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("list"); // ✅ Changed default to "list"
+  const [activeTab, setActiveTab] = useState("available");
   const [userLocation, setUserLocation] = useState(null);
   const [selectedChat, setSelectedChat] = useState(null);
 
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    fetchDashboardData();
-    getCurrentLocation();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   const getCurrentLocation = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          const location = {
+          setUserLocation({
             lat: position.coords.latitude,
             lng: position.coords.longitude,
-          };
-          console.log('📍 User location:', location);
-          setUserLocation(location);
-          // Don't refetch - we already have all listings
+          });
         },
         (error) => {
-          console.error("⚠️ Error getting location:", error);
+          console.error("Error getting location:", error);
         }
       );
-    } else {
-      console.warn("⚠️ Geolocation not supported");
     }
   };
 
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async () => {
     try {
       setLoading(true);
-      console.log('🔄 Fetching dashboard data...');
-      
-      const [userListingsRes, nearbyRes, chatsRes] = await Promise.all([
+
+      const [myListingsRes, allListingsRes, chatsRes] = await Promise.all([
         listingsAPI.getUserListings(),
-        listingsAPI.getAll({ limit: 20, status: 'available' }), // ✅ Get all listings
+        listingsAPI.getAll({ limit: 50, status: "available" }),
         chatAPI.getUserChats(),
       ]);
 
-      // ✅ Handle both response formats
-      const myListings = userListingsRes.data.listings || userListingsRes.data.data || [];
-      const allListings = nearbyRes.data.listings || nearbyRes.data.data || [];
+      const myItems = myListingsRes.data.listings || myListingsRes.data.data || [];
+      const allItems = allListingsRes.data.listings || allListingsRes.data.data || [];
       const myChats = chatsRes.data.chats || chatsRes.data.data || [];
-      
-      console.log('✅ My listings:', myListings.length);
-      console.log('✅ All listings:', allListings.length);
-      console.log('✅ My chats:', myChats.length);
-      
-      setUserListings(myListings);
-      setNearbyListings(allListings);
-      setChats(myChats);
+
+      // Deduplicate chats
+      const uniqueChats = [];
+      const seenParticipants = new Set();
+
+      myChats.forEach((chat) => {
+        const otherUser = chat.participants?.find((p) => p._id !== user?._id);
+        if (otherUser && !seenParticipants.has(otherUser._id)) {
+          seenParticipants.add(otherUser._id);
+          uniqueChats.push(chat);
+        }
+      });
+
+      setMyListings(myItems);
+
+      const othersListings = allItems.filter(
+        (listing) =>
+          listing.donor?._id !== user?._id && listing.donor !== user?._id
+      );
+      setAvailableListings(othersListings);
+
+      const interested = allItems.filter(
+        (listing) =>
+          listing.assignedTo?._id === user?._id ||
+          listing.assignedTo === user?._id
+      );
+      setInterestedListings(interested);
+
+      setChats(uniqueChats);
     } catch (error) {
-      console.error("❌ Error fetching dashboard data:", error);
+      console.error("Error fetching dashboard data:", error);
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?._id]);
+
+  useEffect(() => {
+    fetchDashboardData();
+    getCurrentLocation();
+  }, [fetchDashboardData]);
 
   const handleCreateListing = () => {
     navigate("/create-listing");
-  };
-
-  const handleViewProfile = () => {
-    navigate("/profile");
   };
 
   const handleChatSelect = (chat) => {
@@ -117,159 +134,280 @@ const Dashboard = () => {
   };
 
   if (loading) {
-    return <LoadingSpinner />;
+    return (
+      <LoadingContainer>
+        <LoadingSpinner />
+        <LoadingText>Loading your dashboard...</LoadingText>
+      </LoadingContainer>
+    );
   }
 
+  const isDonor = user?.userType === 'donor';
+  const isRecipient = user?.userType === 'recipient';
+
   const stats = {
-    activeListings: userListings.filter(
-      (listing) => listing.status === "available"
-    ).length,
-    totalListings: userListings.length,
-    activeChats: chats.length,
-    completedDeals: userListings.filter(
-      (listing) => listing.status === "completed"
-    ).length,
+    myActive: myListings.filter((l) => l.status === "available").length,
+    myPending: myListings.filter((l) => l.status === "pending").length,
+    myCompleted: myListings.filter((l) => l.status === "completed").length,
+    availableNearby: availableListings.length,
+    myRequests: interestedListings.length,
+  };
+
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Good Morning";
+    if (hour < 18) return "Good Afternoon";
+    return "Good Evening";
   };
 
   return (
     <DashboardContainer>
+      {/* Header */}
       <DashboardHeader>
         <WelcomeSection>
-          <WelcomeTitle>Welcome back, {user?.firstName}! 👋</WelcomeTitle>
+          <WelcomeTitle>
+            {getGreeting()}, {user?.firstName}! 👋
+          </WelcomeTitle>
           <WelcomeSubtitle>
-            Here's what's happening in your community today
+            {isDonor
+              ? `🌟 You're making a difference! ${stats.myCompleted} donations completed`
+              : "🍎 Discover fresh food available in your community"}
           </WelcomeSubtitle>
         </WelcomeSection>
 
         <QuickActions>
-          <ActionButton $primary onClick={handleCreateListing}>
-            + Create Listing
+          {isDonor && (
+            <ActionButton $primary onClick={handleCreateListing}>
+              ➕ Share Food
+            </ActionButton>
+          )}
+          <ActionButton onClick={() => navigate("/listings")}>
+            🔍 Browse All
           </ActionButton>
-          <ActionButton onClick={handleViewProfile}>View Profile</ActionButton>
         </QuickActions>
       </DashboardHeader>
 
+      {/* Stats Cards */}
       <StatsRow>
-        <StatCard>
-          <StatValue>{stats.activeListings}</StatValue>
-          <StatLabel>My Active Listings</StatLabel>
-        </StatCard>
-        <StatCard>
-          <StatValue>{stats.totalListings}</StatValue>
-          <StatLabel>My Total Listings</StatLabel>
-        </StatCard>
-        <StatCard>
-          <StatValue>{nearbyListings.length}</StatValue>
-          <StatLabel>Available Listings</StatLabel>
-        </StatCard>
-        <StatCard>
-          <StatValue>{stats.completedDeals}</StatValue>
-          <StatLabel>Completed Deals</StatLabel>
-        </StatCard>
+        {isDonor ? (
+          <>
+            <StatCard $variant="purple">
+              <StatValue>{stats.myActive}</StatValue>
+              <StatLabel>📦 Active Donations</StatLabel>
+            </StatCard>
+            
+            <StatCard $variant="pink">
+              <StatValue>{stats.myPending}</StatValue>
+              <StatLabel>⏳ Pending Pickups</StatLabel>
+            </StatCard>
+            
+            <StatCard $variant="blue">
+              <StatValue>{stats.myCompleted}</StatValue>
+              <StatLabel>✅ Completed</StatLabel>
+            </StatCard>
+            
+            <StatCard $variant="green">
+              <StatValue>{chats.length}</StatValue>
+              <StatLabel>💬 Active Chats</StatLabel>
+            </StatCard>
+          </>
+        ) : (
+          <>
+            <StatCard $variant="orange">
+              <StatValue>{stats.availableNearby}</StatValue>
+              <StatLabel>🍎 Available Near You</StatLabel>
+            </StatCard>
+            
+            <StatCard $variant="purple">
+              <StatValue>{stats.myRequests}</StatValue>
+              <StatLabel>📝 My Requests</StatLabel>
+            </StatCard>
+            
+            <StatCard $variant="blue">
+              <StatValue>{stats.myCompleted}</StatValue>
+              <StatLabel>✅ Items Received</StatLabel>
+            </StatCard>
+            
+            <StatCard $variant="green">
+              <StatValue>{chats.length}</StatValue>
+              <StatLabel>💬 Conversations</StatLabel>
+            </StatCard>
+          </>
+        )}
       </StatsRow>
 
       <DashboardContent>
         <MainSection>
+          {/* Donor's Listings Section */}
+          {isDonor && (
+            <Section>
+              <SectionHeader>
+                <GradientText $variant="purple">
+                  📦 Your Donations
+                </GradientText>
+                <TabContainer>
+                  <Tab
+                    $active={activeTab === "active"}
+                    onClick={() => setActiveTab("active")}
+                  >
+                    Active ({stats.myActive})
+                  </Tab>
+                  <Tab
+                    $active={activeTab === "pending"}
+                    onClick={() => setActiveTab("pending")}
+                  >
+                    Pending ({stats.myPending})
+                  </Tab>
+                  <Tab
+                    $active={activeTab === "completed"}
+                    onClick={() => setActiveTab("completed")}
+                  >
+                    Completed ({stats.myCompleted})
+                  </Tab>
+                </TabContainer>
+              </SectionHeader>
+
+              <TabContent>
+                {myListings.filter((listing) => {
+                  if (activeTab === "active") return listing.status === "available";
+                  if (activeTab === "pending") return listing.status === "pending";
+                  if (activeTab === "completed") return listing.status === "completed";
+                  return true;
+                }).length > 0 ? (
+                  <ListingsGrid>
+                    {myListings
+                      .filter((listing) => {
+                        if (activeTab === "active") return listing.status === "available";
+                        if (activeTab === "pending") return listing.status === "pending";
+                        if (activeTab === "completed") return listing.status === "completed";
+                        return true;
+                      })
+                      .slice(0, 6)
+                      .map((listing) => (
+                        <ListingCard
+                          key={listing._id}
+                          listing={listing}
+                          isOwner={true}
+                        />
+                      ))}
+                  </ListingsGrid>
+                ) : (
+                  <EmptyState>
+                    <EmptyStateIcon>📦</EmptyStateIcon>
+                    <EmptyStateText $large>
+                      No {activeTab} donations yet
+                    </EmptyStateText>
+                    <EmptyStateText>
+                      {activeTab === "active" && "Share food to help your community"}
+                      {activeTab === "pending" && "No pending pickups at the moment"}
+                      {activeTab === "completed" && "Complete donations will appear here"}
+                    </EmptyStateText>
+                    {activeTab === "active" && (
+                      <ActionButton $primary onClick={handleCreateListing}>
+                        ➕ Share Your First Item
+                      </ActionButton>
+                    )}
+                  </EmptyState>
+                )}
+              </TabContent>
+            </Section>
+          )}
+
+          {/* Available Food Section */}
           <Section>
             <SectionHeader>
-              <SectionTitle>Discover Resources ({nearbyListings.length} available)</SectionTitle>
+              <GradientText $variant="green">
+                {isDonor ? "🌍 Community Food" : "🍎 Available Near You"}
+              </GradientText>
               <TabContainer>
                 <Tab
-                  $active={activeTab === "list"}
-                  onClick={() => setActiveTab("list")}
+                  $active={activeTab === "available"}
+                  onClick={() => setActiveTab("available")}
                 >
-                  List View
+                  📋 List
                 </Tab>
                 <Tab
-                  $active={activeTab === "nearby"}
-                  onClick={() => setActiveTab("nearby")}
+                  $active={activeTab === "map"}
+                  onClick={() => setActiveTab("map")}
                 >
-                  Map View
+                  🗺️ Map
                 </Tab>
               </TabContainer>
             </SectionHeader>
 
             <TabContent>
-              {activeTab === "list" ? (
-                <ListingsGrid>
-                  {nearbyListings.length > 0 ? (
-                    nearbyListings.slice(0, 6).map((listing) => (
-                      <ListingCard
-                        key={listing._id}
-                        listing={listing}
-                        showDistance={!!userLocation}
-                        userLocation={userLocation}
-                      />
-                    ))
-                  ) : (
-                    <EmptyState>
-                      <EmptyStateIcon>📍</EmptyStateIcon>
-                      <EmptyStateText>
-                        No listings available at the moment
-                      </EmptyStateText>
-                    </EmptyState>
-                  )}
-                </ListingsGrid>
-              ) : (
+              {activeTab === "map" ? (
                 <MapContainer>
                   <Map
-                    listings={nearbyListings}
+                    listings={availableListings}
                     userLocation={userLocation}
                     height="500px"
                   />
                 </MapContainer>
+              ) : availableListings.length > 0 ? (
+                <ListingsGrid>
+                  {availableListings.slice(0, 6).map((listing) => (
+                    <ListingCard
+                      key={listing._id}
+                      listing={listing}
+                      showDistance={!!userLocation}
+                      userLocation={userLocation}
+                    />
+                  ))}
+                </ListingsGrid>
+              ) : (
+                <EmptyState>
+                  <EmptyStateIcon>🔍</EmptyStateIcon>
+                  <EmptyStateText $large>
+                    No food available nearby
+                  </EmptyStateText>
+                  <EmptyStateText>
+                    Check back later or expand your search
+                  </EmptyStateText>
+                </EmptyState>
               )}
             </TabContent>
 
-            {nearbyListings.length > 6 && (
-              <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
-                <ViewAllButton onClick={() => navigate('/listings')}>
-                  View All {nearbyListings.length} Listings →
+            {availableListings.length > 6 && (
+              <div style={{ textAlign: "center", marginTop: "1.5rem" }}>
+                <ViewAllButton onClick={() => navigate("/listings")}>
+                  View All {availableListings.length} Listings →
                 </ViewAllButton>
               </div>
             )}
           </Section>
 
-          <Section>
-            <SectionHeader>
-              <SectionTitle>Your Listings</SectionTitle>
-              <ViewAllButton onClick={handleCreateListing}>
-                + Add New
-              </ViewAllButton>
-            </SectionHeader>
-
-            <ListingsGrid>
-              {userListings.length > 0 ? (
-                userListings
-                  .slice(0, 4)
-                  .map((listing) => (
-                    <ListingCard
-                      key={listing._id}
-                      listing={listing}
-                      isOwner={true}
-                    />
-                  ))
-              ) : (
-                <EmptyState>
-                  <EmptyStateIcon>📦</EmptyStateIcon>
-                  <EmptyStateText>
-                    You haven't created any listings yet
-                  </EmptyStateText>
-                  <ActionButton $primary onClick={handleCreateListing}>
-                    Create Your First Listing
-                  </ActionButton>
-                </EmptyState>
-              )}
-            </ListingsGrid>
-          </Section>
+          {/* My Requests Section */}
+          {interestedListings.length > 0 && (
+            <Section>
+              <SectionHeader>
+                <GradientText $variant="pink">
+                  📝 My Requests
+                </GradientText>
+              </SectionHeader>
+              <ListingsGrid>
+                {interestedListings.map((listing) => (
+                  <ListingCard
+                    key={listing._id}
+                    listing={listing}
+                    showDistance={!!userLocation}
+                    userLocation={userLocation}
+                  />
+                ))}
+              </ListingsGrid>
+            </Section>
+          )}
         </MainSection>
 
         <Sidebar>
+          {/* Messages Section */}
           <Section>
             <SectionHeader>
-              <SectionTitle>Messages</SectionTitle>
-              <ViewAllButton onClick={() => navigate('/chat')}>
-                View All
+              <GradientText $variant="purple">
+                💬 Messages ({chats.length})
+              </GradientText>
+              <ViewAllButton onClick={() => navigate("/chat")}>
+                View All →
               </ViewAllButton>
             </SectionHeader>
 
@@ -281,11 +419,64 @@ const Dashboard = () => {
                 compact={true}
               />
             ) : (
-              <EmptyState>
+              <EmptyState $compact>
                 <EmptyStateIcon>💬</EmptyStateIcon>
-                <EmptyStateText>No conversations yet</EmptyStateText>
+                <EmptyStateText>No messages yet</EmptyStateText>
+                <EmptyStateText $small>
+                  Start conversations with donors
+                </EmptyStateText>
               </EmptyState>
             )}
+          </Section>
+
+          {/* Impact Card */}
+          <Section $impact>
+            <SectionTitle>🌟 Your Impact</SectionTitle>
+            <div>
+              {isDonor ? (
+                <>
+                  <ImpactStat>
+                    <ImpactIcon>✨</ImpactIcon>
+                    <ImpactText>
+                      <ImpactValue>{stats.myCompleted}</ImpactValue> donations completed
+                    </ImpactText>
+                  </ImpactStat>
+                  <ImpactStat>
+                    <ImpactIcon>🌱</ImpactIcon>
+                    <ImpactText>
+                      Approx. <ImpactValue>{stats.myCompleted * 2}kg</ImpactValue> waste prevented
+                    </ImpactText>
+                  </ImpactStat>
+                  <ImpactStat>
+                    <ImpactIcon>💚</ImpactIcon>
+                    <ImpactText>
+                      <ImpactValue>{stats.myCompleted * 3}</ImpactValue> meals provided
+                    </ImpactText>
+                  </ImpactStat>
+                </>
+              ) : (
+                <>
+                  <ImpactStat>
+                    <ImpactIcon>🙏</ImpactIcon>
+                    <ImpactText>
+                      <ImpactValue>{stats.myCompleted}</ImpactValue> items received
+                    </ImpactText>
+                  </ImpactStat>
+                  <ImpactStat>
+                    <ImpactIcon>🌍</ImpactIcon>
+                    <ImpactText>
+                      Part of <ImpactValue>850+</ImpactValue> member community
+                    </ImpactText>
+                  </ImpactStat>
+                  <ImpactStat>
+                    <ImpactIcon>💪</ImpactIcon>
+                    <ImpactText>
+                      Together we've saved <ImpactValue>1,200+ lbs</ImpactValue>
+                    </ImpactText>
+                  </ImpactStat>
+                </>
+              )}
+            </div>
           </Section>
         </Sidebar>
       </DashboardContent>

@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
+
 import Header from './components/Header';
 import LoadingSpinner from './components/Common/LoadingSpinner';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -9,17 +10,15 @@ import FloatingChatbot from './components/FloatingChatbot';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import About from './pages/About';
-import Contact from './pages/Contact';
 import Listings from './pages/Listings';
-import ListingDetails from './pages/Listings';
-
+import ListingDetails from './pages/ListingDetails'; 
 // Protected Pages
 import Dashboard from './pages/Dashboard';
 import CreateListing from './pages/CreateListing';
 import Profile from './pages/Profile';
 import Notifications from './pages/Notifications';
 import Chat from './components/Chat';
+import ContactModal from './components/ContactModal';
 
 function App() {
   const { loading } = useAuth();
@@ -36,8 +35,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/contact" element={<Contact />} />
+        <Route path="/contact" element={<ContactModal />} />
         <Route path="/listings" element={<Listings />} />
         <Route path="/listings/:id" element={<ListingDetails />} />
 

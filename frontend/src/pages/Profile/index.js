@@ -1,46 +1,50 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { usersAPI, uploadAPI } from "../../services/api";
-import LoadingSpinner from "../../components/Common/LoadingSpinner";
 import {
   ProfileContainer,
   ProfileCard,
+  CoverPhoto,
   ProfileHeader,
-  ProfileAvatar,
-  AvatarImage,
-  AvatarPlaceholder,
+  AvatarWrapper,
+  Avatar,
   AvatarUpload,
-  ProfileInfo,
+  ProfileInfo,  
   ProfileName,
   ProfileEmail,
-  ProfileStats,
-  StatItem,
+  ProfileBio,
+  ProfileActions,
+  ActionButton,
+  StatsContainer,
+  StatCard,
   StatValue,
   StatLabel,
-  ProfileContent,
-  TabContainer,
+  ContentTabs,
   Tab,
   TabContent,
-  EditProfileSection,
-  ProfileForm,
-  FormRow,
+  FormGrid,
   FormGroup,
   Label,
   Input,
-  TextArea,
   Select,
-  SaveButton,
-  CancelButton,
-  ButtonRow,
+  TextArea, 
+  BadgesSection,
+  BadgeCard,
+  BadgeIcon,
+  BadgeName,
+  BadgeDescription,
   RatingsSection,
-  RatingItem,
+  RatingCard,
   RatingHeader,
-  RatingUser,
+  RaterInfo,
+  RaterAvatar,
+  RaterName,
   RatingDate,
-  RatingStars,
+  Stars,
   RatingComment,
-  ErrorMessage,
-  SuccessMessage,
+  MessageBox,
+  LoadingOverlay,
+  Spinner,
 } from "./styledComponents";
 
 const Profile = () => {
@@ -63,6 +67,53 @@ const Profile = () => {
   });
 
   const [avatarFile, setAvatarFile] = useState(null);
+  const [avatarPreview, setAvatarPreview] = useState(null);
+
+  // Badges data
+  const badges = [
+    {
+      id: 1,
+      icon: "🌟",
+      name: "First Donation",
+      description: "Made your first donation",
+      unlocked: (user?.listingsCount || 0) > 0,
+    },
+    {
+      id: 2,
+      icon: "🏆",
+      name: "Super Donor",
+      description: "Made 10+ donations",
+      unlocked: (user?.listingsCount || 0) >= 10,
+    },
+    {
+      id: 3,
+      icon: "💎",
+      name: "Diamond Donor",
+      description: "Made 50+ donations",
+      unlocked: (user?.listingsCount || 0) >= 50,
+    },
+    {
+      id: 4,
+      icon: "⭐",
+      name: "Top Rated",
+      description: "4.5+ average rating",
+      unlocked: (user?.rating || 0) >= 4.5,
+    },
+    {
+      id: 5,
+      icon: "🔥",
+      name: "On Fire",
+      description: "Active 30 days streak",
+      unlocked: false,
+    },
+    {
+      id: 6,
+      icon: "❤️",
+      name: "Community Hero",
+      description: "Helped 100+ people",
+      unlocked: false,
+    },
+  ];
 
   useEffect(() => {
     if (user) {
@@ -80,18 +131,14 @@ const Profile = () => {
 
   useEffect(() => {
     fetchRatings();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchRatings = async () => {
     try {
-      setLoading(true);
       const response = await usersAPI.getRatings(user._id);
       setRatings(response.data.ratings || []);
     } catch (err) {
       console.error("Error fetching ratings:", err);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -101,7 +148,6 @@ const Profile = () => {
       ...prev,
       [name]: value,
     }));
-
     if (error) setError("");
     if (success) setSuccess("");
   };
@@ -114,16 +160,15 @@ const Profile = () => {
         return;
       }
       if (file.size > 2 * 1024 * 1024) {
-        // 2MB limit
         setError("Image size should be less than 2MB");
         return;
       }
       setAvatarFile(file);
+      setAvatarPreview(URL.createObjectURL(file));
       setError("");
     }
   };
 
-  // Replace handleSave function:
   const handleSave = async () => {
     try {
       setLoading(true);
@@ -131,7 +176,6 @@ const Profile = () => {
 
       let avatarUrl = user.avatar;
 
-      // Upload avatar if changed
       if (avatarFile) {
         const uploadFormData = new FormData();
         uploadFormData.append("image", avatarFile);
@@ -141,7 +185,6 @@ const Profile = () => {
         avatarUrl = uploadResponse.data.imageUrl || uploadResponse.data.url;
       }
 
-      // Update profile data
       const updatedData = {
         ...formData,
         avatar: avatarUrl,
@@ -154,6 +197,7 @@ const Profile = () => {
         setSuccess("Profile updated successfully!");
         setIsEditing(false);
         setAvatarFile(null);
+        setAvatarPreview(null);
       }
     } catch (err) {
       console.error("Error updating profile:", err);
@@ -174,6 +218,7 @@ const Profile = () => {
       userType: user?.userType || "individual",
     });
     setAvatarFile(null);
+    setAvatarPreview(null);
     setIsEditing(false);
     setError("");
     setSuccess("");
@@ -197,30 +242,41 @@ const Profile = () => {
       : 0;
 
   if (!user) {
-    return <LoadingSpinner />;
+    return (
+      <LoadingOverlay>
+        <Spinner />
+      </LoadingOverlay>
+    );
   }
 
   return (
     <ProfileContainer>
+      {loading && (
+        <LoadingOverlay>
+          <Spinner />
+        </LoadingOverlay>
+      )}
+
       <ProfileCard>
+        <CoverPhoto />
+
         <ProfileHeader>
-          <ProfileAvatar>
-            {avatarFile ? (
-              <AvatarImage
-                src={URL.createObjectURL(avatarFile)}
-                alt="Avatar Preview"
-              />
-            ) : user.avatar ? (
-              <AvatarImage
-                src={user.avatar}
-                alt={`${user.firstName} ${user.lastName}`}
-              />
-            ) : (
-              <AvatarPlaceholder>
-                {user.firstName?.[0]}
-                {user.lastName?.[0]}
-              </AvatarPlaceholder>
-            )}
+          <AvatarWrapper>
+            <Avatar>
+              {avatarPreview ? (
+                <img src={avatarPreview} alt="Avatar Preview" />
+              ) : user.avatar ? (
+                <img
+                  src={user.avatar}
+                  alt={`${user.firstName} ${user.lastName}`}
+                />
+              ) : (
+                <span>
+                  {user.firstName?.[0]}
+                  {user.lastName?.[0]}
+                </span>
+              )}
+            </Avatar>
 
             {isEditing && (
               <AvatarUpload>
@@ -228,202 +284,226 @@ const Profile = () => {
                   type="file"
                   accept="image/*"
                   onChange={handleAvatarChange}
-                  style={{ display: "none" }}
                   id="avatar-upload"
                 />
-                <label htmlFor="avatar-upload">📷</label>
+                📷
               </AvatarUpload>
             )}
-          </ProfileAvatar>
+          </AvatarWrapper>
 
           <ProfileInfo>
             <ProfileName>
               {user.firstName} {user.lastName}
             </ProfileName>
-            <ProfileEmail>{user.email}</ProfileEmail>
+            <ProfileEmail>📧 {user.email}</ProfileEmail>
+            {user.bio && !isEditing && <ProfileBio>{user.bio}</ProfileBio>}
+            <ProfileActions>
+              {isEditing ? (
+                <>
+                  <ActionButton onClick={handleCancel}>❌ Cancel</ActionButton>
+                  <ActionButton
+                    $primary
+                    onClick={handleSave}
+                    disabled={loading}
+                  >
+                    ✅ Save Changes
+                  </ActionButton>
+                </>
+              ) : (
+                <ActionButton $primary onClick={() => setIsEditing(true)}>
+                  ✏️ Edit Profile
+                </ActionButton>
+              )}
+            </ProfileActions>
           </ProfileInfo>
-
-          <ProfileStats>
-            <StatItem>
-              <StatValue>{user.listingsCount || 0}</StatValue>
-              <StatLabel>Listings</StatLabel>
-            </StatItem>
-            <StatItem>
-              <StatValue>{averageRating.toFixed(1)}</StatValue>
-              <StatLabel>Rating</StatLabel>
-            </StatItem>
-            <StatItem>
-              <StatValue>{ratings.length}</StatValue>
-              <StatLabel>Reviews</StatLabel>
-            </StatItem>
-          </ProfileStats>
         </ProfileHeader>
 
-        <ProfileContent>
-          <TabContainer>
-            <Tab
-              $active={activeTab === "profile"} 
-              onClick={() => setActiveTab("profile")}
-            >
-              Profile Info
-            </Tab>
-            <Tab
-              $active={activeTab === "ratings"}
-              onClick={() => setActiveTab("ratings")}
-            >
-              Reviews
-            </Tab>
-          </TabContainer>
+        <StatsContainer>
+          <StatCard>
+            <StatValue>{user.listingsCount || 0}</StatValue>
+            <StatLabel>📦 Total Donations</StatLabel>
+          </StatCard>
+          <StatCard>
+            <StatValue>{averageRating.toFixed(1)}</StatValue>
+            <StatLabel>⭐ Average Rating</StatLabel>
+          </StatCard>
+          <StatCard>
+            <StatValue>{ratings.length}</StatValue>
+            <StatLabel>💬 Reviews</StatLabel>
+          </StatCard>
+          <StatCard>
+            <StatValue>{badges.filter((b) => b.unlocked).length}</StatValue>
+            <StatLabel>🏆 Badges Earned</StatLabel>
+          </StatCard>
+        </StatsContainer>
 
-          <TabContent>
-            {activeTab === "profile" && (
-              <EditProfileSection>
-                {error && <ErrorMessage>{error}</ErrorMessage>}
-                {success && <SuccessMessage>{success}</SuccessMessage>}
+        <ContentTabs>
+          <Tab
+            $active={activeTab === "profile"}
+            onClick={() => setActiveTab("profile")}
+          >
+            👤 Profile Info
+          </Tab>
+          <Tab
+            $active={activeTab === "badges"}
+            onClick={() => setActiveTab("badges")}
+          >
+            🏆 Achievements
+          </Tab>
+          <Tab
+            $active={activeTab === "ratings"}
+            onClick={() => setActiveTab("ratings")}
+          >
+            ⭐ Reviews
+          </Tab>
+        </ContentTabs>
 
-                <ProfileForm>
-                  <FormRow>
-                    <FormGroup>
-                      <Label>First Name</Label>
-                      <Input
-                        type="text"
-                        name="firstName"
-                        value={formData.firstName}
-                        onChange={handleInputChange}
-                        disabled={!isEditing}
-                      />
-                    </FormGroup>
+        <TabContent>
+          {error && <MessageBox $type="error">{error}</MessageBox>}
+          {success && <MessageBox $type="success">{success}</MessageBox>}
 
-                    <FormGroup>
-                      <Label>Last Name</Label>
-                      <Input
-                        type="text"
-                        name="lastName"
-                        value={formData.lastName}
-                        onChange={handleInputChange}
-                        disabled={!isEditing}
-                      />
-                    </FormGroup>
-                  </FormRow>
+          {activeTab === "profile" && (
+            <FormGrid>
+              <FormGroup>
+                <Label>First Name</Label>
+                <Input
+                  type="text"
+                  name="firstName"
+                  value={formData.firstName}
+                  onChange={handleInputChange}
+                  disabled={!isEditing}
+                />
+              </FormGroup>
 
-                  <FormRow>
-                    <FormGroup>
-                      <Label>Email</Label>
-                      <Input
-                        type="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleInputChange}
-                        disabled={true} // Email should not be editable
-                      />
-                    </FormGroup>
+              <FormGroup>
+                <Label>Last Name</Label>
+                <Input
+                  type="text"
+                  name="lastName"
+                  value={formData.lastName}
+                  onChange={handleInputChange}
+                  disabled={!isEditing}
+                />
+              </FormGroup>
 
-                    <FormGroup>
-                      <Label>Phone</Label>
-                      <Input
-                        type="tel"
-                        name="phone"
-                        value={formData.phone}
-                        onChange={handleInputChange}
-                        disabled={!isEditing}
-                      />
-                    </FormGroup>
-                  </FormRow>
+              <FormGroup>
+                <Label>Email</Label>
+                <Input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  disabled={true}
+                />
+              </FormGroup>
 
-                  <FormGroup>
-                    <Label>Address</Label>
-                    <Input
-                      type="text"
-                      name="address"
-                      value={formData.address}
-                      onChange={handleInputChange}
-                      disabled={!isEditing}
-                    />
-                  </FormGroup>
+              <FormGroup>
+                <Label>Phone</Label>
+                <Input
+                  type="tel"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleInputChange}
+                  disabled={!isEditing}
+                />
+              </FormGroup>
 
-                  <FormGroup>
-                    <Label>Account Type</Label>
-                    <Select
-                      name="userType"
-                      value={formData.userType}
-                      onChange={handleInputChange}
-                      disabled={!isEditing}
-                    >
-                      <option value="individual">Individual</option>
-                      <option value="business">Business/Organization</option>
-                    </Select>
-                  </FormGroup>
+              <FormGroup style={{ gridColumn: "1 / -1" }}>
+                <Label>Address</Label>
+                <Input
+                  type="text"
+                  name="address"
+                  value={formData.address}
+                  onChange={handleInputChange}
+                  disabled={!isEditing}
+                />
+              </FormGroup>
 
-                  <FormGroup>
-                    <Label>Bio</Label>
-                    <TextArea
-                      name="bio"
-                      value={formData.bio}
-                      onChange={handleInputChange}
-                      placeholder="Tell others about yourself..."
-                      disabled={!isEditing}
-                      rows="4"
-                    />
-                  </FormGroup>
+              <FormGroup style={{ gridColumn: "1 / -1" }}>
+                <Label>Account Type</Label>
+                <Select
+                  name="userType"
+                  value={formData.userType}
+                  onChange={handleInputChange}
+                  disabled={!isEditing}
+                >
+                  <option value="individual">Individual</option>
+                  <option value="business">Business/Organization</option>
+                </Select>
+              </FormGroup>
 
-                  <ButtonRow>
-                    {isEditing ? (
-                      <>
-                        <CancelButton onClick={handleCancel}>
-                          Cancel
-                        </CancelButton>
-                        <SaveButton onClick={handleSave} disabled={loading}>
-                          {loading ? (
-                            <LoadingSpinner size="small" />
-                          ) : (
-                            "Save Changes"
-                          )}
-                        </SaveButton>
-                      </>
-                    ) : (
-                      <SaveButton onClick={() => setIsEditing(true)}>
-                        Edit Profile
-                      </SaveButton>
+              <FormGroup style={{ gridColumn: "1 / -1" }}>
+                <Label>Bio</Label>
+                <TextArea
+                  name="bio"
+                  value={formData.bio}
+                  onChange={handleInputChange}
+                  placeholder="Tell others about yourself..."
+                  disabled={!isEditing}
+                  rows="4"
+                />
+              </FormGroup>
+            </FormGrid>
+          )}
+
+          {activeTab === "badges" && (
+            <BadgesSection>
+              {badges.map((badge) => (
+                <BadgeCard key={badge.id} $unlocked={badge.unlocked}>
+                  <BadgeIcon>{badge.icon}</BadgeIcon>
+                  <BadgeName>{badge.name}</BadgeName>
+                  <BadgeDescription>{badge.description}</BadgeDescription>
+                </BadgeCard>
+              ))}
+            </BadgesSection>
+          )}
+
+          {activeTab === "ratings" && (
+            <RatingsSection>
+              {ratings.length > 0 ? (
+                ratings.map((rating, index) => (
+                  <RatingCard key={index}>
+                    <RatingHeader>
+                      <RaterInfo>
+                        <RaterAvatar>
+                          {rating.raterName?.[0] || "?"}
+                        </RaterAvatar>
+                        <div>
+                          <RaterName>
+                            {rating.raterName || "Anonymous User"}
+                          </RaterName>
+                          <RatingDate>
+                            {formatDate(rating.createdAt)}
+                          </RatingDate>
+                        </div>
+                      </RaterInfo>
+                      <Stars>{renderStars(rating.rating)}</Stars>
+                    </RatingHeader>
+                    {rating.comment && (
+                      <RatingComment>"{rating.comment}"</RatingComment>
                     )}
-                  </ButtonRow>
-                </ProfileForm>
-              </EditProfileSection>
-            )}
-
-            {activeTab === "ratings" && (
-              <RatingsSection>
-                {loading ? (
-                  <LoadingSpinner />
-                ) : ratings.length > 0 ? (
-                  ratings.map((rating, index) => (
-                    <RatingItem key={index}>
-                      <RatingHeader>
-                        <RatingUser>
-                          {rating.raterName || "Anonymous User"}
-                        </RatingUser>
-                        <RatingDate>{formatDate(rating.createdAt)}</RatingDate>
-                      </RatingHeader>
-                      <RatingStars>{renderStars(rating.rating)}</RatingStars>
-                      {rating.comment && (
-                        <RatingComment>"{rating.comment}"</RatingComment>
-                      )}
-                    </RatingItem>
-                  ))
-                ) : (
-                  <div
-                    style={{
-                      textAlign: "center",
-                      padding: "2rem",
-                      color: "#64748b",
-                    }}
-                  >
-                    No reviews yet
+                  </RatingCard>
+                ))
+              ) : (
+                <div
+                  style={{
+                    textAlign: "center",
+                    padding: "4rem 2rem",
+                    color: "#a0aec0",
+                  }}
+                >
+                  <div style={{ fontSize: "4rem", marginBottom: "1rem" }}>
+                    ⭐
                   </div>
-                )}
-              </RatingsSection>
-            )}
-          </TabContent>
-        </ProfileContent>
+                  <h3 style={{ color: "#4a5568", marginBottom: "0.5rem" }}>
+                    No reviews yet
+                  </h3>
+                  <p>Complete donations to receive reviews from recipients</p>
+                </div>
+              )}
+            </RatingsSection>
+          )}
+        </TabContent>
       </ProfileCard>
     </ProfileContainer>
   );

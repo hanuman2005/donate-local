@@ -1,42 +1,77 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from "../../context/AuthContext";
 import { useSocket } from "../../context/SocketContext";
 import { chatAPI } from "../../services/api";
+
 import {
   ChatContainer,
-  ChatSidebar,
+  Sidebar,
+  SidebarHeader,
+  SidebarTitle,
+  SearchInput,
   ChatList,
   ChatItem,
-  ChatAvatar,
+  Avatar,
   ChatInfo,
   ChatName,
-  ChatLastMessage,
-  ChatTime,
-  ChatBadge,
-  ChatMain,
+  LastMessage,
+  UnreadBadge,
+  OnlineIndicator,
+  MainChat,
   ChatHeader,
-  ChatHeaderInfo,
-  ChatHeaderName,
-  ChatHeaderStatus,
-  MessagesContainer,
-  MessageGroup,
+  BackButton,
+  HeaderInfo,
+  HeaderName,
+  HeaderStatus,
+  TypingIndicator,
+  MessagesArea,
+  DateDivider,
   MessageBubble,
+  MessageAvatar,
   MessageContent,
+  MessageText,
   MessageTime,
+  InputArea,
+  InputForm,
+  InputWrapper,
+  IconButton,
   MessageInput,
-  InputContainer,
-  MessageTextarea,
   SendButton,
   EmptyState,
+  EmptyIcon,
+  EmptyTitle,
+  EmptyText,
+  ChatMeta,
+  TimeStamp,
   LoadingSpinner,
 } from "./styledComponents";
 
-// ----------------- Utility Functions -------------------
+// ==================== UTILITY FUNCTIONS ====================
+
 const formatTime = (timestamp) => {
-  if (!timestamp) return '';
+  if (!timestamp) return "";
   return new Date(timestamp).toLocaleTimeString("en-US", {
     hour: "2-digit",
     minute: "2-digit",
+  });
+};
+
+const formatDate = (timestamp) => {
+  if (!timestamp) return "";
+  const date = new Date(timestamp);
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+
+  if (date.toDateString() === today.toDateString()) return "Today";
+  if (date.toDateString() === yesterday.toDateString()) return "Yesterday";
+
+  return date.toLocaleDateString("en-US", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
   });
 };
 
@@ -57,11 +92,12 @@ const getOtherParticipant = (chat, userId) => {
 
 const getLastMessage = (chat) => {
   if (!chat?.lastMessage) return "No messages yet";
-  const content = chat.lastMessage.content || '';
-  return content.length > 50 ? `${content.substring(0, 50)}...` : content;
+  const content = chat.lastMessage.content || "";
+  return content.length > 40 ? `${content.substring(0, 40)}...` : content;
 };
 
-// ----------------- Main Component -------------------
+// ==================== MAIN COMPONENT ====================
+
 const Chat = ({
   chats = [],
   selectedChat = null,
@@ -72,36 +108,82 @@ const Chat = ({
   const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [currentChat, setCurrentChat] = useState(selectedChat);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
+  const [showSidebar, setShowSidebar] = useState(true);
+  const [allChats, setAllChats] = useState(chats);
   const messagesEndRef = useRef(null);
+  const inputRef = useRef(null);
+  const navigate = useNavigate();
+  const { chatId } = useParams();
 
   const { user } = useAuth();
   const { socket, isConnected, joinChat, leaveChat } = useSocket();
 
-  // ----------------- Socket Events -------------------
+  // ==================== FETCH CHATS ====================
+  
+  useEffect(() => {
+    if (!compact && chats.length === 0) {
+      fetchChats();
+    } else {
+      setAllChats(chats);
+    }
+  }, [compact, chats]);
+
+  const fetchChats = async () => {
+    try {
+      const response = await chatAPI.getUserChats();
+      const fetchedChats = response.data.chats || response.data.data || [];
+      setAllChats(fetchedChats);
+    } catch (error) {
+      console.error('Error fetching chats:', error);
+    }
+  };
+
+  // ==================== LOAD CHAT FROM URL ====================
+
+  useEffect(() => {
+    if (chatId && allChats.length > 0) {
+      const chat = allChats.find(c => c._id === chatId);
+      if (chat && (!currentChat || currentChat._id !== chatId)) {
+        setCurrentChat(chat);
+        loadMessages(chatId);
+        setShowSidebar(false);
+      }
+    }
+  }, [chatId, allChats, currentChat]);
+
+  // ==================== AUTO-ADJUST TEXTAREA ====================
+
+  const adjustTextareaHeight = () => {
+    const textarea = inputRef.current;
+    if (textarea) {
+      textarea.style.height = "auto";
+      textarea.style.height = Math.min(textarea.scrollHeight, 120) + "px";
+    }
+  };
+
+  // ==================== SOCKET EVENTS ====================
+
   useEffect(() => {
     if (!currentChat || !socket || !isConnected) return;
 
-    // Join the chat room
     joinChat(currentChat._id);
 
-    // Listen for new messages
     const handleNewMessage = (message) => {
       if (message.chat === currentChat._id) {
         setMessages((prev) => {
-          // Prevent duplicates by checking _id or tempId
           const exists = prev.some((m) => {
             if (m._id && message._id) return m._id === message._id;
             if (m.tempId && message.tempId) return m.tempId === message.tempId;
-            // Check by content + sender + approximate time (within 2 seconds)
             return (
               m.content === message.content &&
               (m.sender === message.sender || m.sender?._id === message.sender) &&
               Math.abs(new Date(m.timestamp) - new Date(message.timestamp)) < 2000
             );
           });
-          
+
           if (exists) {
-            // Replace optimistic message with real one
             return prev.map((m) => {
               if (m.tempId && message.content === m.content) {
                 return message;
@@ -109,37 +191,46 @@ const Chat = ({
               return m;
             });
           }
-          
+
           return [...prev, message];
         });
       }
     };
 
-    socket.on("newMessage", handleNewMessage);
-    socket.on("receiveMessage", handleNewMessage); // Backup event name
+    const handleTyping = (data) => {
+      if (data.chatId === currentChat._id && data.userId !== user._id) {
+        setIsTyping(true);
+        setTimeout(() => setIsTyping(false), 3000);
+      }
+    };
 
-    // Cleanup
+    socket.on("newMessage", handleNewMessage);
+    socket.on("receiveMessage", handleNewMessage);
+    socket.on("userTyping", handleTyping);
+
     return () => {
       leaveChat(currentChat._id);
       socket.off("newMessage", handleNewMessage);
       socket.off("receiveMessage", handleNewMessage);
+      socket.off("userTyping", handleTyping);
     };
-  }, [currentChat, socket, isConnected, joinChat, leaveChat]);
+  }, [currentChat, socket, isConnected, joinChat, leaveChat, user]);
 
-  // ----------------- Scroll to latest -------------------
+  // ==================== SCROLL TO BOTTOM ====================
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // ----------------- Load messages API -------------------
+  // ==================== LOAD MESSAGES ====================
+
   const loadMessages = useCallback(
     async (chatId) => {
       if (!chatId) return;
-      
+
       setLoading(true);
       try {
         const response = await chatAPI.getMessages(chatId);
-        // Ensure this response is still relevant
         if (chatId === currentChat?._id) {
           setMessages(response.data.messages || []);
         }
@@ -153,28 +244,42 @@ const Chat = ({
     [currentChat?._id]
   );
 
-  // Load messages when selectedChat changes
   useEffect(() => {
     if (selectedChat && selectedChat._id !== currentChat?._id) {
       setCurrentChat(selectedChat);
       loadMessages(selectedChat._id);
+      setShowSidebar(false);
     }
   }, [selectedChat, currentChat?._id, loadMessages]);
 
-  // ----------------- Select chat -------------------
+  // ==================== HANDLE CHAT SELECTION ====================
+
   const handleChatSelect = (chat) => {
     if (chat._id === currentChat?._id) return;
-    
+
     setCurrentChat(chat);
     setMessages([]);
     loadMessages(chat._id);
-    
+    setShowSidebar(false);
+
     if (onChatSelect) {
       onChatSelect(chat);
     }
   };
 
-  // ----------------- Send Message -------------------
+  // ==================== HANDLE TYPING ====================
+
+  const handleTyping = () => {
+    if (socket && currentChat) {
+      socket.emit("typing", {
+        chatId: currentChat._id,
+        userId: user._id,
+      });
+    }
+  };
+
+  // ==================== SEND MESSAGE ====================
+
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!newMessage.trim() || !currentChat) return;
@@ -182,7 +287,6 @@ const Chat = ({
     const messageText = newMessage.trim();
     const tempId = `temp-${Date.now()}-${Math.random()}`;
 
-    // Optimistic message object
     const optimisticMessage = {
       tempId,
       content: messageText,
@@ -192,28 +296,26 @@ const Chat = ({
       pending: true,
     };
 
-    // Add optimistic message immediately
     setMessages((prev) => [...prev, optimisticMessage]);
     setNewMessage("");
 
+    if (inputRef.current) {
+      inputRef.current.style.height = "auto";
+    }
+
     try {
-      // Send via API - backend will broadcast via socket to all participants
       const response = await chatAPI.sendMessage(currentChat._id, {
         content: messageText,
       });
 
-      // Replace optimistic message with real one
       if (response.data.message) {
         setMessages((prev) =>
-          prev.map((m) =>
-            m.tempId === tempId ? response.data.message : m
-          )
+          prev.map((m) => (m.tempId === tempId ? response.data.message : m))
         );
       }
     } catch (error) {
       console.error("Error sending message:", error);
-      
-      // Mark message as failed
+
       setMessages((prev) =>
         prev.map((m) =>
           m.tempId === tempId ? { ...m, failed: true, pending: false } : m
@@ -222,10 +324,22 @@ const Chat = ({
     }
   };
 
-  // ----------------- Compact Mode -------------------
+  // ==================== FILTER CHATS ====================
+
+  const chatsToDisplay = compact ? chats : allChats;
+  const filteredChats = chatsToDisplay.filter((chat) => {
+    if (!searchQuery) return true;
+    const otherUser = getOtherParticipant(chat, user._id);
+    if (!otherUser) return false;
+    const name = `${otherUser.firstName} ${otherUser.lastName}`.toLowerCase();
+    return name.includes(searchQuery.toLowerCase());
+  });
+
+  // ==================== COMPACT MODE ====================
+
   if (compact) {
     return (
-      <ChatContainer compact>
+      <ChatContainer $compact>
         <ChatList>
           {chats.length > 0 ? (
             chats.slice(0, 5).map((chat) => {
@@ -235,34 +349,43 @@ const Chat = ({
               return (
                 <ChatItem
                   key={chat._id}
-                  onClick={() => handleChatSelect(chat)}
-                  active={currentChat?._id === chat._id}
+                  onClick={() => {
+                    console.log("🔍 Chat clicked:", chat);
+                    navigate(`/chat/${chat._id}`);
+                  }}
+                  $active={currentChat?._id === chat._id}
+                  style={{ cursor: "pointer" }}
                 >
-                  <ChatAvatar>
+                  <Avatar $active={currentChat?._id === chat._id}>
                     {otherUser.avatar ? (
                       <img src={otherUser.avatar} alt={otherUser.firstName} />
                     ) : (
                       <span>
-                        {otherUser.firstName?.[0] || '?'}
-                        {otherUser.lastName?.[0] || ''}
+                        {otherUser.firstName?.[0] || "?"}
+                        {otherUser.lastName?.[0] || ""}
                       </span>
                     )}
-                  </ChatAvatar>
+                  </Avatar>
                   <ChatInfo>
                     <ChatName>
                       {otherUser.firstName} {otherUser.lastName}
                     </ChatName>
-                    <ChatLastMessage>{getLastMessage(chat)}</ChatLastMessage>
+                    <LastMessage $active={currentChat?._id === chat._id}>
+                      {getLastMessage(chat)}
+                    </LastMessage>
                   </ChatInfo>
                   {chat.unreadCount > 0 && (
-                    <ChatBadge>{chat.unreadCount}</ChatBadge>
+                    <UnreadBadge $active={currentChat?._id === chat._id}>
+                      {chat.unreadCount}
+                    </UnreadBadge>
                   )}
                 </ChatItem>
               );
             })
           ) : (
             <EmptyState>
-              <p>No conversations</p>
+              <EmptyIcon>💬</EmptyIcon>
+              <EmptyText>No conversations</EmptyText>
             </EmptyState>
           )}
         </ChatList>
@@ -270,29 +393,27 @@ const Chat = ({
     );
   }
 
-  // ----------------- Full Mode -------------------
+  // ==================== FULL MODE ====================
+
   const otherUser = currentChat ? getOtherParticipant(currentChat, user._id) : null;
 
   return (
     <ChatContainer>
-      {/* Sidebar */}
-      <ChatSidebar>
-        <div style={{ padding: "1rem", borderBottom: "1px solid #e2e8f0" }}>
-          <h3
-            style={{
-              margin: 0,
-              fontSize: "1.1rem",
-              fontWeight: "600",
-              color: "#2d3748",
-            }}
-          >
-            Messages
-          </h3>
-        </div>
+      {/* ==================== SIDEBAR ==================== */}
+      <Sidebar $hidden={!showSidebar}>
+        <SidebarHeader>
+          <SidebarTitle>💬 Messages</SidebarTitle>
+          <SearchInput
+            type="text"
+            placeholder="Search conversations..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </SidebarHeader>
 
         <ChatList>
-          {chats.length > 0 ? (
-            chats.map((chat) => {
+          {filteredChats.length > 0 ? (
+            filteredChats.map((chat) => {
               const chatOtherUser = getOtherParticipant(chat, user._id);
               if (!chatOtherUser) return null;
 
@@ -300,70 +421,89 @@ const Chat = ({
                 <ChatItem
                   key={chat._id}
                   onClick={() => handleChatSelect(chat)}
-                  active={currentChat?._id === chat._id}
+                  $active={currentChat?._id === chat._id}
                 >
-                  <ChatAvatar>
+                  <Avatar $active={currentChat?._id === chat._id}>
                     {chatOtherUser.avatar ? (
-                      <img src={chatOtherUser.avatar} alt={chatOtherUser.firstName} />
+                      <img
+                        src={chatOtherUser.avatar}
+                        alt={chatOtherUser.firstName}
+                      />
                     ) : (
                       <span>
-                        {chatOtherUser.firstName?.[0] || '?'}
-                        {chatOtherUser.lastName?.[0] || ''}
+                        {chatOtherUser.firstName?.[0] || "?"}
+                        {chatOtherUser.lastName?.[0] || ""}
                       </span>
                     )}
-                  </ChatAvatar>
+                    {isConnected && <OnlineIndicator />}
+                  </Avatar>
                   <ChatInfo>
                     <ChatName>
                       {chatOtherUser.firstName} {chatOtherUser.lastName}
                     </ChatName>
-                    <ChatLastMessage>{getLastMessage(chat)}</ChatLastMessage>
-                    {chat.lastMessage && (
-                      <ChatTime>
-                        {formatTime(chat.lastMessage.timestamp)}
-                      </ChatTime>
-                    )}
+                    <LastMessage $active={currentChat?._id === chat._id}>
+                      {getLastMessage(chat)}
+                    </LastMessage>
                   </ChatInfo>
-                  {chat.unreadCount > 0 && (
-                    <ChatBadge>{chat.unreadCount}</ChatBadge>
-                  )}
+                  <ChatMeta>
+                    {chat.lastMessage && (
+                      <TimeStamp>
+                        {formatTime(chat.lastMessage.timestamp)}
+                      </TimeStamp>
+                    )}
+                    {chat.unreadCount > 0 && (
+                      <UnreadBadge $active={currentChat?._id === chat._id}>
+                        {chat.unreadCount}
+                      </UnreadBadge>
+                    )}
+                  </ChatMeta>
                 </ChatItem>
               );
             })
           ) : (
             <EmptyState>
-              <p>No conversations yet</p>
+              <EmptyIcon>🔍</EmptyIcon>
+              <EmptyText>
+                {searchQuery ? "No conversations found" : "No conversations yet"}
+              </EmptyText>
             </EmptyState>
           )}
         </ChatList>
-      </ChatSidebar>
+      </Sidebar>
 
-      {/* Main Chat Area */}
-      <ChatMain>
+      {/* ==================== MAIN CHAT ==================== */}
+      <MainChat $hidden={showSidebar}>
         {currentChat && otherUser ? (
           <>
+            {/* ==================== CHAT HEADER ==================== */}
             <ChatHeader>
-              <ChatAvatar>
+              <BackButton onClick={() => setShowSidebar(true)}>←</BackButton>
+              <Avatar>
                 {otherUser.avatar ? (
                   <img src={otherUser.avatar} alt={otherUser.firstName} />
                 ) : (
                   <span>
-                    {otherUser.firstName?.[0] || '?'}
-                    {otherUser.lastName?.[0] || ''}
+                    {otherUser.firstName?.[0] || "?"}
+                    {otherUser.lastName?.[0] || ""}
                   </span>
                 )}
-              </ChatAvatar>
-              <ChatHeaderInfo>
-                <ChatHeaderName>
+              </Avatar>
+              <HeaderInfo>
+                <HeaderName>
                   {otherUser.firstName} {otherUser.lastName}
-                </ChatHeaderName>
-                <ChatHeaderStatus>
-                  {isConnected ? 'Online' : 'Offline'}
-                </ChatHeaderStatus>
-              </ChatHeaderInfo>
+                </HeaderName>
+                {isTyping ? (
+                  <TypingIndicator>typing...</TypingIndicator>
+                ) : (
+                  <HeaderStatus $online={isConnected}>
+                    {isConnected ? "Online" : "Offline"}
+                  </HeaderStatus>
+                )}
+              </HeaderInfo>
             </ChatHeader>
 
-            {/* Messages */}
-            <MessagesContainer>
+            {/* ==================== MESSAGES AREA ==================== */}
+            <MessagesArea>
               {loading ? (
                 <div
                   style={{
@@ -376,71 +516,103 @@ const Chat = ({
                 </div>
               ) : messages.length === 0 ? (
                 <EmptyState>
-                  <p>No messages yet. Start the conversation!</p>
+                  <EmptyIcon>💬</EmptyIcon>
+                  <EmptyTitle>No messages yet</EmptyTitle>
+                  <EmptyText>Start the conversation!</EmptyText>
+                  <div
+                    style={{
+                      marginTop: "2rem",
+                      padding: "1rem",
+                      background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                      borderRadius: "12px",
+                      color: "white",
+                      maxWidth: "400px",
+                      margin: "2rem auto 0",
+                    }}
+                  >
+                    <p style={{ margin: 0, fontSize: "0.9rem" }}>
+                      💡 <strong>Tip:</strong> Type your message in the box below and
+                      press Enter or click 📤 to send
+                    </p>
+                  </div>
                 </EmptyState>
               ) : (
                 Object.entries(groupMessagesByDate(messages)).map(
                   ([date, dayMessages]) => (
-                    <MessageGroup key={date}>
-                      <div
-                        style={{
-                          textAlign: "center",
-                          margin: "1rem 0",
-                          color: "#64748b",
-                          fontSize: "0.85rem",
-                        }}
-                      >
-                        {new Date(date).toLocaleDateString("en-US", {
-                          weekday: "long",
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
-                        })}
-                      </div>
+                    <div key={date}>
+                      <DateDivider>
+                        <span>{formatDate(new Date(date))}</span>
+                      </DateDivider>
 
                       {dayMessages.map((message, index) => {
                         const isOwn =
                           message.sender === user._id ||
                           message.sender?._id === user._id;
 
+                        const showAvatar =
+                          index === 0 ||
+                          dayMessages[index - 1]?.sender !== message.sender;
+
                         return (
                           <MessageBubble
                             key={message._id || message.tempId || index}
-                            isOwn={isOwn}
+                            $isOwn={isOwn}
                           >
-                            <MessageContent isOwn={isOwn}>
-                              {message.content}
-                              {message.pending && !message.failed && (
-                                <span style={{ marginLeft: 8, opacity: 0.6 }}>
-                                  ⏳
-                                </span>
-                              )}
-                              {message.failed && (
-                                <span style={{ color: "#ef4444", marginLeft: 8 }}>
-                                  ✗ Failed
-                                </span>
-                              )}
+                            {!isOwn && showAvatar && (
+                              <MessageAvatar>
+                                {otherUser.avatar ? (
+                                  <img
+                                    src={otherUser.avatar}
+                                    alt={otherUser.firstName}
+                                  />
+                                ) : (
+                                  <span>
+                                    {otherUser.firstName?.[0]}
+                                    {otherUser.lastName?.[0]}
+                                  </span>
+                                )}
+                              </MessageAvatar>
+                            )}
+                            {!isOwn && !showAvatar && (
+                              <div style={{ width: "35px" }} />
+                            )}
+                            <MessageContent $isOwn={isOwn}>
+                              <MessageText
+                                $isOwn={isOwn}
+                                $pending={message.pending}
+                                $failed={message.failed}
+                              >
+                                {message.content}
+                              </MessageText>
+                              <MessageTime>
+                                {formatTime(message.timestamp)}
+                              </MessageTime>
                             </MessageContent>
-                            <MessageTime>
-                              {formatTime(message.timestamp)}
-                            </MessageTime>
                           </MessageBubble>
                         );
                       })}
-                    </MessageGroup>
+                    </div>
                   )
                 )
               )}
               <div ref={messagesEndRef} />
-            </MessagesContainer>
+            </MessagesArea>
 
-            {/* Input */}
-            <InputContainer>
-              <form onSubmit={handleSendMessage} style={{ width: '100%' }}>
-                <MessageInput>
-                  <MessageTextarea
+            {/* ==================== INPUT AREA ==================== */}
+            <InputArea>
+              <InputForm onSubmit={handleSendMessage}>
+                <InputWrapper>
+                  <IconButton type="button" title="Attach file">
+                    📎
+                  </IconButton>
+                  <MessageInput
+                    ref={inputRef}
                     value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
+                    onChange={(e) => {
+                      setNewMessage(e.target.value);
+                      adjustTextareaHeight();
+                      handleTyping();
+                    }}
                     placeholder="Type your message..."
                     rows="1"
                     onKeyDown={(e) => {
@@ -451,25 +623,28 @@ const Chat = ({
                     }}
                     disabled={!isConnected}
                   />
-                  <SendButton 
-                    type="submit" 
-                    disabled={!newMessage.trim() || !isConnected}
-                    title={!isConnected ? "Disconnected from chat server" : "Send message"}
-                  >
-                    📤
-                  </SendButton>
-                </MessageInput>
-              </form>
-            </InputContainer>
+                  <IconButton type="button" title="Add emoji">
+                    😊
+                  </IconButton>
+                </InputWrapper>
+                <SendButton
+                  type="submit"
+                  disabled={!newMessage.trim() || !isConnected}
+                  title={!isConnected ? "Disconnected" : "Send message"}
+                >
+                  {isConnected ? "📤" : "⚠️"}
+                </SendButton>
+              </InputForm>
+            </InputArea>
           </>
         ) : (
           <EmptyState>
-            <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>💬</div>
-            <h3>Select a conversation</h3>
-            <p>Choose a conversation from the sidebar to start chatting</p>
+            <EmptyIcon>💬</EmptyIcon>
+            <EmptyTitle>Select a conversation</EmptyTitle>
+            <EmptyText>Choose from the sidebar to start chatting</EmptyText>
           </EmptyState>
         )}
-      </ChatMain>
+      </MainChat>
     </ChatContainer>
   );
 };
