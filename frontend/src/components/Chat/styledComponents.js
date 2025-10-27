@@ -3,12 +3,18 @@ import styled from "styled-components";
 export const ChatContainer = styled.div`
   display: grid;
   grid-template-columns: ${(props) => (props.$compact ? "1fr" : "350px 1fr")};
-  height: ${(props) => (props.$compact ? "auto" : "calc(100vh - 80px)")};
-  background: #f8fafc;
+  height: ${(props) => (props.$compact ? "auto" : "calc(100vh - 120px)")};
+  max-width: 1400px;
+  margin: 2rem auto;
+  background: white;
+  border-radius: 20px;
   overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 
   @media (max-width: 968px) {
     grid-template-columns: 1fr;
+    height: calc(100vh - 80px);
+    margin: 1rem;
   }
 `;
 
@@ -17,7 +23,7 @@ export const Sidebar = styled.div`
   border-right: 1px solid #e2e8f0;
   display: flex;
   flex-direction: column;
-  overflow: auto;
+  overflow: hidden;
 
   @media (max-width: 968px) {
     display: ${(props) => (props.$hidden ? "none" : "flex")};
@@ -29,6 +35,7 @@ export const SidebarHeader = styled.div`
   border-bottom: 1px solid #e2e8f0;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
+  flex-shrink: 0;
 `;
 
 export const SidebarTitle = styled.h2`
@@ -183,6 +190,8 @@ export const MainChat = styled.div`
   flex-direction: column;
   background: white;
   position: relative;
+  height: 100%;
+  overflow: hidden;
 
   @media (max-width: 968px) {
     display: ${(props) => (props.$hidden ? "none" : "flex")};
@@ -198,6 +207,7 @@ export const ChatHeader = styled.div`
   background: white;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
   z-index: 10;
+  flex-shrink: 0;
 `;
 
 export const BackButton = styled.button`
@@ -266,6 +276,7 @@ export const MessagesArea = styled.div`
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  min-height: 0;
 
   &::-webkit-scrollbar {
     width: 8px;
@@ -390,6 +401,7 @@ export const InputArea = styled.div`
   padding: 1.5rem;
   border-top: 1px solid #e2e8f0;
   background: white;
+  flex-shrink: 0;
 `;
 
 export const InputForm = styled.form`
