@@ -1,5 +1,5 @@
 // ============================================
-// models/Listing.js - FIXED
+// models/Listing.js - WITH QR VERIFICATION
 // ============================================
 const mongoose = require("mongoose");
 
@@ -29,19 +29,16 @@ const listingSchema = new mongoose.Schema(
         "other",
       ],
     },
-    // ✅ FIXED: Changed from String to Number
     quantity: {
       type: Number,
       required: [true, "Quantity is required"],
       min: [0, "Quantity cannot be negative"],
     },
-    // ✅ ADDED: Unit field
     unit: {
       type: String,
       enum: ['items', 'kg', 'lbs', 'bags', 'boxes', 'servings'],
       default: 'items',
     },
-    // ✅ FIXED: Changed to array of strings to match frontend
     images: [String],
     donor: {
       type: mongoose.Schema.Types.ObjectId,
@@ -55,7 +52,7 @@ const listingSchema = new mongoose.Schema(
         default: "Point",
       },
       coordinates: {
-        type: [Number], // [longitude, latitude]
+        type: [Number],
         required: true,
         validate: {
           validator: function(v) {
@@ -67,7 +64,6 @@ const listingSchema = new mongoose.Schema(
         }
       },
     },
-    // ✅ ADDED: pickupLocation as string (what frontend sends)
     pickupLocation: {
       type: String,
       required: [true, "Pickup location is required"],
@@ -87,7 +83,6 @@ const listingSchema = new mongoose.Schema(
       type: Date,
       required: false,
     },
-    // ✅ RENAMED: From pickupInstructions to additionalNotes (matches frontend)
     additionalNotes: {
       type: String,
       maxlength: [500, "Additional notes cannot exceed 500 characters"],
@@ -114,8 +109,32 @@ const listingSchema = new mongoose.Schema(
     },
     urgency: {
       type: Number,
-      enum: [1, 2, 3], // 1 = low, 2 = medium, 3 = high
+      enum: [1, 2, 3],
       default: 1,
+    },
+    
+    // ✅ NEW: QR Verification Fields
+    qrCode: {
+      data: String,           // Encrypted QR data
+      secret: String,         // Secret key for verification
+      generatedAt: Date,      // When QR was created
+      expiresAt: Date,        // QR expiry time (24 hours)
+      isUsed: {
+        type: Boolean,
+        default: false
+      },
+      usedAt: Date,          // When QR was scanned
+      scannedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User"
+      }
+    },
+    
+    // ✅ NEW: Verification Status
+    verificationStatus: {
+      type: String,
+      enum: ["not_generated", "pending", "verified", "expired"],
+      default: "not_generated"
     },
   },
   {
@@ -123,12 +142,14 @@ const listingSchema = new mongoose.Schema(
   }
 );
 
-// Index for geospatial queries
+// Indexes
 listingSchema.index({ location: "2dsphere" });
 listingSchema.index({ category: 1 });
 listingSchema.index({ status: 1 });
 listingSchema.index({ createdAt: -1 });
 listingSchema.index({ urgency: -1 });
 listingSchema.index({ donor: 1 });
+listingSchema.index({ assignedTo: 1 });
+listingSchema.index({ "qrCode.secret": 1 }); // ✅ NEW: For QR lookup
 
 module.exports = mongoose.model("Listing", listingSchema);
