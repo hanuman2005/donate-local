@@ -1,236 +1,220 @@
-// src/components/QRCode/index.jsx
-
-import React, { useRef, useState } from 'react';
-import styled from 'styled-components';
-import { QRCodeCanvas } from 'qrcode.react';
+// src/components/QRCode/QRGenerator.jsx
+import React, { useState, useEffect } from 'react';
+import { qrAPI } from '../../services/api';
 import { toast } from 'react-toastify';
+import {
+  QRContainer,
+  QRWrapper,
+  QRImage,
+  Title,
+  Description,
+  Button,
+  InfoCard,
+  InfoRow,
+  Label,
+  Value,
+  LoadingSpinner,
+  Actions,
+  StatusBadge,
+  ExpiryTimer
+} from './styledComponents';
 
-const QRContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
-  padding: 2rem;
-  background: var(--bg-secondary);
-  border-radius: 12px;
-  border: 1px solid var(--border-color);
-`;
+const QRGenerator = ({ listingId, recipientId, recipientName, listingTitle }) => {
+  const [loading, setLoading] = useState(false);
+  const [qrData, setQrData] = useState(null);
+  const [error, setError] = useState(null);
+  const [timeLeft, setTimeLeft] = useState(null);
 
-const QRWrapper = styled.div`
-  padding: 1.5rem;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-`;
-
-const Title = styled.h3`
-  color: var(--text-primary);
-  font-size: 1.25rem;
-  margin: 0;
-`;
-
-const Description = styled.p`
-  color: var(--text-secondary);
-  text-align: center;
-  margin: 0;
-  font-size: 0.9rem;
-  max-width: 300px;
-`;
-
-const ButtonGroup = styled.div`
-  display: flex;
-  gap: 0.75rem;
-  margin-top: 1rem;
-`;
-
-const Button = styled.button`
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  border: none;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.9rem;
-
-  ${props => props.$primary ? `
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-    color: white;
-    
-    &:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(240, 147, 251, 0.3);
+  useEffect(() => {
+    if (listingId && recipientId) {
+      generateQR();
     }
-  ` : `
-    background: var(--bg-primary);
-    color: var(--text-primary);
-    border: 2px solid var(--border-color);
-    
-    &:hover {
-      border-color: #f093fb;
-    }
-  `}
+  }, [listingId, recipientId]);
 
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
-  }
-`;
+  // Countdown timer
+  useEffect(() => {
+    if (qrData?.transaction?.expiresAt) {
+      const interval = setInterval(() => {
+        const now = new Date().getTime();
+        const expiry = new Date(qrData.transaction.expiresAt).getTime();
+        const diff = expiry - now;
 
-const InfoBox = styled.div`
-  background: ${props => props.$type === 'success' ? '#d1fae5' : '#fef3c7'};
-  color: ${props => props.$type === 'success' ? '#065f46' : '#92400e'};
-  padding: 0.75rem 1rem;
-  border-radius: 8px;
-  font-size: 0.85rem;
-  text-align: center;
-  max-width: 300px;
-  margin-top: 0.5rem;
-`;
-
-const QRCodeGenerator = ({ listing, onPickupComplete }) => {
-  const qrRef = useRef(null);
-  const [downloading, setDownloading] = useState(false);
-
-  // Generate pickup data
-  const pickupData = {
-    listingId: listing._id,
-    donorId: listing.donor._id,
-    title: listing.title,
-    quantity: `${listing.quantity} ${listing.unit}`,
-    pickupLocation: listing.pickupLocation,
-    expiryDate: listing.expiryDate,
-    timestamp: new Date().toISOString(),
-  };
-
-  const qrValue = JSON.stringify(pickupData);
-
-  // Download QR Code
-  const handleDownload = () => {
-    setDownloading(true);
-    try {
-      const canvas = qrRef.current.querySelector('canvas');
-      if (!canvas) {
-        throw new Error('QR Code canvas not found');
-      }
-
-      // Convert canvas to blob
-      canvas.toBlob((blob) => {
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `QR-${listing.title.replace(/\s+/g, '-')}-${Date.now()}.png`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-        
-        toast.success('QR Code downloaded successfully!');
-      });
-    } catch (error) {
-      console.error('Download error:', error);
-      toast.error('Failed to download QR Code');
-    } finally {
-      setDownloading(false);
-    }
-  };
-
-  // Share QR Code
-  const handleShare = async () => {
-    try {
-      const canvas = qrRef.current.querySelector('canvas');
-      if (!canvas) {
-        throw new Error('QR Code canvas not found');
-      }
-
-      canvas.toBlob(async (blob) => {
-        const file = new File([blob], 'pickup-qr-code.png', { type: 'image/png' });
-        
-        if (navigator.share && navigator.canShare({ files: [file] })) {
-          await navigator.share({
-            title: `Pickup QR Code - ${listing.title}`,
-            text: `Scan this QR code to confirm pickup of "${listing.title}"`,
-            files: [file]
-          });
-          toast.success('Shared successfully!');
+        if (diff <= 0) {
+          setTimeLeft('Expired');
+          clearInterval(interval);
         } else {
-          // Fallback: Copy to clipboard (if supported)
-          try {
-            const item = new ClipboardItem({ 'image/png': blob });
-            await navigator.clipboard.write([item]);
-            toast.success('QR Code copied to clipboard!');
-          } catch (err) {
-            toast.info('Sharing not supported. Please download instead.');
-          }
+          const hours = Math.floor(diff / (1000 * 60 * 60));
+          const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+          setTimeLeft(`${hours}h ${minutes}m`);
         }
-      });
-    } catch (error) {
-      console.error('Share error:', error);
-      toast.error('Failed to share QR Code');
+      }, 1000);
+
+      return () => clearInterval(interval);
+    }
+  }, [qrData]);
+
+  const generateQR = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await qrAPI.generateQR(listingId, recipientId);
+
+      if (response.data.success) {
+        setQrData(response.data);
+        toast.success('QR Code generated successfully!');
+      } else {
+        throw new Error(response.data.message);
+      }
+    } catch (err) {
+      const errorMsg = err.response?.data?.message || err.message || 'Failed to generate QR code';
+      setError(errorMsg);
+      toast.error(errorMsg);
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Copy pickup details
-  const handleCopyDetails = () => {
-    const details = `
-Pickup Details:
-📦 Item: ${listing.title}
-📊 Quantity: ${listing.quantity} ${listing.unit}
-📍 Location: ${listing.pickupLocation}
-📅 Valid until: ${new Date(listing.expiryDate).toLocaleDateString()}
+  const handleDownload = async () => {
+    try {
+      const response = await qrAPI.downloadQR(qrData.transaction.id);
+      
+      // Create blob and download
+      const blob = new Blob([response.data], { type: 'image/png' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `qr-code-${qrData.transaction.id}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
 
-Show this QR code when picking up the item!
-    `.trim();
-
-    navigator.clipboard.writeText(details).then(() => {
-      toast.success('Pickup details copied!');
-    }).catch(() => {
-      toast.error('Failed to copy details');
-    });
+      toast.success('QR Code downloaded!');
+    } catch (error) {
+      toast.error('Failed to download QR code');
+    }
   };
+
+  const handleShare = async () => {
+    if (navigator.share && qrData?.qrCodeImage) {
+      try {
+        // Convert data URL to blob
+        const response = await fetch(qrData.qrCodeImage);
+        const blob = await response.blob();
+        const file = new File([blob], 'qr-code.png', { type: 'image/png' });
+
+        await navigator.share({
+          title: 'Pickup QR Code',
+          text: `QR Code for: ${listingTitle}`,
+          files: [file]
+        });
+
+        toast.success('Shared successfully!');
+      } catch (error) {
+        if (error.name !== 'AbortError') {
+          toast.error('Failed to share');
+        }
+      }
+    } else {
+      // Fallback: copy to clipboard
+      toast.info('Share not supported. QR code copied to clipboard!');
+    }
+  };
+
+  const handleRefresh = () => {
+    generateQR();
+  };
+
+  if (loading) {
+    return (
+      <QRContainer>
+        <LoadingSpinner />
+        <Description>Generating your secure QR code...</Description>
+      </QRContainer>
+    );
+  }
+
+  if (error) {
+    return (
+      <QRContainer>
+        <StatusBadge $status="error">❌ Error</StatusBadge>
+        <Description>{error}</Description>
+        <Button onClick={handleRefresh} $primary>
+          🔄 Try Again
+        </Button>
+      </QRContainer>
+    );
+  }
+
+  if (!qrData) {
+    return (
+      <QRContainer>
+        <Description>Ready to generate QR code</Description>
+        <Button onClick={generateQR} $primary>
+          Generate QR Code
+        </Button>
+      </QRContainer>
+    );
+  }
 
   return (
     <QRContainer>
-      <Title>📱 Pickup QR Code</Title>
-      <Description>
-        Share this QR code with the recipient. They scan it during pickup to confirm the transaction.
-      </Description>
-
-      <QRWrapper ref={qrRef}>
-        <QRCodeCanvas
-          value={qrValue}
-          size={200}
-          level="H"
-          includeMargin={true}
-          imageSettings={{
-            src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='50' font-size='80' text-anchor='middle' x='50'%3E🍎%3C/text%3E%3C/svg%3E",
-            height: 24,
-            width: 24,
-            excavate: true,
-          }}
+      <Title>✅ QR Code Generated!</Title>
+      
+      <QRWrapper>
+        <QRImage 
+          src={qrData.qrCodeImage} 
+          alt="Pickup QR Code" 
         />
       </QRWrapper>
 
-      <ButtonGroup>
-        <Button $primary onClick={handleDownload} disabled={downloading}>
-          {downloading ? '⏳' : '📥'} Download
+      <InfoCard>
+        <InfoRow>
+          <Label>📦 Item:</Label>
+          <Value>{listingTitle}</Value>
+        </InfoRow>
+        
+        <InfoRow>
+          <Label>👤 Recipient:</Label>
+          <Value>{recipientName}</Value>
+        </InfoRow>
+
+        <InfoRow>
+          <Label>⏰ Expires in:</Label>
+          <ExpiryTimer $expired={timeLeft === 'Expired'}>
+            {timeLeft || 'Calculating...'}
+          </ExpiryTimer>
+        </InfoRow>
+
+        <InfoRow>
+          <Label>📍 Status:</Label>
+          <StatusBadge $status={qrData.transaction.status}>
+            {qrData.transaction.status.toUpperCase()}
+          </StatusBadge>
+        </InfoRow>
+      </InfoCard>
+
+      <Description>
+        📱 <strong>Instructions:</strong><br/>
+        1. Show this QR code to the recipient<br/>
+        2. They scan it with their camera<br/>
+        3. Transaction completes automatically!
+      </Description>
+
+      <Actions>
+        <Button onClick={handleDownload} $secondary>
+          💾 Download
         </Button>
-        <Button onClick={handleShare}>
+        <Button onClick={handleShare} $secondary>
           📤 Share
         </Button>
-        <Button onClick={handleCopyDetails}>
-          📋 Copy Details
+        <Button onClick={handleRefresh} $primary>
+          🔄 Regenerate
         </Button>
-      </ButtonGroup>
-
-      <InfoBox $type="warning">
-        💡 Tip: Keep this QR code ready for quick verification during pickup
-      </InfoBox>
+      </Actions>
     </QRContainer>
   );
 };
 
-export default QRCodeGenerator;
+export default QRGenerator;

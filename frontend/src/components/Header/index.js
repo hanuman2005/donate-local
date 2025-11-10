@@ -1,5 +1,5 @@
 // ============================================
-// src/components/Header/index.jsx - WITH ROLE-BASED ACCESS
+// src/components/Header/index.jsx - WITH NEW FEATURES
 // ============================================
 import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
@@ -146,6 +146,11 @@ const Header = () => {
             Listings
           </NavLink>
 
+          {/* 🆕 NEW: Community Impact (Public - Everyone can see) */}
+          <NavLink as={Link} to="/impact/community" $active={isActive("/impact/community")}>
+            Community
+          </NavLink>
+
           {user && (
             <>
               <NavLink
@@ -155,7 +160,8 @@ const Header = () => {
               >
                 Dashboard
               </NavLink>
-              {/* ✅ FIXED: Only show for donors */}
+              
+              {/* ✅ Only show for donors */}
               {isDonor && (
                 <NavLink
                   as={Link}
@@ -228,6 +234,27 @@ const Header = () => {
                     <DropdownItem onClick={handleProfileClick}>
                       <span>👤</span> Profile
                     </DropdownItem>
+
+                    {/* 🆕 NEW: Personal Impact */}
+                    <DropdownItem
+                      onClick={() => {
+                        setIsDropdownOpen(false);
+                        navigate("/impact/personal");
+                      }}
+                    >
+                       My Impact
+                    </DropdownItem>
+
+                    {/* 🆕 NEW: QR Scanner */}
+                    <DropdownItem
+                      onClick={() => {
+                        setIsDropdownOpen(false);
+                        navigate("/verify-pickup");
+                      }}
+                    >
+                      <span>📷</span> Scan QR
+                    </DropdownItem>
+
                     <DropdownItem onClick={handleNotificationsClick}>
                       <span>🔔</span> Notifications
                       {unreadCount > 0 && (
@@ -236,7 +263,8 @@ const Header = () => {
                         </NotificationBadge>
                       )}
                     </DropdownItem>
-                    {/* ✅ FIXED: Only show for donors */}
+
+                    {/* ✅ Only show for donors */}
                     {isDonor && (
                       <DropdownItem
                         onClick={() => {
@@ -247,6 +275,7 @@ const Header = () => {
                         <span>➕</span> Create Listing
                       </DropdownItem>
                     )}
+                    
                     <div
                       style={{
                         borderTop: "1px solid #e2e8f0",
@@ -302,6 +331,17 @@ const Header = () => {
           >
             Listings
           </MobileNavLink>
+
+          {/* 🆕 NEW: Community Impact (Mobile) */}
+          <MobileNavLink
+            as={Link}
+            to="/impact/community"
+            onClick={closeMobileMenu}
+            $active={isActive("/impact/community")}
+          >
+            🌍 Community Impact
+          </MobileNavLink>
+
           {user ? (
             <>
               <MobileNavLink
@@ -312,6 +352,27 @@ const Header = () => {
               >
                 Dashboard
               </MobileNavLink>
+
+              {/* 🆕 NEW: Personal Impact (Mobile) */}
+              <MobileNavLink
+                as={Link}
+                to="/impact/personal"
+                onClick={closeMobileMenu}
+                $active={isActive("/impact/personal")}
+              >
+                🌱 My Impact
+              </MobileNavLink>
+
+              {/* 🆕 NEW: QR Scanner (Mobile) */}
+              <MobileNavLink
+                as={Link}
+                to="/verify-pickup"
+                onClick={closeMobileMenu}
+                $active={isActive("/verify-pickup")}
+              >
+                📷 Scan QR Code
+              </MobileNavLink>
+
               <MobileNavLink
                 as={Link}
                 to="/notifications"
@@ -325,7 +386,8 @@ const Header = () => {
                   </NotificationBadge>
                 )}
               </MobileNavLink>
-              {/* ✅ FIXED: Only show for donors */}
+
+              {/* ✅ Only show for donors */}
               {isDonor && (
                 <MobileNavLink
                   as={Link}
@@ -336,6 +398,7 @@ const Header = () => {
                   Create Listing
                 </MobileNavLink>
               )}
+
               <MobileNavLink
                 as={Link}
                 to="/profile"
@@ -344,6 +407,7 @@ const Header = () => {
               >
                 Profile
               </MobileNavLink>
+
               <MobileNavLink
                 onClick={() => {
                   handleLogout();
