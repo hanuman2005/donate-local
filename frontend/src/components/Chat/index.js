@@ -1,3 +1,5 @@
+// src/components/Chat/index.js - FIXED VERSION
+
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from "../../context/AuthContext";
@@ -118,7 +120,7 @@ const Chat = ({
   const { chatId } = useParams();
 
   const { user } = useAuth();
-  const { socket, isConnected, joinChat, leaveChat } = useSocket();
+  const { socket, isConnected } = useSocket();
 
   // ==================== FETCH CHATS ====================
   
@@ -163,35 +165,50 @@ const Chat = ({
     }
   };
 
-  // ==================== SOCKET EVENTS ====================
+  // ==================== SOCKET EVENTS (FIXED!) ====================
 
   useEffect(() => {
     if (!currentChat || !socket || !isConnected) return;
 
-    joinChat(currentChat._id);
+    console.log('🔌 Joining chat:', currentChat._id);
+    
+    // Join the chat room
+    socket.emit('joinChat', currentChat._id);
 
+    // ✅ FIXED: Create stable handler with useCallback
     const handleNewMessage = (message) => {
-      if (message.chat === currentChat._id) {
+      console.log('📩 Received message:', message);
+      
+      if (message.chat === currentChat._id || message.chat?._id === currentChat._id) {
         setMessages((prev) => {
+          // ✅ Prevent duplicates by ID
           const exists = prev.some((m) => {
             if (m._id && message._id) return m._id === message._id;
             if (m.tempId && message.tempId) return m.tempId === message.tempId;
-            return (
-              m.content === message.content &&
-              (m.sender === message.sender || m.sender?._id === message.sender) &&
-              Math.abs(new Date(m.timestamp) - new Date(message.timestamp)) < 2000
-            );
+            
+            // Fallback: same content + sender + close timestamp
+            const isSameSender = 
+              m.sender === message.sender || 
+              m.sender?._id === message.sender ||
+              m.sender?._id === message.sender?._id;
+            const isSameContent = m.content === message.content;
+            const timeDiff = Math.abs(new Date(m.timestamp) - new Date(message.timestamp));
+            
+            return isSameSender && isSameContent && timeDiff < 2000;
           });
 
           if (exists) {
+            console.log('⚠️ Duplicate message prevented');
+            // Replace temp message with real one
             return prev.map((m) => {
-              if (m.tempId && message.content === m.content) {
-                return message;
+              if (m.tempId && m.content === message.content) {
+                return { ...message, _id: message._id };
               }
               return m;
             });
           }
 
+          console.log('✅ Adding new message');
           return [...prev, message];
         });
       }
@@ -204,17 +221,18 @@ const Chat = ({
       }
     };
 
+    // ✅ CRITICAL FIX: Only listen to ONE event (not both!)
     socket.on("newMessage", handleNewMessage);
-    socket.on("receiveMessage", handleNewMessage);
     socket.on("userTyping", handleTyping);
 
+    // ✅ Cleanup
     return () => {
-      leaveChat(currentChat._id);
+      console.log('🧹 Leaving chat:', currentChat._id);
+      socket.emit('leaveChat', currentChat._id);
       socket.off("newMessage", handleNewMessage);
-      socket.off("receiveMessage", handleNewMessage);
       socket.off("userTyping", handleTyping);
     };
-  }, [currentChat, socket, isConnected, joinChat, leaveChat, user]);
+  }, [currentChat, socket, isConnected, user]);
 
   // ==================== SCROLL TO BOTTOM ====================
 
@@ -309,8 +327,10 @@ const Chat = ({
       });
 
       if (response.data.message) {
+        // ✅ The real message will come through socket
+        // Just remove the temp message
         setMessages((prev) =>
-          prev.map((m) => (m.tempId === tempId ? response.data.message : m))
+          prev.filter(m => m.tempId !== tempId)
         );
       }
     } catch (error) {
@@ -350,7 +370,6 @@ const Chat = ({
                 <ChatItem
                   key={chat._id}
                   onClick={() => {
-                    console.log("🔍 Chat clicked:", chat);
                     navigate(`/chat/${chat._id}`);
                   }}
                   $active={currentChat?._id === chat._id}
@@ -505,13 +524,7 @@ const Chat = ({
             {/* ==================== MESSAGES AREA ==================== */}
             <MessagesArea>
               {loading ? (
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "center",
-                    padding: "2rem",
-                  }}
-                >
+                <div style={{ display: "flex", justifyContent: "center", padding: "2rem" }}>
                   <LoadingSpinner />
                 </div>
               ) : messages.length === 0 ? (
@@ -519,81 +532,44 @@ const Chat = ({
                   <EmptyIcon>💬</EmptyIcon>
                   <EmptyTitle>No messages yet</EmptyTitle>
                   <EmptyText>Start the conversation!</EmptyText>
-                  <div
-                    style={{
-                      marginTop: "2rem",
-                      padding: "1rem",
-                      background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                      borderRadius: "12px",
-                      color: "white",
-                      maxWidth: "400px",
-                      margin: "2rem auto 0",
-                    }}
-                  >
-                    <p style={{ margin: 0, fontSize: "0.9rem" }}>
-                      💡 <strong>Tip:</strong> Type your message in the box below and
-                      press Enter or click 📤 to send
-                    </p>
-                  </div>
                 </EmptyState>
               ) : (
-                Object.entries(groupMessagesByDate(messages)).map(
-                  ([date, dayMessages]) => (
-                    <div key={date}>
-                      <DateDivider>
-                        <span>{formatDate(new Date(date))}</span>
-                      </DateDivider>
+                Object.entries(groupMessagesByDate(messages)).map(([date, dayMessages]) => (
+                  <div key={date}>
+                    <DateDivider>
+                      <span>{formatDate(new Date(date))}</span>
+                    </DateDivider>
 
-                      {dayMessages.map((message, index) => {
-                        const isOwn =
-                          message.sender === user._id ||
-                          message.sender?._id === user._id;
+                    {dayMessages.map((message, index) => {
+                      const isOwn = message.sender === user._id || message.sender?._id === user._id;
+                      const showAvatar = index === 0 || dayMessages[index - 1]?.sender !== message.sender;
 
-                        const showAvatar =
-                          index === 0 ||
-                          dayMessages[index - 1]?.sender !== message.sender;
-
-                        return (
-                          <MessageBubble
-                            key={message._id || message.tempId || index}
-                            $isOwn={isOwn}
-                          >
-                            {!isOwn && showAvatar && (
-                              <MessageAvatar>
-                                {otherUser.avatar ? (
-                                  <img
-                                    src={otherUser.avatar}
-                                    alt={otherUser.firstName}
-                                  />
-                                ) : (
-                                  <span>
-                                    {otherUser.firstName?.[0]}
-                                    {otherUser.lastName?.[0]}
-                                  </span>
-                                )}
-                              </MessageAvatar>
-                            )}
-                            {!isOwn && !showAvatar && (
-                              <div style={{ width: "35px" }} />
-                            )}
-                            <MessageContent $isOwn={isOwn}>
-                              <MessageText
-                                $isOwn={isOwn}
-                                $pending={message.pending}
-                                $failed={message.failed}
-                              >
-                                {message.content}
-                              </MessageText>
-                              <MessageTime>
-                                {formatTime(message.timestamp)}
-                              </MessageTime>
-                            </MessageContent>
-                          </MessageBubble>
-                        );
-                      })}
-                    </div>
-                  )
-                )
+                      return (
+                        <MessageBubble key={message._id || message.tempId || index} $isOwn={isOwn}>
+                          {!isOwn && showAvatar && (
+                            <MessageAvatar>
+                              {otherUser.avatar ? (
+                                <img src={otherUser.avatar} alt={otherUser.firstName} />
+                              ) : (
+                                <span>
+                                  {otherUser.firstName?.[0]}
+                                  {otherUser.lastName?.[0]}
+                                </span>
+                              )}
+                            </MessageAvatar>
+                          )}
+                          {!isOwn && !showAvatar && <div style={{ width: "35px" }} />}
+                          <MessageContent $isOwn={isOwn}>
+                            <MessageText $isOwn={isOwn} $pending={message.pending} $failed={message.failed}>
+                              {message.content}
+                            </MessageText>
+                            <MessageTime>{formatTime(message.timestamp)}</MessageTime>
+                          </MessageContent>
+                        </MessageBubble>
+                      );
+                    })}
+                  </div>
+                ))
               )}
               <div ref={messagesEndRef} />
             </MessagesArea>
@@ -602,9 +578,7 @@ const Chat = ({
             <InputArea>
               <InputForm onSubmit={handleSendMessage}>
                 <InputWrapper>
-                  <IconButton type="button" title="Attach file">
-                    📎
-                  </IconButton>
+                  <IconButton type="button" title="Attach file">📎</IconButton>
                   <MessageInput
                     ref={inputRef}
                     value={newMessage}
@@ -623,9 +597,7 @@ const Chat = ({
                     }}
                     disabled={!isConnected}
                   />
-                  <IconButton type="button" title="Add emoji">
-                    😊
-                  </IconButton>
+                  <IconButton type="button" title="Add emoji">😊</IconButton>
                 </InputWrapper>
                 <SendButton
                   type="submit"

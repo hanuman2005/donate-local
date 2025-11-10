@@ -3,6 +3,8 @@ import axios from "axios";
 
 const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000/api";
 
+console.log("🧭 API Base URL:", process.env.REACT_APP_API_URL);
+
 const api = axios.create({
   baseURL: API_URL,
   timeout: 30000,
@@ -11,7 +13,7 @@ const api = axios.create({
   },
 });
 
-// Request interceptor
+// ✅ Request interceptor
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
@@ -20,16 +22,12 @@ api.interceptors.request.use(
     }
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
-// Response interceptor
+// ✅ Response interceptor
 api.interceptors.response.use(
-  (response) => {
-    return response;
-  },
+  (response) => response,
   (error) => {
     if (error.response?.status === 401) {
       const currentPath = window.location.pathname;
@@ -40,14 +38,15 @@ api.interceptors.response.use(
         window.location.href = "/login";
       }
     }
-    if (!error.response) {
-      console.error("Network error:", error.message);
-    }
+    if (!error.response) console.error("Network error:", error.message);
     return Promise.reject(error);
   }
 );
 
-// API methods
+// ---------------------- //
+//   API ENDPOINT GROUPS  //
+// ---------------------- //
+
 export const authAPI = {
   login: (credentials) => api.post("/auth/login", credentials),
   register: (userData) => api.post("/auth/register", userData),
@@ -74,9 +73,7 @@ export const listingsAPI = {
   complete: (id) => api.put(`/listings/${id}/complete`),
   getUserListings: (params) => api.get("/listings/user", { params }),
   getNearby: (lat, lng, radius) =>
-    api.get("/listings/nearby", {
-      params: { lat, lng, radius },
-    }),
+    api.get("/listings/nearby", { params: { lat, lng, radius } }),
   search: (params) => api.get("/listings/search", { params }),
 };
 
@@ -88,9 +85,20 @@ export const chatAPI = {
   getChat: (chatId) => api.get(`/chat/${chatId}`),
 };
 
+// ✅ QR-related API (merged properly)
+export const qrAPI = {
+  generateQR: (listingId, recipientId) =>
+    api.post("/qr/generate", { listingId, recipientId }),
+  verifyQR: (qrCode, location = null) =>
+    api.post("/qr/verify", { qrCode, location }),
+  getTransaction: (transactionId) => api.get(`/qr/transaction/${transactionId}`),
+  getMyTransactions: (params = {}) => api.get("/qr/my-transactions", { params }),
+  downloadQR: (transactionId) =>
+    api.get(`/qr/download/${transactionId}`, { responseType: "blob" }),
+};
+
 export const usersAPI = {
   getProfile: (id) => api.get(`/users/${id}`),
-  // ✅ ADDED: updateProfile method
   updateProfile: (data) => api.put("/users/profile", data),
   rate: (id, data) => api.post(`/users/${id}/rate`, data),
   getRatings: (id, params) => api.get(`/users/${id}/ratings`, { params }),
@@ -116,45 +124,33 @@ export const uploadAPI = {
         }
       },
     }),
-
   uploadMultiple: (files, onProgress) => {
     const formData = new FormData();
-    files.forEach((file, index) => {
-      formData.append("images", file);
-    });
+    files.forEach((file) => formData.append("images", file));
     return api.post("/upload/multiple", formData, {
       headers: { "Content-Type": "multipart/form-data" },
       timeout: 60000,
-      onUploadProgress: (progressEvent) => {
-        if (onProgress) {
-          const percentCompleted = Math.round(
-            (progressEvent.loaded * 100) / progressEvent.total
-          );
-          onProgress(percentCompleted);
-        }
-      },
+      onUploadProgress: (e) =>
+        onProgress &&
+        onProgress(Math.round((e.loaded * 100) / e.total)),
     });
   },
-
   uploadImage: (file, onProgress) => {
     const formData = new FormData();
     formData.append("image", file);
     return api.post("/upload/image", formData, {
       headers: { "Content-Type": "multipart/form-data" },
       timeout: 60000,
-      onUploadProgress: (progressEvent) => {
-        if (onProgress) {
-          const percentCompleted = Math.round(
-            (progressEvent.loaded * 100) / progressEvent.total
-          );
-          onProgress(percentCompleted);
-        }
-      },
+      onUploadProgress: (e) =>
+        onProgress &&
+        onProgress(Math.round((e.loaded * 100) / e.total)),
     });
   },
-
-  listing: (data, onProgress) => listingsAPI.create(data),
-  profileImage: (data, onProgress) => usersAPI.updateProfileImage(data),
+  listing: (data) => listingsAPI.create(data),
+  profileImage: (data) => usersAPI.updateProfileImage(data),
 };
 
+
+
+// ✅ Export the axios instance itself
 export default api;
