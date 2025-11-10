@@ -1,4 +1,4 @@
-// backend/server.js - FIXED CORS ISSUE
+// backend/server.js - COMPLETE WITH ALL ROUTES
 
 const express = require('express');
 const mongoose = require('mongoose');
@@ -17,6 +17,8 @@ const chatRoutes = require('./routes/chat');
 const userRoutes = require('./routes/users');
 const notificationRoutes = require('./routes/notifications');
 const analyticsRoutes = require('./routes/analytics');
+const qrRoutes = require('./routes/qr'); // 🆕 ADD THIS
+const impactRoutes = require('./routes/impact'); // 🆕 ADD THIS
 
 // Import socket handler
 const socketHandler = require('./socket/socketHandler');
@@ -27,32 +29,31 @@ const errorHandler = require('./middleware/errorHandler');
 const app = express();
 const server = http.createServer(app);
 
-// ✅ CRITICAL FIX: Configure CORS properly BEFORE any routes
+// ✅ Configure CORS properly
 const corsOptions = {
   origin: process.env.CLIENT_URL || 'http://localhost:3000',
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   exposedHeaders: ['Content-Range', 'X-Content-Range'],
-  maxAge: 86400 // 24 hours
+  maxAge: 86400
 };
 
 app.use(cors(corsOptions));
-
-// ✅ Handle preflight requests
 app.options('*', cors(corsOptions));
 
 // Body parser middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// ✅ IMPORTANT: Initialize Socket.IO with CORS
+// ✅ Initialize Socket.IO with CORS
 const io = socketIO(server, {
   cors: {
     origin: process.env.CLIENT_URL || 'http://localhost:3000',
     methods: ['GET', 'POST'],
     credentials: true
-  }
+  },
+  transports: ['websocket', 'polling'] // 🆕 ADD THIS
 });
 
 // Initialize socket handlers
@@ -64,7 +65,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// Logging middleware (optional, for debugging)
+// Logging middleware
 app.use((req, res, next) => {
   console.log(`${req.method} ${req.path}`);
   next();
@@ -82,8 +83,10 @@ app.use('/api/chat', chatRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/qr', qrRoutes); // 🆕 ADD THIS
+app.use('/api/impact', impactRoutes); // 🆕 ADD THIS
 
-// Error handling middleware (must be last)
+// Error handling middleware
 app.use(errorHandler);
 
 // 404 handler
@@ -105,10 +108,11 @@ mongoose
   .then(() => {
     console.log('✅ MongoDB connected successfully');
     
-    // Start server
     server.listen(PORT, () => {
       console.log(`✅ Server running on port ${PORT}`);
-      console.log(`✅ CORS enabled for: ${process.env.CLIENT_URL || 'http://localhost:3000'}`);
+      console.log(`✅ CORS enabled for: ${corsOptions.origin}`);
+      console.log(`✅ QR routes: /api/qr/*`);
+      console.log(`✅ Impact routes: /api/impact/*`);
     });
   })
   .catch((err) => {
@@ -116,7 +120,6 @@ mongoose
     process.exit(1);
   });
 
-// Handle unhandled promise rejections
 process.on('unhandledRejection', (err) => {
   console.error('❌ Unhandled Promise Rejection:', err);
   server.close(() => process.exit(1));
