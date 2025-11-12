@@ -1,154 +1,225 @@
-// ============================================
-// controllers/notificationController.js - NEW FEATURE
-// ============================================
-const Notification = require('../models/Notification');
+// backend/controllers/notificationController.js
+const Notification = require("../models/Notification");
 
-// Get user notifications
+/**
+ * Get all notifications for logged-in user
+ * GET /api/notifications
+ */
 const getNotifications = async (req, res) => {
   try {
-    const { page = 1, limit = 20, unreadOnly = false } = req.query;
-    
-    const query = { recipient: req.user._id };
-    if (unreadOnly === 'true') {
-      query.read = false;
-    }
+    const userId = req.user._id;
+    const { type, unreadOnly, limit = 50, page = 1 } = req.query;
 
+    // Build query
+    const query = { recipient: userId };
+
+    if (type) query.type = type;
+    if (unreadOnly === "true") query.read = false;
+
+    // Calculate skip
     const skip = (parseInt(page) - 1) * parseInt(limit);
 
+    // Get notifications
     const notifications = await Notification.find(query)
-      .populate('sender', 'firstName lastName avatar')
-      .populate('relatedListing', 'title images')
+      .populate("sender", "firstName lastName avatar")
+      .populate("relatedListing", "title images category")
       .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(parseInt(limit));
+      .limit(parseInt(limit))
+      .skip(skip);
 
+    // Get total count
     const total = await Notification.countDocuments(query);
-    const unreadCount = await Notification.countDocuments({
-      recipient: req.user._id,
-      read: false
-    });
 
-    res.json({
+    // Get unread count
+    const unreadCount = await Notification.getUnreadCount(userId);
+
+    res.status(200).json({
       success: true,
       notifications,
-      unreadCount,
       pagination: {
+        total,
         page: parseInt(page),
         limit: parseInt(limit),
-        total,
-        pages: Math.ceil(total / limit)
-      }
+        pages: Math.ceil(total / parseInt(limit)),
+      },
+      unreadCount,
     });
   } catch (error) {
-    console.error('Get notifications error:', error);
+    console.error("Get notifications error:", error);
     res.status(500).json({
       success: false,
-      message: 'Server error fetching notifications'
+      message: "Failed to fetch notifications",
+      error: error.message,
     });
   }
 };
 
-// Mark notification as read
+/**
+ * Get unread notification count
+ * GET /api/notifications/unread-count
+ */
+const getUnreadCount = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const count = await Notification.getUnreadCount(userId);
+
+    res.status(200).json({
+      success: true,
+      unreadCount: count,
+    });
+  } catch (error) {
+    console.error("Get unread count error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to get unread count",
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * Mark notification as read
+ * PUT /api/notifications/:notificationId/read
+ */
 const markAsRead = async (req, res) => {
   try {
     const { notificationId } = req.params;
+    const userId = req.user._id;
 
-    const notification = await Notification.findOneAndUpdate(
-      {
-        _id: notificationId,
-        recipient: req.user._id
-      },
-      { read: true },
-      { new: true }
-    );
+    const notification = await Notification.findOne({
+      _id: notificationId,
+      recipient: userId,
+    });
 
     if (!notification) {
       return res.status(404).json({
         success: false,
-        message: 'Notification not found'
+        message: "Notification not found",
       });
     }
 
-    res.json({
+    await notification.markAsRead();
+
+    res.status(200).json({
       success: true,
-      notification
+      notification,
     });
   } catch (error) {
-    console.error('Mark notification as read error:', error);
+    console.error("Mark as read error:", error);
     res.status(500).json({
       success: false,
-      message: 'Server error'
+      message: "Failed to mark as read",
+      error: error.message,
     });
   }
 };
 
-// Mark all notifications as read
+/**
+ * Mark all notifications as read
+ * PUT /api/notifications/mark-all-read
+ */
 const markAllAsRead = async (req, res) => {
   try {
-    await Notification.updateMany(
-      { recipient: req.user._id, read: false },
-      { read: true }
-    );
+    const userId = req.user._id;
+    const result = await Notification.markAllAsRead(userId);
 
-    res.json({
+    res.status(200).json({
       success: true,
-      message: 'All notifications marked as read'
+      message: "All notifications marked as read",
+      modifiedCount: result.modifiedCount,
     });
   } catch (error) {
-    console.error('Mark all as read error:', error);
+    console.error("Mark all as read error:", error);
     res.status(500).json({
       success: false,
-      message: 'Server error'
+      message: "Failed to mark all as read",
+      error: error.message,
     });
   }
 };
 
-// Delete notification
+/**
+ * Delete notification
+ * DELETE /api/notifications/:notificationId
+ */
 const deleteNotification = async (req, res) => {
   try {
     const { notificationId } = req.params;
+    const userId = req.user._id;
 
     const notification = await Notification.findOneAndDelete({
       _id: notificationId,
-      recipient: req.user._id
+      recipient: userId,
     });
 
     if (!notification) {
       return res.status(404).json({
         success: false,
-        message: 'Notification not found'
+        message: "Notification not found",
       });
     }
 
-    res.json({
+    res.status(200).json({
       success: true,
-      message: 'Notification deleted'
+      message: "Notification deleted",
     });
   } catch (error) {
-    console.error('Delete notification error:', error);
+    console.error("Delete notification error:", error);
     res.status(500).json({
       success: false,
-      message: 'Server error'
+      message: "Failed to delete notification",
+      error: error.message,
     });
   }
 };
 
-// Create notification (helper function)
+/**
+ * Clear all read notifications
+ * DELETE /api/notifications/clear-read
+ */
+const clearReadNotifications = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    const result = await Notification.deleteMany({
+      recipient: userId,
+      read: true,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Read notifications cleared",
+      deletedCount: result.deletedCount,
+    });
+  } catch (error) {
+    console.error("Clear notifications error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to clear notifications",
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * Create notification (helper function)
+ */
 const createNotification = async (data) => {
   try {
-    const notification = new Notification(data);
-    await notification.save();
+    const notification = await Notification.create(data);
     return notification;
   } catch (error) {
-    console.error('Create notification error:', error);
+    console.error("Create notification error:", error);
     return null;
   }
 };
 
 module.exports = {
   getNotifications,
+  getUnreadCount,
   markAsRead,
   markAllAsRead,
   deleteNotification,
-  createNotification
+  clearReadNotifications,
+  createNotification,
 };
