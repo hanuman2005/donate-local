@@ -1,13 +1,15 @@
-// src/pages/Listings/index.jsx - FIXED
+// src/pages/Listings/index.jsx - FIXED WITH OWNER ACTIONS
 
 import styled from "styled-components";
 import { useState, useEffect } from "react";
 import api from "../../services/api";
 import ListingCard from "../../components/ListingCard";
 import LoadingSpinner from "../../components/Common/LoadingSpinner";
+import { useAuth } from "../../context/AuthContext"; // ✅ ADD THIS
+import { toast } from "react-toastify"; // ✅ ADD THIS
 
 const ListingsContainer = styled.div`
-  background: var(--bg-primary); // ✅ ADD
+  background: var(--bg-primary);
   color: var(--text-primary);
   min-height: calc(100vh - 80px);
   padding: 2rem;
@@ -39,6 +41,7 @@ const Listings = () => {
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { user } = useAuth(); // ✅ Get current user
 
   useEffect(() => {
     fetchListings();
@@ -52,8 +55,6 @@ const Listings = () => {
       const response = await api.get("/listings");
       console.log("📥 Response:", response.data);
 
-      // ✅ FIXED: Backend returns { success, listings, pagination }
-      // NOT { data: [...] }
       const fetchedListings =
         response.data.listings || response.data.data || [];
 
@@ -67,6 +68,37 @@ const Listings = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // ✅ ADD: Delete handler
+  const handleDelete = async (listing) => {
+    if (!window.confirm(`Are you sure you want to delete "${listing.title}"?`)) {
+      return;
+    }
+
+    try {
+      console.log("🗑️ Deleting listing:", listing._id);
+      await api.delete(`/listings/${listing._id}`);
+      
+      toast.success("Listing deleted successfully");
+      
+      // Remove from UI
+      setListings(prev => prev.filter(l => l._id !== listing._id));
+    } catch (err) {
+      console.error("❌ Delete error:", err);
+      toast.error(err.response?.data?.message || "Failed to delete listing");
+    }
+  };
+
+  // ✅ ADD: Check if user owns a listing
+  const isOwner = (listing) => {
+    if (!user || !listing.donor) return false;
+    
+    const donorId = typeof listing.donor === 'object' 
+      ? listing.donor._id 
+      : listing.donor;
+    
+    return donorId?.toString() === user._id?.toString();
   };
 
   if (loading) {
@@ -126,7 +158,12 @@ const Listings = () => {
           </div>
           <Grid>
             {listings.map((listing) => (
-              <ListingCard key={listing._id} listing={listing} />
+              <ListingCard 
+                key={listing._id} 
+                listing={listing}
+                isOwner={isOwner(listing)} // ✅ Pass ownership status
+                onDelete={handleDelete} // ✅ Pass delete handler
+              />
             ))}
           </Grid>
         </>
