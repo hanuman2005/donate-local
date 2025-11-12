@@ -1,16 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useSocket } from '../../context/SocketContext';
-import api from '../../services/api';
+// src/pages/Notifications/index.jsx
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useSocket } from "../../context/SocketContext";
+import { useNotifications } from "../../context/NotificationContext"; // ✅ Context added
+import api from "../../services/api";
 import {
   NotificationsContainer,
-  Header, 
+  Header,
   HeaderTop,
   Title,
-  UnreadBadge,  
+  UnreadBadge,
   MarkAllButton,
   FilterContainer,
-  FilterButton, 
+  FilterButton,
   NotificationsList,
   NotificationCard,
   NotificationIcon,
@@ -28,142 +30,136 @@ import {
   EmptyText,
   EmptySubtext,
   LoadingContainer,
-  Spinner
-} from './styledComponents';
+  Spinner,
+} from "./styledComponents";
 
 const Notifications = () => {
   const [notifications, setNotifications] = useState([]);
-  const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('all');
+  const [filter, setFilter] = useState("all");
   const navigate = useNavigate();
   const { socket } = useSocket();
 
+  // ✅ Using global context for unread count
+  const { unreadCount, setUnreadCount, fetchUnreadCount } = useNotifications();
+
+  // Fetch notifications when filter changes
   useEffect(() => {
     fetchNotifications();
   }, [filter]);
 
+  // Real-time updates
   useEffect(() => {
     if (socket) {
-      socket.on('newNotification', (notification) => {
-        setNotifications(prev => [notification, ...prev]);
-        setUnreadCount(prev => prev + 1);
+      socket.on("newNotification", (notification) => {
+        setNotifications((prev) => [notification, ...prev]);
+        fetchUnreadCount(); // ✅ refresh global count
       });
-
-      return () => {
-        socket.off('newNotification');
-      };
+      return () => socket.off("newNotification");
     }
   }, [socket]);
 
+  // Fetch all or unread notifications
   const fetchNotifications = async () => {
     try {
       setLoading(true);
-      const params = filter === 'unread' ? { unreadOnly: true } : {};
-      
-      const response = await api.get('/notifications', { params });
-      
-      setNotifications(response.data.notifications || []);
-      setUnreadCount(response.data.unreadCount || 0);
-    } catch (error) {
-      console.error('Error fetching notifications:', error);
+      const params = filter === "unread" ? { unreadOnly: true } : {};
+      const res = await api.get("/notifications", { params });
+      setNotifications(res.data.notifications || []);
+      fetchUnreadCount();
+    } catch (err) {
+      console.error("Error fetching notifications:", err);
     } finally {
       setLoading(false);
     }
   };
 
-  const markAsRead = async (notificationId) => {
+  // Mark single notification as read
+  const markAsRead = async (id) => {
     try {
-      await api.put(`/notifications/${notificationId}/read`);
-      setNotifications(prev => 
-        prev.map(n => n._id === notificationId ? { ...n, read: true } : n)
+      await api.put(`/notifications/${id}/read`);
+      setNotifications((prev) =>
+        prev.map((n) => (n._id === id ? { ...n, read: true } : n))
       );
-      setUnreadCount(prev => Math.max(0, prev - 1));
-    } catch (error) {
-      console.error('Error marking as read:', error);
+      fetchUnreadCount();
+    } catch (err) {
+      console.error("Error marking as read:", err);
     }
   };
 
+  // Mark all as read
   const markAllAsRead = async () => {
     try {
-      await api.put('/notifications/read-all');
-      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+      await api.put("/notifications/mark-all-read");
+      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
       setUnreadCount(0);
-    } catch (error) {
-      console.error('Error marking all as read:', error);
+    } catch (err) {
+      console.error("Error marking all as read:", err);
     }
   };
 
-  const deleteNotification = async (notificationId) => {
+  // Delete notification
+  const deleteNotification = async (id) => {
     try {
-      await api.delete(`/notifications/${notificationId}`);
-      setNotifications(prev => prev.filter(n => n._id !== notificationId));
-    } catch (error) {
-      console.error('Error deleting notification:', error);
+      await api.delete(`/notifications/${id}`);
+      setNotifications((prev) => prev.filter((n) => n._id !== id));
+    } catch (err) {
+      console.error("Error deleting notification:", err);
     }
   };
 
+  // Handle clicking notification
   const handleNotificationClick = (notification) => {
-    if (!notification.read) {
-      markAsRead(notification._id);
-    }
-    if (notification.actionUrl) {
-      navigate(notification.actionUrl);
-    }
+    if (!notification.read) markAsRead(notification._id);
+    if (notification.actionUrl) navigate(notification.actionUrl);
   };
 
+  // Icon mapping
   const getNotificationIcon = (type) => {
     const icons = {
-      message: '💬',
-      interest: '👋',
-      assignment: '✅',
-      rating: '⭐',
-      completion: '🎉',
-      system: '📢'
+      new_listing: "🎁",
+      message: "💬",
+      interest: "👋",
+      assignment: "🎉",
+      rating: "⭐",
+      completion: "✅",
+      pickup_completed: "✅",
+      system: "📢",
     };
-    return icons[type] || '🔔';
+    return icons[type] || "🔔";
   };
 
+  // Format time display
   const formatTime = (date) => {
     const now = new Date();
-    const notifDate = new Date(date);
-    const diffMs = now - notifDate;
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
-
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays === 0) return 'Today';
-    if (diffDays === 1) return 'Yesterday';
-    if (diffDays < 7) return `${diffDays} days ago`;
-    return notifDate.toLocaleDateString();
+    const d = new Date(date);
+    const diff = now - d;
+    const mins = Math.floor(diff / 60000);
+    const hrs = Math.floor(diff / 3600000);
+    const days = Math.floor(diff / 86400000);
+    if (mins < 1) return "Just now";
+    if (mins < 60) return `${mins}m ago`;
+    if (hrs < 24) return `${hrs}h ago`;
+    if (days === 1) return "Yesterday";
+    if (days < 7) return `${days} days ago`;
+    return d.toLocaleDateString();
   };
 
+  // Group by date
   const groupByDate = (notifs) => {
-    const groups = {
-      today: [],
-      yesterday: [],
-      thisWeek: [],
-      older: []
-    };
-
-    notifs.forEach(notif => {
-      const date = new Date(notif.createdAt);
-      const now = new Date();
-      const diffDays = Math.floor((now - date) / 86400000);
-
-      if (diffDays === 0) groups.today.push(notif);
-      else if (diffDays === 1) groups.yesterday.push(notif);
-      else if (diffDays < 7) groups.thisWeek.push(notif);
-      else groups.older.push(notif);
+    const groups = { today: [], yesterday: [], thisWeek: [], older: [] };
+    notifs.forEach((n) => {
+      const d = new Date(n.createdAt);
+      const diffDays = Math.floor((new Date() - d) / 86400000);
+      if (diffDays === 0) groups.today.push(n);
+      else if (diffDays === 1) groups.yesterday.push(n);
+      else if (diffDays < 7) groups.thisWeek.push(n);
+      else groups.older.push(n);
     });
-
     return groups;
   };
 
-  if (loading) {
+  if (loading)
     return (
       <NotificationsContainer>
         <LoadingContainer>
@@ -171,9 +167,8 @@ const Notifications = () => {
         </LoadingContainer>
       </NotificationsContainer>
     );
-  }
 
-  const groupedNotifications = groupByDate(notifications);
+  const grouped = groupByDate(notifications);
 
   return (
     <NotificationsContainer>
@@ -183,7 +178,6 @@ const Notifications = () => {
             🔔 Notifications
             {unreadCount > 0 && <UnreadBadge>{unreadCount}</UnreadBadge>}
           </Title>
-          
           {unreadCount > 0 && (
             <MarkAllButton onClick={markAllAsRead}>
               ✓ Mark all as read
@@ -193,14 +187,14 @@ const Notifications = () => {
 
         <FilterContainer>
           <FilterButton
-            $active={filter === 'all'}
-            onClick={() => setFilter('all')}
+            $active={filter === "all"}
+            onClick={() => setFilter("all")}
           >
-            All Notifications
+            All
           </FilterButton>
           <FilterButton
-            $active={filter === 'unread'}
-            onClick={() => setFilter('unread')}
+            $active={filter === "unread"}
+            onClick={() => setFilter("unread")}
           >
             Unread ({unreadCount})
           </FilterButton>
@@ -212,185 +206,85 @@ const Notifications = () => {
           <EmptyState>
             <EmptyIcon>🔔</EmptyIcon>
             <EmptyText>
-              {filter === 'unread' ? 'All caught up!' : 'No notifications yet'}
+              {filter === "unread" ? "All caught up!" : "No notifications yet"}
             </EmptyText>
             <EmptySubtext>
-              {filter === 'unread' 
-                ? 'You have no unread notifications' 
+              {filter === "unread"
+                ? "You have no unread notifications"
                 : "We'll notify you when something important happens"}
             </EmptySubtext>
           </EmptyState>
         ) : (
           <>
-            {groupedNotifications.today.length > 0 && (
-              <DateGroup>
-                <DateLabel>📅 Today</DateLabel>
-                {groupedNotifications.today.map((notif) => (
-                  <NotificationCard
-                    key={notif._id}
-                    $read={notif.read}
-                    onClick={() => handleNotificationClick(notif)}
-                  >
-                    <NotificationIcon type={notif.type}>
-                      {getNotificationIcon(notif.type)}
-                    </NotificationIcon>
-                    
-                    <NotificationContent>
-                      <NotificationHeader>
-                        <NotificationTitle>{notif.title}</NotificationTitle>
-                        <NotificationTime>{formatTime(notif.createdAt)}</NotificationTime>
-                      </NotificationHeader>
-                      
-                      <NotificationMessage>{notif.message}</NotificationMessage>
-                      
-                      <NotificationActions>
-                        {notif.actionUrl && (
-                          <ActionButton $primary onClick={() => navigate(notif.actionUrl)}>
-                            View Details
-                          </ActionButton>
-                        )}
-                        {!notif.read && (
-                          <ActionButton onClick={(e) => {
-                            e.stopPropagation();
-                            markAsRead(notif._id);
-                          }}>
-                            Mark as Read
-                          </ActionButton>
-                        )}
-                        <ActionButton onClick={(e) => {
-                          e.stopPropagation();
-                          deleteNotification(notif._id);
-                        }}>
-                          Delete
-                        </ActionButton>
-                      </NotificationActions>
-                    </NotificationContent>
-                  </NotificationCard>
-                ))}
-              </DateGroup>
-            )}
+            {Object.entries(grouped).map(([key, list]) =>
+              list.length > 0 ? (
+                <DateGroup key={key}>
+                  <DateLabel>
+                    📅{" "}
+                    {key === "today"
+                      ? "Today"
+                      : key === "yesterday"
+                      ? "Yesterday"
+                      : key === "thisWeek"
+                      ? "This Week"
+                      : "Older"}
+                  </DateLabel>
 
-            {groupedNotifications.yesterday.length > 0 && (
-              <DateGroup>
-                <DateLabel>📅 Yesterday</DateLabel>
-                {groupedNotifications.yesterday.map((notif) => (
-                  <NotificationCard
-                    key={notif._id}
-                    $read={notif.read}
-                    onClick={() => handleNotificationClick(notif)}
-                  >
-                    <NotificationIcon type={notif.type}>
-                      {getNotificationIcon(notif.type)}
-                    </NotificationIcon>
-                    
-                    <NotificationContent>
-                      <NotificationHeader>
-                        <NotificationTitle>{notif.title}</NotificationTitle>
-                        <NotificationTime>{formatTime(notif.createdAt)}</NotificationTime>
-                      </NotificationHeader>
-                      
-                      <NotificationMessage>{notif.message}</NotificationMessage>
-                      
-                      <NotificationActions>
-                        {notif.actionUrl && (
-                          <ActionButton $primary onClick={() => navigate(notif.actionUrl)}>
-                            View Details
+                  {list.map((notif) => (
+                    <NotificationCard
+                      key={notif._id}
+                      $read={notif.read}
+                      onClick={() => handleNotificationClick(notif)}
+                    >
+                      <NotificationIcon>
+                        {getNotificationIcon(notif.type)}
+                      </NotificationIcon>
+                      <NotificationContent>
+                        <NotificationHeader>
+                          <NotificationTitle>{notif.title}</NotificationTitle>
+                          <NotificationTime>
+                            {formatTime(notif.createdAt)}
+                          </NotificationTime>
+                        </NotificationHeader>
+                        <NotificationMessage>
+                          {notif.message}
+                        </NotificationMessage>
+                        <NotificationActions>
+                          {notif.actionUrl && (
+                            <ActionButton
+                              $primary
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigate(notif.actionUrl);
+                              }}
+                            >
+                              View
+                            </ActionButton>
+                          )}
+                          {!notif.read && (
+                            <ActionButton
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                markAsRead(notif._id);
+                              }}
+                            >
+                              Mark Read
+                            </ActionButton>
+                          )}
+                          <ActionButton
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              deleteNotification(notif._id);
+                            }}
+                          >
+                            Delete
                           </ActionButton>
-                        )}
-                        {!notif.read && (
-                          <ActionButton onClick={(e) => {
-                            e.stopPropagation();
-                            markAsRead(notif._id);
-                          }}>
-                            Mark as Read
-                          </ActionButton>
-                        )}
-                        <ActionButton onClick={(e) => {
-                          e.stopPropagation();
-                          deleteNotification(notif._id);
-                        }}>
-                          Delete
-                        </ActionButton>
-                      </NotificationActions>
-                    </NotificationContent>
-                  </NotificationCard>
-                ))}
-              </DateGroup>
-            )}
-
-            {groupedNotifications.thisWeek.length > 0 && (
-              <DateGroup>
-                <DateLabel>📅 This Week</DateLabel>
-                {groupedNotifications.thisWeek.map((notif) => (
-                  <NotificationCard
-                    key={notif._id}
-                    $read={notif.read}
-                    onClick={() => handleNotificationClick(notif)}
-                  >
-                    <NotificationIcon type={notif.type}>
-                      {getNotificationIcon(notif.type)}
-                    </NotificationIcon>
-                    
-                    <NotificationContent>
-                      <NotificationHeader>
-                        <NotificationTitle>{notif.title}</NotificationTitle>
-                        <NotificationTime>{formatTime(notif.createdAt)}</NotificationTime>
-                      </NotificationHeader>
-                      
-                      <NotificationMessage>{notif.message}</NotificationMessage>
-                      
-                      <NotificationActions>
-                        {notif.actionUrl && (
-                          <ActionButton $primary onClick={() => navigate(notif.actionUrl)}>
-                            View Details
-                          </ActionButton>
-                        )}
-                        <ActionButton onClick={(e) => {
-                          e.stopPropagation();
-                          deleteNotification(notif._id);
-                        }}>
-                          Delete
-                        </ActionButton>
-                      </NotificationActions>
-                    </NotificationContent>
-                  </NotificationCard>
-                ))}
-              </DateGroup>
-            )}
-
-            {groupedNotifications.older.length > 0 && (
-              <DateGroup>
-                <DateLabel>📅 Older</DateLabel>
-                {groupedNotifications.older.map((notif) => (
-                  <NotificationCard
-                    key={notif._id}
-                    $read={notif.read}
-                    onClick={() => handleNotificationClick(notif)}
-                  >
-                    <NotificationIcon type={notif.type}>
-                      {getNotificationIcon(notif.type)}
-                    </NotificationIcon>
-                    
-                    <NotificationContent>
-                      <NotificationHeader>
-                        <NotificationTitle>{notif.title}</NotificationTitle>
-                        <NotificationTime>{formatTime(notif.createdAt)}</NotificationTime>
-                      </NotificationHeader>
-                      
-                      <NotificationMessage>{notif.message}</NotificationMessage>
-                      
-                      <NotificationActions>
-                        <ActionButton onClick={(e) => {
-                          e.stopPropagation();
-                          deleteNotification(notif._id);
-                        }}>
-                          Delete
-                        </ActionButton>
-                      </NotificationActions>
-                    </NotificationContent>
-                  </NotificationCard>
-                ))}
-              </DateGroup>
+                        </NotificationActions>
+                      </NotificationContent>
+                    </NotificationCard>
+                  ))}
+                </DateGroup>
+              ) : null
             )}
           </>
         )}

@@ -1,12 +1,11 @@
-// ============================================
-// src/components/Header/index.jsx - WITH NEW FEATURES
-// ============================================
+// src/components/Header/index.jsx - CLEANED VERSION
 import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useSocket } from "../../context/SocketContext";
+import { useNotifications } from "../../context/NotificationContext"; // 🆕 ADD THIS
 import ThemeToggle from "../ThemeToggle";
-import api from "../../services/api";
+
 import {
   HeaderContainer,
   HeaderContent,
@@ -32,44 +31,45 @@ import {
 const Header = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(0);
+
+  const { unreadCount } = useNotifications();
+
   const dropdownRef = useRef(null);
   const { user, logout } = useAuth();
   const { socket } = useSocket();
   const navigate = useNavigate();
   const location = useLocation();
 
-  // ✅ Check if user is donor
-  const isDonor = user?.userType === 'donor';
+  const isDonor = user?.userType === "donor";
 
-  useEffect(() => {
-    if (user) {
-      fetchUnreadCount();
-    }
-  }, [user]);
+  // ❌ REMOVE THESE - No longer needed since we use context
+  // useEffect(() => {
+  //   if (user) {
+  //     fetchUnreadCount();
+  //   }
+  // }, [user]);
 
-  useEffect(() => {
-    if (socket && user) {
-      socket.on("newNotification", () => {
-        fetchUnreadCount();
-      });
+  // useEffect(() => {
+  //   if (socket && user) {
+  //     socket.on("newNotification", () => {
+  //       fetchUnreadCount();
+  //     });
+  //     return () => {
+  //       socket.off("newNotification");
+  //     };
+  //   }
+  // }, [socket, user]);
 
-      return () => {
-        socket.off("newNotification");
-      };
-    }
-  }, [socket, user]);
-
-  const fetchUnreadCount = async () => {
-    try {
-      const response = await api.get("/notifications", {
-        params: { unreadOnly: true, limit: 1 },
-      });
-      setUnreadCount(response.data.unreadCount || 0);
-    } catch (error) {
-      console.error("Error fetching unread count:", error);
-    }
-  };
+  // const fetchUnreadCount = async () => {
+  //   try {
+  //     const response = await api.get("/notifications", {
+  //       params: { unreadOnly: true, limit: 1 },
+  //     });
+  //     setUnreadCount(response.data.unreadCount || 0);
+  //   } catch (error) {
+  //     console.error("Error fetching unread count:", error);
+  //   }
+  // };
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -141,14 +141,15 @@ const Header = () => {
           <NavLink as={Link} to="/" $active={isActive("/")}>
             Home
           </NavLink>
-
           <NavLink as={Link} to="/listings" $active={isActive("/listings")}>
             Listings
           </NavLink>
-
-          {/* 🆕 NEW: Community Impact (Public - Everyone can see) */}
-          <NavLink as={Link} to="/impact/community" $active={isActive("/impact/community")}>
-            Community
+          <NavLink
+            as={Link}
+            to="/impact/community"
+            $active={isActive("/impact/community")}
+          >
+            🌍 Community
           </NavLink>
 
           {user && (
@@ -160,8 +161,6 @@ const Header = () => {
               >
                 Dashboard
               </NavLink>
-              
-              {/* ✅ Only show for donors */}
               {isDonor && (
                 <NavLink
                   as={Link}
@@ -234,18 +233,14 @@ const Header = () => {
                     <DropdownItem onClick={handleProfileClick}>
                       <span>👤</span> Profile
                     </DropdownItem>
-
-                    {/* 🆕 NEW: Personal Impact */}
                     <DropdownItem
                       onClick={() => {
                         setIsDropdownOpen(false);
                         navigate("/impact/personal");
                       }}
                     >
-                       My Impact
+                      <span>🌱</span> My Impact
                     </DropdownItem>
-
-                    {/* 🆕 NEW: QR Scanner */}
                     <DropdownItem
                       onClick={() => {
                         setIsDropdownOpen(false);
@@ -254,7 +249,6 @@ const Header = () => {
                     >
                       <span>📷</span> Scan QR
                     </DropdownItem>
-
                     <DropdownItem onClick={handleNotificationsClick}>
                       <span>🔔</span> Notifications
                       {unreadCount > 0 && (
@@ -263,8 +257,6 @@ const Header = () => {
                         </NotificationBadge>
                       )}
                     </DropdownItem>
-
-                    {/* ✅ Only show for donors */}
                     {isDonor && (
                       <DropdownItem
                         onClick={() => {
@@ -275,7 +267,6 @@ const Header = () => {
                         <span>➕</span> Create Listing
                       </DropdownItem>
                     )}
-                    
                     <div
                       style={{
                         borderTop: "1px solid #e2e8f0",
@@ -322,7 +313,6 @@ const Header = () => {
           >
             Home
           </MobileNavLink>
-
           <MobileNavLink
             as={Link}
             to="/listings"
@@ -331,8 +321,6 @@ const Header = () => {
           >
             Listings
           </MobileNavLink>
-
-          {/* 🆕 NEW: Community Impact (Mobile) */}
           <MobileNavLink
             as={Link}
             to="/impact/community"
@@ -352,8 +340,6 @@ const Header = () => {
               >
                 Dashboard
               </MobileNavLink>
-
-              {/* 🆕 NEW: Personal Impact (Mobile) */}
               <MobileNavLink
                 as={Link}
                 to="/impact/personal"
@@ -362,8 +348,6 @@ const Header = () => {
               >
                 🌱 My Impact
               </MobileNavLink>
-
-              {/* 🆕 NEW: QR Scanner (Mobile) */}
               <MobileNavLink
                 as={Link}
                 to="/verify-pickup"
@@ -372,7 +356,6 @@ const Header = () => {
               >
                 📷 Scan QR Code
               </MobileNavLink>
-
               <MobileNavLink
                 as={Link}
                 to="/notifications"
@@ -386,8 +369,6 @@ const Header = () => {
                   </NotificationBadge>
                 )}
               </MobileNavLink>
-
-              {/* ✅ Only show for donors */}
               {isDonor && (
                 <MobileNavLink
                   as={Link}
@@ -398,7 +379,6 @@ const Header = () => {
                   Create Listing
                 </MobileNavLink>
               )}
-
               <MobileNavLink
                 as={Link}
                 to="/profile"
@@ -407,7 +387,6 @@ const Header = () => {
               >
                 Profile
               </MobileNavLink>
-
               <MobileNavLink
                 onClick={() => {
                   handleLogout();
@@ -428,7 +407,6 @@ const Header = () => {
               >
                 Login
               </MobileNavLink>
-
               <MobileNavLink
                 as={Link}
                 to="/register"
