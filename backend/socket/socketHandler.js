@@ -1,5 +1,5 @@
 // ============================================
-// socket/socketHandler.js - FIXED
+// socket/socketHandler.js
 // ============================================
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");

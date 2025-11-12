@@ -1,13 +1,14 @@
-// ============================================
-// controllers/listingController.js - COMPLETE & FIXED
-// ============================================
+// backend/controllers/listingController.js - CLEANED VERSION
+
 const { validationResult } = require("express-validator");
 const Listing = require("../models/Listing");
 const User = require("../models/User");
 const cloudinary = require("../config/cloudinary");
 const notificationHelper = require("../utils/notificationHelper");
+// ❌ REMOVED: const Notification = require("../models/Notification");
+// We don't need this here since notificationHelper handles it
 
-// ✅ Create listing - FIXED
+// ✅ Create listing with REAL-TIME NOTIFICATIONS
 const createListing = async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -65,6 +66,19 @@ const createListing = async (req, res) => {
       $inc: { listingsCount: 1 },
     });
 
+    // 🔔 Broadcast notification to all users
+    try {
+      const notificationCount = await notificationHelper.broadcastNewListing(
+        listing,
+        req.user,
+        req.io
+      );
+      console.log(`✅ Sent ${notificationCount} notifications for new listing`);
+    } catch (notifError) {
+      console.error("⚠️ Notification error (non-critical):", notifError);
+      // Don't fail the request if notifications fail
+    }
+
     return res.status(201).json({
       success: true,
       message: "Listing created successfully",
@@ -80,7 +94,7 @@ const createListing = async (req, res) => {
   }
 };
 
-// ✅ Get all listings - FIXED
+// ✅ Get all listings
 const getListings = async (req, res) => {
   try {
     const {
@@ -134,11 +148,11 @@ const getListings = async (req, res) => {
   }
 };
 
-// ✅ Get single listing by ID - NEW
+// ✅ Get single listing by ID
 const getListingById = async (req, res) => {
   try {
-    console.log('🔍 Fetching listing:', req.params.id);
-    
+    console.log("🔍 Fetching listing:", req.params.id);
+
     const listing = await Listing.findById(req.params.id)
       .populate("donor", "firstName lastName avatar rating phone")
       .populate("assignedTo", "firstName lastName avatar rating")
@@ -151,30 +165,34 @@ const getListingById = async (req, res) => {
       });
     }
 
-    // ✅ FIXED: Increment views without validation
+    // Increment views
     await Listing.findByIdAndUpdate(
       req.params.id,
       { $inc: { views: 1 } },
-      { validateBeforeSave: false } // Skip validation
+      { validateBeforeSave: false }
     );
 
-    console.log('✅ Returning listing');
+    console.log("✅ Returning listing");
     res.json(listing);
-    
   } catch (error) {
     console.error("❌ Get listing error:", error);
     res.status(500).json({
       success: false,
       message: "Server error fetching listing",
-      error: error.message
+      error: error.message,
     });
   }
 };
 
-// ✅ Update listing - NEW
+// backend/controllers/listingController.js
+// REPLACE YOUR DELETE, UPDATE, and ASSIGN FUNCTIONS WITH THESE:
+
+// ✅ Update listing - WITH NOTIFICATIONS
 const updateListing = async (req, res) => {
   try {
-    const listing = await Listing.findById(req.params.id);
+    const listing = await Listing.findById(req.params.id)
+      .populate("interestedUsers.user", "firstName lastName")
+      .populate("assignedTo", "firstName lastName");
 
     if (!listing) {
       return res.status(404).json({
@@ -230,7 +248,26 @@ const updateListing = async (req, res) => {
       req.params.id,
       updateData,
       { new: true, runValidators: true }
-    ).populate("donor", "firstName lastName avatar rating");
+    )
+      .populate("donor", "firstName lastName avatar rating")
+      .populate("interestedUsers.user", "firstName lastName")
+      .populate("assignedTo", "firstName lastName");
+
+    // 🔔 NOTIFY INTERESTED USERS ABOUT THE UPDATE
+    try {
+      if (
+        updatedListing.interestedUsers?.length > 0 ||
+        updatedListing.assignedTo
+      ) {
+        await notificationHelper.onListingUpdated(
+          updatedListing,
+          updateData,
+          req.io
+        );
+      }
+    } catch (notifError) {
+      console.error("⚠️ Update notification error (non-critical):", notifError);
+    }
 
     res.json({
       success: true,
@@ -246,10 +283,12 @@ const updateListing = async (req, res) => {
   }
 };
 
-// ✅ Delete listing - NEW
+// ✅ Delete listing - WITH NOTIFICATIONS
 const deleteListing = async (req, res) => {
   try {
-    const listing = await Listing.findById(req.params.id);
+    const listing = await Listing.findById(req.params.id)
+      .populate("interestedUsers.user", "firstName lastName")
+      .populate("assignedTo", "firstName lastName");
 
     if (!listing) {
       return res.status(404).json({
@@ -266,6 +305,16 @@ const deleteListing = async (req, res) => {
         success: false,
         message: "Not authorized to delete this listing",
       });
+    }
+
+    // 🔔 NOTIFY INTERESTED USERS BEFORE DELETING
+    try {
+      if (listing.interestedUsers?.length > 0 || listing.assignedTo) {
+        const reason = req.body.reason || "The donor has removed this listing";
+        await notificationHelper.onListingDeleted(listing, reason, req.io);
+      }
+    } catch (notifError) {
+      console.error("⚠️ Delete notification error (non-critical):", notifError);
     }
 
     // Delete images from Cloudinary
@@ -298,7 +347,7 @@ const deleteListing = async (req, res) => {
   }
 };
 
-// ✅ Express interest - NEW
+// ✅ Express interest - ALREADY HAS NOTIFICATIONS
 const expressInterest = async (req, res) => {
   try {
     const { message } = req.body;
@@ -348,7 +397,7 @@ const expressInterest = async (req, res) => {
     await listing.save();
     await listing.populate("interestedUsers.user", "firstName lastName avatar");
 
-    // ✅ FIXED: Pass req.io
+    // 🔔 Notify donor
     await notificationHelper.onInterestExpressed(listing, req.user, req.io);
 
     res.json({
@@ -365,13 +414,16 @@ const expressInterest = async (req, res) => {
   }
 };
 
-// ✅ Assign listing - ADD req.io
+// ✅ Assign listing - WITH NOTIFICATIONS FOR ALL INTERESTED USERS
 const assignListing = async (req, res) => {
   try {
     const { recipientId } = req.body;
     const listingId = req.params.id;
 
-    const listing = await Listing.findById(listingId);
+    const listing = await Listing.findById(listingId).populate(
+      "interestedUsers.user",
+      "firstName lastName"
+    );
 
     if (!listing) {
       return res.status(404).json({
@@ -388,7 +440,7 @@ const assignListing = async (req, res) => {
     }
 
     listing.assignedTo = recipientId;
-    listing.status = "pending";
+    listing.status = "assigned"; // Changed from "pending" to "assigned"
     await listing.save();
 
     await listing.populate(
@@ -396,10 +448,24 @@ const assignListing = async (req, res) => {
       "firstName lastName avatar email phone"
     );
 
-    // ✅ FIXED: Pass req.io
+    // 🔔 NOTIFY THE CHOSEN RECIPIENT (Winner)
     const recipient = await User.findById(recipientId);
     if (recipient) {
       await notificationHelper.onListingAssigned(listing, recipient, req.io);
+    }
+
+    // 🔔 NOTIFY OTHER INTERESTED USERS (Sorry, someone else got it)
+    try {
+      await notificationHelper.onListingStatusChanged(
+        listing,
+        "assigned",
+        req.io
+      );
+    } catch (notifError) {
+      console.error(
+        "⚠️ Status change notification error (non-critical):",
+        notifError
+      );
     }
 
     res.json({
@@ -416,7 +482,7 @@ const assignListing = async (req, res) => {
   }
 };
 
-// ✅ Complete listing - ADD req.io
+// ✅ Complete listing
 const completeListing = async (req, res) => {
   try {
     const listingId = req.params.id;
@@ -441,7 +507,7 @@ const completeListing = async (req, res) => {
     listing.completedAt = new Date();
     await listing.save();
 
-    // ✅ FIXED: Pass req.io
+    // 🔔 Notify recipient
     if (listing.assignedTo) {
       await notificationHelper.onListingCompleted(
         listing,
@@ -584,17 +650,12 @@ const searchListings = async (req, res) => {
     });
   }
 };
-
-// ✅ Express interest - ADD req.io
-
+// MAKE SURE TO EXPORT THEM:
 module.exports = {
   createListing,
   getListings,
   getListingById,
   updateListing,
-  expressInterest, // ✅ Updated
-  assignListing, // ✅ Updated
-  completeListing,
   deleteListing,
   expressInterest,
   assignListing,
