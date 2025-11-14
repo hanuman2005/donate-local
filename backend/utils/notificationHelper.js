@@ -469,6 +469,56 @@ const notificationHelper = {
       return null;
     }
   },
+   async notifyQueueJoined(listing, userId, position) {
+    try {
+      const user = await User.findById(userId);
+
+      await Notification.create({
+        recipient: listing.donor,
+        sender: userId,
+        type: "queue_joined",
+        title: "📋 Someone Joined Your Queue",
+        message: `${user.firstName} joined the queue for "${listing.title}" (Position: ${position})`,
+        listing: listing._id,
+        actionUrl: `/listings/${listing._id}`,
+      });
+    } catch (error) {
+      console.error("Error sending queue notification:", error);
+    }
+  },
+
+  // Notify user when assigned from queue
+  async notifyAssignedFromQueue(listing, userId) {
+    try {
+      await Notification.create({
+        recipient: userId,
+        sender: listing.donor,
+        type: "queue_assigned",
+        title: "🎉 Your Turn! Listing Assigned",
+        message: `"${listing.title}" is now assigned to you! You have 24 hours to respond.`,
+        listing: listing._id,
+        actionUrl: `/listings/${listing._id}`,
+      });
+    } catch (error) {
+      console.error("Error sending queue assignment notification:", error);
+    }
+  },
+
+  // Notify when assignment is cancelled
+  async notifyAssignmentCancelled(listing, userId) {
+    try {
+      await Notification.create({
+        recipient: userId,
+        type: "assignment_cancelled",
+        title: "❌ Assignment Cancelled",
+        message: `Your assignment for "${listing.title}" was cancelled by the donor`,
+        listing: listing._id,
+        actionUrl: `/listings`,
+      });
+    } catch (error) {
+      console.error("Error sending cancellation notification:", error);
+    }
+  }
 };
 
 module.exports = notificationHelper;
