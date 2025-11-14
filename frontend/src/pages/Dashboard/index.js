@@ -1,3 +1,4 @@
+// src/pages/Dashboard/index.jsx - UPDATED WITH NEW COMPONENTS
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
@@ -6,6 +7,11 @@ import Map from "../../components/Map";
 import ListingCard from "../../components/ListingCard";
 import Chat from "../../components/Chat";
 import LoadingSpinner from "../../components/Common/LoadingSpinner";
+// ✅ Import new components
+import DonationCenterInfo from "../../components/DonationCenterInfo";
+import LiveDonationFeed from "../../components/LiveDonationFeed";
+import LiveStats from "../../components/LiveStats";
+
 import {
   DashboardContainer,
   DashboardHeader,
@@ -51,6 +57,7 @@ const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("available");
   const [userLocation, setUserLocation] = useState(null);
   const [selectedChat, setSelectedChat] = useState(null);
+  const [showLiveFeed, setShowLiveFeed] = useState(false); // ✅ Toggle for live feed
 
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -81,11 +88,12 @@ const Dashboard = () => {
         chatAPI.getUserChats(),
       ]);
 
-      const myItems = myListingsRes.data.listings || myListingsRes.data.data || [];
-      const allItems = allListingsRes.data.listings || allListingsRes.data.data || [];
+      const myItems =
+        myListingsRes.data.listings || myListingsRes.data.data || [];
+      const allItems =
+        allListingsRes.data.listings || allListingsRes.data.data || [];
       const myChats = chatsRes.data.chats || chatsRes.data.data || [];
 
-      // Deduplicate chats
       const uniqueChats = [];
       const seenParticipants = new Set();
 
@@ -142,8 +150,8 @@ const Dashboard = () => {
     );
   }
 
-  const isDonor = user?.userType === 'donor';
-  const isRecipient = user?.userType === 'recipient';
+  const isDonor = user?.userType === "donor" || user?.userType === "both";
+  const isRecipient = user?.userType === "recipient";
 
   const stats = {
     myActive: myListings.filter((l) => l.status === "available").length,
@@ -171,21 +179,27 @@ const Dashboard = () => {
           <WelcomeSubtitle>
             {isDonor
               ? `🌟 You're making a difference! ${stats.myCompleted} donations completed`
-              : "🍎 Discover fresh food available in your community"}
+              : "🍎 Discover fresh items available in your community"}
           </WelcomeSubtitle>
         </WelcomeSection>
 
         <QuickActions>
           {isDonor && (
             <ActionButton $primary onClick={handleCreateListing}>
-              ➕ Share Food
+              ➕ Share Item
             </ActionButton>
           )}
           <ActionButton onClick={() => navigate("/listings")}>
             🔍 Browse All
           </ActionButton>
+          <ActionButton onClick={() => setShowLiveFeed(!showLiveFeed)}>
+            {showLiveFeed ? "📋 List View" : "⚡ Live Feed"}
+          </ActionButton>
         </QuickActions>
       </DashboardHeader>
+
+      {/* ✅ Live Stats Component */}
+      <LiveStats />
 
       {/* Stats Cards */}
       <StatsRow>
@@ -195,17 +209,17 @@ const Dashboard = () => {
               <StatValue>{stats.myActive}</StatValue>
               <StatLabel>📦 Active Donations</StatLabel>
             </StatCard>
-            
+
             <StatCard $variant="pink">
               <StatValue>{stats.myPending}</StatValue>
               <StatLabel>⏳ Pending Pickups</StatLabel>
             </StatCard>
-            
+
             <StatCard $variant="blue">
               <StatValue>{stats.myCompleted}</StatValue>
               <StatLabel>✅ Completed</StatLabel>
             </StatCard>
-            
+
             <StatCard $variant="green">
               <StatValue>{chats.length}</StatValue>
               <StatLabel>💬 Active Chats</StatLabel>
@@ -215,19 +229,19 @@ const Dashboard = () => {
           <>
             <StatCard $variant="orange">
               <StatValue>{stats.availableNearby}</StatValue>
-              <StatLabel>🍎 Available Near You</StatLabel>
+              <StatLabel>📦 Available Near You</StatLabel>
             </StatCard>
-            
+
             <StatCard $variant="purple">
               <StatValue>{stats.myRequests}</StatValue>
               <StatLabel>📝 My Requests</StatLabel>
             </StatCard>
-            
+
             <StatCard $variant="blue">
               <StatValue>{stats.myCompleted}</StatValue>
               <StatLabel>✅ Items Received</StatLabel>
             </StatCard>
-            
+
             <StatCard $variant="green">
               <StatValue>{chats.length}</StatValue>
               <StatLabel>💬 Conversations</StatLabel>
@@ -238,168 +252,196 @@ const Dashboard = () => {
 
       <DashboardContent>
         <MainSection>
-          {/* Donor's Listings Section */}
-          {isDonor && (
+          {/* ✅ Live Donation Feed or Regular View */}
+          {showLiveFeed ? (
             <Section>
               <SectionHeader>
-                <GradientText $variant="purple">
-                  📦 Your Donations
+                <GradientText $variant="green">
+                  ⚡ Live Donation Feed
                 </GradientText>
-                <TabContainer>
-                  <Tab
-                    $active={activeTab === "active"}
-                    onClick={() => setActiveTab("active")}
-                  >
-                    Active ({stats.myActive})
-                  </Tab>
-                  <Tab
-                    $active={activeTab === "pending"}
-                    onClick={() => setActiveTab("pending")}
-                  >
-                    Pending ({stats.myPending})
-                  </Tab>
-                  <Tab
-                    $active={activeTab === "completed"}
-                    onClick={() => setActiveTab("completed")}
-                  >
-                    Completed ({stats.myCompleted})
-                  </Tab>
-                </TabContainer>
+                <ActionButton onClick={() => setShowLiveFeed(false)}>
+                  📋 Switch to List View
+                </ActionButton>
               </SectionHeader>
+              <LiveDonationFeed />
+            </Section>
+          ) : (
+            <>
+              {/* Donor's Listings Section */}
+              {isDonor && (
+                <Section>
+                  <SectionHeader>
+                    <GradientText $variant="purple">
+                      📦 Your Donations
+                    </GradientText>
+                    <TabContainer>
+                      <Tab
+                        $active={activeTab === "active"}
+                        onClick={() => setActiveTab("active")}
+                      >
+                        Active ({stats.myActive})
+                      </Tab>
+                      <Tab
+                        $active={activeTab === "pending"}
+                        onClick={() => setActiveTab("pending")}
+                      >
+                        Pending ({stats.myPending})
+                      </Tab>
+                      <Tab
+                        $active={activeTab === "completed"}
+                        onClick={() => setActiveTab("completed")}
+                      >
+                        Completed ({stats.myCompleted})
+                      </Tab>
+                    </TabContainer>
+                  </SectionHeader>
 
-              <TabContent>
-                {myListings.filter((listing) => {
-                  if (activeTab === "active") return listing.status === "available";
-                  if (activeTab === "pending") return listing.status === "pending";
-                  if (activeTab === "completed") return listing.status === "completed";
-                  return true;
-                }).length > 0 ? (
-                  <ListingsGrid>
-                    {myListings
-                      .filter((listing) => {
-                        if (activeTab === "active") return listing.status === "available";
-                        if (activeTab === "pending") return listing.status === "pending";
-                        if (activeTab === "completed") return listing.status === "completed";
-                        return true;
-                      })
-                      .slice(0, 6)
-                      .map((listing) => (
+                  <TabContent>
+                    {myListings.filter((listing) => {
+                      if (activeTab === "active")
+                        return listing.status === "available";
+                      if (activeTab === "pending")
+                        return listing.status === "pending";
+                      if (activeTab === "completed")
+                        return listing.status === "completed";
+                      return true;
+                    }).length > 0 ? (
+                      <ListingsGrid>
+                        {myListings
+                          .filter((listing) => {
+                            if (activeTab === "active")
+                              return listing.status === "available";
+                            if (activeTab === "pending")
+                              return listing.status === "pending";
+                            if (activeTab === "completed")
+                              return listing.status === "completed";
+                            return true;
+                          })
+                          .slice(0, 6)
+                          .map((listing) => (
+                            <ListingCard
+                              key={listing._id}
+                              listing={listing}
+                              isOwner={true}
+                            />
+                          ))}
+                      </ListingsGrid>
+                    ) : (
+                      <EmptyState>
+                        <EmptyStateIcon>📦</EmptyStateIcon>
+                        <EmptyStateText $large>
+                          No {activeTab} donations yet
+                        </EmptyStateText>
+                        <EmptyStateText>
+                          {activeTab === "active" &&
+                            "Share items to help your community"}
+                          {activeTab === "pending" &&
+                            "No pending pickups at the moment"}
+                          {activeTab === "completed" &&
+                            "Complete donations will appear here"}
+                        </EmptyStateText>
+                        {activeTab === "active" && (
+                          <ActionButton $primary onClick={handleCreateListing}>
+                            ➕ Share Your First Item
+                          </ActionButton>
+                        )}
+                      </EmptyState>
+                    )}
+                  </TabContent>
+                </Section>
+              )}
+
+              {/* Available Items Section */}
+              <Section>
+                <SectionHeader>
+                  <GradientText $variant="green">
+                    {isDonor ? "🌍 Community Items" : "📦 Available Near You"}
+                  </GradientText>
+                  <TabContainer>
+                    <Tab
+                      $active={activeTab === "available"}
+                      onClick={() => setActiveTab("available")}
+                    >
+                      📋 List
+                    </Tab>
+                    <Tab
+                      $active={activeTab === "map"}
+                      onClick={() => setActiveTab("map")}
+                    >
+                      🗺️ Map
+                    </Tab>
+                  </TabContainer>
+                </SectionHeader>
+
+                <TabContent>
+                  {activeTab === "map" ? (
+                    <MapContainer>
+                      <Map
+                        listings={availableListings}
+                        userLocation={userLocation}
+                        height="500px"
+                      />
+                    </MapContainer>
+                  ) : availableListings.length > 0 ? (
+                    <ListingsGrid>
+                      {availableListings.slice(0, 6).map((listing) => (
                         <ListingCard
                           key={listing._id}
                           listing={listing}
-                          isOwner={true}
+                          showQuickClaim={true}
+                          showDistance={!!userLocation}
+                          userLocation={userLocation}
                         />
                       ))}
-                  </ListingsGrid>
-                ) : (
-                  <EmptyState>
-                    <EmptyStateIcon>📦</EmptyStateIcon>
-                    <EmptyStateText $large>
-                      No {activeTab} donations yet
-                    </EmptyStateText>
-                    <EmptyStateText>
-                      {activeTab === "active" && "Share food to help your community"}
-                      {activeTab === "pending" && "No pending pickups at the moment"}
-                      {activeTab === "completed" && "Complete donations will appear here"}
-                    </EmptyStateText>
-                    {activeTab === "active" && (
-                      <ActionButton $primary onClick={handleCreateListing}>
-                        ➕ Share Your First Item
-                      </ActionButton>
-                    )}
-                  </EmptyState>
+                    </ListingsGrid>
+                  ) : (
+                    <EmptyState>
+                      <EmptyStateIcon>🔍</EmptyStateIcon>
+                      <EmptyStateText $large>
+                        No items available nearby
+                      </EmptyStateText>
+                      <EmptyStateText>
+                        Check back later or expand your search
+                      </EmptyStateText>
+                    </EmptyState>
+                  )}
+                </TabContent>
+
+                {availableListings.length > 6 && (
+                  <div style={{ textAlign: "center", marginTop: "1.5rem" }}>
+                    <ViewAllButton onClick={() => navigate("/listings")}>
+                      View All {availableListings.length} Listings →
+                    </ViewAllButton>
+                  </div>
                 )}
-              </TabContent>
-            </Section>
-          )}
+              </Section>
 
-          {/* Available Food Section */}
-          <Section>
-            <SectionHeader>
-              <GradientText $variant="green">
-                {isDonor ? "🌍 Community Food" : "🍎 Available Near You"}
-              </GradientText>
-              <TabContainer>
-                <Tab
-                  $active={activeTab === "available"}
-                  onClick={() => setActiveTab("available")}
-                >
-                  📋 List
-                </Tab>
-                <Tab
-                  $active={activeTab === "map"}
-                  onClick={() => setActiveTab("map")}
-                >
-                  🗺️ Map
-                </Tab>
-              </TabContainer>
-            </SectionHeader>
-
-            <TabContent>
-              {activeTab === "map" ? (
-                <MapContainer>
-                  <Map
-                    listings={availableListings}
-                    userLocation={userLocation}
-                    height="500px"
-                  />
-                </MapContainer>
-              ) : availableListings.length > 0 ? (
-                <ListingsGrid>
-                  {availableListings.slice(0, 6).map((listing) => (
-                    <ListingCard
-                      key={listing._id}
-                      listing={listing}
-                      showDistance={!!userLocation}
-                      userLocation={userLocation}
-                    />
-                  ))}
-                </ListingsGrid>
-              ) : (
-                <EmptyState>
-                  <EmptyStateIcon>🔍</EmptyStateIcon>
-                  <EmptyStateText $large>
-                    No food available nearby
-                  </EmptyStateText>
-                  <EmptyStateText>
-                    Check back later or expand your search
-                  </EmptyStateText>
-                </EmptyState>
+              {/* My Requests Section */}
+              {interestedListings.length > 0 && (
+                <Section>
+                  <SectionHeader>
+                    <GradientText $variant="pink">📝 My Requests</GradientText>
+                  </SectionHeader>
+                  <ListingsGrid>
+                    {interestedListings.map((listing) => (
+                      <ListingCard
+                        key={listing._id}
+                        listing={listing}
+                        showDistance={!!userLocation}
+                        userLocation={userLocation}
+                      />
+                    ))}
+                  </ListingsGrid>
+                </Section>
               )}
-            </TabContent>
-
-            {availableListings.length > 6 && (
-              <div style={{ textAlign: "center", marginTop: "1.5rem" }}>
-                <ViewAllButton onClick={() => navigate("/listings")}>
-                  View All {availableListings.length} Listings →
-                </ViewAllButton>
-              </div>
-            )}
-          </Section>
-
-          {/* My Requests Section */}
-          {interestedListings.length > 0 && (
-            <Section>
-              <SectionHeader>
-                <GradientText $variant="pink">
-                  📝 My Requests
-                </GradientText>
-              </SectionHeader>
-              <ListingsGrid>
-                {interestedListings.map((listing) => (
-                  <ListingCard
-                    key={listing._id}
-                    listing={listing}
-                    showDistance={!!userLocation}
-                    userLocation={userLocation}
-                  />
-                ))}
-              </ListingsGrid>
-            </Section>
+            </>
           )}
         </MainSection>
 
         <Sidebar>
+          {/* ✅ Donation Center Info */}
+          <DonationCenterInfo />
+
           {/* Messages Section */}
           <Section>
             <SectionHeader>
@@ -438,19 +480,23 @@ const Dashboard = () => {
                   <ImpactStat>
                     <ImpactIcon>✨</ImpactIcon>
                     <ImpactText>
-                      <ImpactValue>{stats.myCompleted}</ImpactValue> donations completed
+                      <ImpactValue>{stats.myCompleted}</ImpactValue> donations
+                      completed
                     </ImpactText>
                   </ImpactStat>
                   <ImpactStat>
                     <ImpactIcon>🌱</ImpactIcon>
                     <ImpactText>
-                      Approx. <ImpactValue>{stats.myCompleted * 2}kg</ImpactValue> waste prevented
+                      Approx.{" "}
+                      <ImpactValue>{stats.myCompleted * 2}kg</ImpactValue> waste
+                      prevented
                     </ImpactText>
                   </ImpactStat>
                   <ImpactStat>
                     <ImpactIcon>💚</ImpactIcon>
                     <ImpactText>
-                      <ImpactValue>{stats.myCompleted * 3}</ImpactValue> meals provided
+                      <ImpactValue>{stats.myCompleted * 3}</ImpactValue> items
+                      shared
                     </ImpactText>
                   </ImpactStat>
                 </>
@@ -459,7 +505,8 @@ const Dashboard = () => {
                   <ImpactStat>
                     <ImpactIcon>🙏</ImpactIcon>
                     <ImpactText>
-                      <ImpactValue>{stats.myCompleted}</ImpactValue> items received
+                      <ImpactValue>{stats.myCompleted}</ImpactValue> items
+                      received
                     </ImpactText>
                   </ImpactStat>
                   <ImpactStat>

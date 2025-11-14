@@ -2,14 +2,15 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import ImpactCard from './ImpactCard';
-import axios from 'axios';
+import { impactAPI } from '../../services/api';
 import { toast } from 'react-toastify';
-import api from '../../services/api'; // ✅ Added this line
 
 const Container = styled.div`
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
+  min-height: 100vh;
+  background: #f7fafc;
 `;
 
 const Header = styled.div`
@@ -175,25 +176,26 @@ const LoadingSpinner = styled.div`
   color: #667eea;
 `;
 
+const ErrorMessage = styled.div`
+  text-align: center;
+  padding: 4rem;
+  color: #e53e3e;
+  font-size: 1.2rem;
+`;
+
 const getCategoryIcon = (category) => {
   const icons = {
-    'fruits': '🍎',
-    'vegetables': '🥬',
-    'grains': '🌾',
-    'dairy': '🥛',
-    'meat': '🍖',
-    'bakery': '🍞',
+    'produce': '🍎',
     'canned-goods': '🥫',
-    'beverages': '🥤',
-    'snacks': '🍿',
-    'frozen': '❄️',
-    'prepared-meals': '🍱',
+    'dairy': '🥛',
+    'bakery': '🍞',
+    'household-items': '🏠',
     'clothing': '👕',
     'electronics': '📱',
     'furniture': '🛋️',
     'books': '📚',
     'toys': '🧸',
-    'household': '🏠'
+    'other': '📦'
   };
   return icons[category] || '📦';
 };
@@ -201,6 +203,7 @@ const getCategoryIcon = (category) => {
 const CommunityStats = () => {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState(null);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     fetchCommunityData();
@@ -208,14 +211,19 @@ const CommunityStats = () => {
 
   const fetchCommunityData = async () => {
     try {
-      // ✅ Changed axios to api and fixed endpoint path
-      const response = await api.get('/impact/community');
+      setLoading(true);
+      setError(null);
+      
+      const response = await impactAPI.getCommunityImpact();
       
       if (response.data.success) {
         setData(response.data);
+      } else {
+        throw new Error(response.data.message || 'Failed to load community data');
       }
     } catch (error) {
       console.error('Fetch error:', error);
+      setError(error.response?.data?.message || 'Failed to load community data');
       toast.error('Failed to load community data');
     } finally {
       setLoading(false);
@@ -223,11 +231,45 @@ const CommunityStats = () => {
   };
 
   if (loading) {
-    return <LoadingSpinner>Loading community impact... 🌍</LoadingSpinner>;
+    return (
+      <Container>
+        <LoadingSpinner>Loading community impact... 🌍</LoadingSpinner>
+      </Container>
+    );
   }
 
-  if (!data) {
-    return <Container>Error loading data</Container>;
+  if (error) {
+    return (
+      <Container>
+        <ErrorMessage>
+          {error}
+          <br />
+          <button 
+            onClick={fetchCommunityData}
+            style={{
+              marginTop: '1rem',
+              padding: '0.75rem 1.5rem',
+              background: '#667eea',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontSize: '1rem'
+            }}
+          >
+            Try Again
+          </button>
+        </ErrorMessage>
+      </Container>
+    );
+  }
+
+  if (!data || !data.community) {
+    return (
+      <Container>
+        <ErrorMessage>No community data available</ErrorMessage>
+      </Container>
+    );
   }
 
   const { community, topDonors, trendingCategories, stats } = data;
@@ -242,7 +284,7 @@ const CommunityStats = () => {
       <CardsGrid>
         <ImpactCard
           icon="♻️"
-          value={community.totalWastePreventedKg}
+          value={community.totalWastePreventedKg || 0}
           label="Total Waste Prevented"
           subtitle="Community-wide impact"
           decimals={1}
@@ -252,53 +294,55 @@ const CommunityStats = () => {
 
         <ImpactCard
           icon="🌍"
-          value={community.totalCO2SavedKg}
+          value={community.totalCO2SavedKg || 0}
           label="Total CO2 Saved"
-          subtitle={`${community.treesEquivalent} trees equivalent`}
+          subtitle={`${community.treesEquivalent || 0} trees equivalent`}
           decimals={1}
           suffix=" kg"
           gradient="linear-gradient(135deg, #4299e1 0%, #3182ce 100%)"
         />
 
         <ImpactCard
-          icon="🍽️"
-          value={community.totalMealsProvided}
-          label="Total Meals"
-          subtitle="Fed to community members"
+          icon="📦"
+          value={community.totalItemsSaved || community.totalMealsProvided || 0}
+          label="Items Shared"
+          subtitle="Helping our community"
           gradient="linear-gradient(135deg, #ed8936 0%, #dd6b20 100%)"
         />
 
         <ImpactCard
           icon="👥"
-          value={community.totalUsers}
-          label="Active Members"
+          value={stats?.activeUsersThisWeek || 0}
+          label="Active This Week"
           subtitle="Growing every day"
           gradient="linear-gradient(135deg, #9f7aea 0%, #805ad5 100%)"
         />
       </CardsGrid>
 
-      <Section>
-        <SectionTitle>🏆 Top Contributors</SectionTitle>
-        <LeaderboardList>
-          {topDonors.slice(0, 10).map((donor, index) => (
-            <LeaderboardItem key={index} $rank={index + 1}>
-              <RankBadge $rank={index + 1}>
-                {index + 1 <= 3 ? ['🥇', '🥈', '🥉'][index] : `#${index + 1}`}
-              </RankBadge>
-              <UserInfo>
-                <UserName>
-                  {donor.user ? `${donor.user.firstName} ${donor.user.lastName}` : 'Anonymous'}
-                </UserName>
-                <UserStats>
-                  {donor.wasteKg.toFixed(1)}kg waste prevented • 
-                  {donor.co2Kg.toFixed(1)}kg CO2 saved • 
-                  {donor.count} donations
-                </UserStats>
-              </UserInfo>
-            </LeaderboardItem>
-          ))}
-        </LeaderboardList>
-      </Section>
+      {topDonors && topDonors.length > 0 && (
+        <Section>
+          <SectionTitle>🏆 Top Contributors</SectionTitle>
+          <LeaderboardList>
+            {topDonors.slice(0, 10).map((donor, index) => (
+              <LeaderboardItem key={index} $rank={index + 1}>
+                <RankBadge $rank={index + 1}>
+                  {index + 1 <= 3 ? ['🥇', '🥈', '🥉'][index] : `#${index + 1}`}
+                </RankBadge>
+                <UserInfo>
+                  <UserName>
+                    {donor.user ? `${donor.user.firstName || ''} ${donor.user.lastName || ''}`.trim() : 'Anonymous'}
+                  </UserName>
+                  <UserStats>
+                    {donor.wasteKg?.toFixed(1) || 0}kg waste prevented • 
+                    {donor.co2Kg?.toFixed(1) || 0}kg CO2 saved • 
+                    {donor.count || 0} donations
+                  </UserStats>
+                </UserInfo>
+              </LeaderboardItem>
+            ))}
+          </LeaderboardList>
+        </Section>
+      )}
 
       {trendingCategories && trendingCategories.length > 0 && (
         <Section>
@@ -308,30 +352,32 @@ const CommunityStats = () => {
               <TrendingCard key={index}>
                 <CategoryIcon>{getCategoryIcon(category._id)}</CategoryIcon>
                 <CategoryName>{category._id || 'Other'}</CategoryName>
-                <CategoryCount>{category.count} donations</CategoryCount>
+                <CategoryCount>{category.count || 0} donations</CategoryCount>
               </TrendingCard>
             ))}
           </TrendingGrid>
         </Section>
       )}
 
-      <Section>
-        <SectionTitle>📊 This Week's Activity</SectionTitle>
-        <StatsRow>
-          <StatBox>
-            <StatValue>{stats.activeUsersThisWeek}</StatValue>
-            <StatLabel>Active Users</StatLabel>
-          </StatBox>
-          <StatBox>
-            <StatValue>{stats.transactionsThisWeek}</StatValue>
-            <StatLabel>Transactions</StatLabel>
-          </StatBox>
-          <StatBox>
-            <StatValue>{community.totalTransactions}</StatValue>
-            <StatLabel>All-Time Total</StatLabel>
-          </StatBox>
-        </StatsRow>
-      </Section>
+      {stats && (
+        <Section>
+          <SectionTitle>📊 This Week's Activity</SectionTitle>
+          <StatsRow>
+            <StatBox>
+              <StatValue>{stats.activeUsersThisWeek || 0}</StatValue>
+              <StatLabel>Active Users</StatLabel>
+            </StatBox>
+            <StatBox>
+              <StatValue>{stats.transactionsThisWeek || 0}</StatValue>
+              <StatLabel>Transactions</StatLabel>
+            </StatBox>
+            <StatBox>
+              <StatValue>{community.totalTransactions || 0}</StatValue>
+              <StatLabel>All-Time Total</StatLabel>
+            </StatBox>
+          </StatsRow>
+        </Section>
+      )}
     </Container>
   );
 };

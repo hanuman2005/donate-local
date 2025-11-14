@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { usersAPI, uploadAPI } from "../../services/api";
+import api from "../../services/api";
+import { toast } from "react-toastify";
+
 import {
   ProfileContainer,
   ProfileCard,
@@ -9,7 +12,7 @@ import {
   AvatarWrapper,
   Avatar,
   AvatarUpload,
-  ProfileInfo,  
+  ProfileInfo,
   ProfileName,
   ProfileEmail,
   ProfileBio,
@@ -27,7 +30,7 @@ import {
   Label,
   Input,
   Select,
-  TextArea, 
+  TextArea,
   BadgesSection,
   BadgeCard,
   BadgeIcon,
@@ -47,6 +50,19 @@ import {
   Spinner,
 } from "./styledComponents";
 
+import {
+  HistorySection,
+  HistoryItem,
+  ItemDetails,
+  ItemTitle,
+  ItemMeta,
+  ReceiptButton,
+  ReceiptModal,
+  ReceiptHeader,
+  ReceiptBody,
+  ReceiptRow,
+} from "./styledComponents";
+
 const Profile = () => {
   const { user, updateUser } = useAuth();
   const [activeTab, setActiveTab] = useState("profile");
@@ -55,6 +71,9 @@ const Profile = () => {
   const [ratings, setRatings] = useState([]);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [stats, setStats] = useState(null);
+  const [history, setHistory] = useState([]);
+  const [selectedReceipt, setSelectedReceipt] = useState(null);
 
   const [formData, setFormData] = useState({
     firstName: user?.firstName || "",
@@ -69,7 +88,6 @@ const Profile = () => {
   const [avatarFile, setAvatarFile] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState(null);
 
-  // Badges data
   const badges = [
     {
       id: 1,
@@ -99,20 +117,6 @@ const Profile = () => {
       description: "4.5+ average rating",
       unlocked: (user?.rating || 0) >= 4.5,
     },
-    {
-      id: 5,
-      icon: "🔥",
-      name: "On Fire",
-      description: "Active 30 days streak",
-      unlocked: false,
-    },
-    {
-      id: 6,
-      icon: "❤️",
-      name: "Community Hero",
-      description: "Helped 100+ people",
-      unlocked: false,
-    },
   ];
 
   useEffect(() => {
@@ -130,124 +134,112 @@ const Profile = () => {
   }, [user]);
 
   useEffect(() => {
-    fetchRatings();
-  }, []);
+    if (activeTab === "ratings") fetchRatings();
+    if (activeTab === "impact") fetchStats();
+    if (activeTab === "donations") fetchHistory("donated");
+    if (activeTab === "received") fetchHistory("received");
+  }, [activeTab]);
 
   const fetchRatings = async () => {
     try {
-      const response = await usersAPI.getRatings(user._id);
-      setRatings(response.data.ratings || []);
-    } catch (err) {
-      console.error("Error fetching ratings:", err);
+      const res = await usersAPI.getRatings(user._id);
+      setRatings(res.data.ratings || []);
+    } catch {
+      toast.error("Failed to fetch ratings");
+    }
+  };
+
+  const fetchStats = async () => {
+    try {
+      const res = await api.get("/analytics/user");
+      setStats(res.data.analytics);
+    } catch {
+      toast.error("Failed to fetch analytics");
+    }
+  };
+
+  const fetchHistory = async (type) => {
+    try {
+      const res = await api.get(`/listings/user?type=${type}`);
+      setHistory(res.data.listings);
+    } catch {
+      toast.error("Failed to fetch listings");
     }
   };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-    if (error) setError("");
-    if (success) setSuccess("");
+    setFormData((p) => ({ ...p, [name]: value }));
   };
 
   const handleAvatarChange = (e) => {
     const file = e.target.files[0];
-    if (file) {
-      if (!file.type.startsWith("image/")) {
-        setError("Please select an image file");
-        return;
-      }
-      if (file.size > 2 * 1024 * 1024) {
-        setError("Image size should be less than 2MB");
-        return;
-      }
+    if (file && file.type.startsWith("image/") && file.size < 2 * 1024 * 1024) {
       setAvatarFile(file);
       setAvatarPreview(URL.createObjectURL(file));
-      setError("");
-    }
+    } else toast.error("Invalid image (max 2MB)");
   };
 
   const handleSave = async () => {
     try {
       setLoading(true);
-      setError("");
-
       let avatarUrl = user.avatar;
 
       if (avatarFile) {
-        const uploadFormData = new FormData();
-        uploadFormData.append("image", avatarFile);
-        const uploadResponse = await usersAPI.updateProfileImage(
-          uploadFormData
-        );
-        avatarUrl = uploadResponse.data.imageUrl || uploadResponse.data.url;
+        const uploadData = new FormData();
+        uploadData.append("image", avatarFile);
+        const uploadRes = await usersAPI.updateProfileImage(uploadData);
+        avatarUrl = uploadRes.data.imageUrl || uploadRes.data.url;
       }
 
-      const updatedData = {
-        ...formData,
-        avatar: avatarUrl,
-      };
-
-      const response = await usersAPI.updateProfile(user._id, updatedData);
-
-      if (response.data) {
-        updateUser(response.data.user || response.data);
-        setSuccess("Profile updated successfully!");
-        setIsEditing(false);
-        setAvatarFile(null);
-        setAvatarPreview(null);
-      }
+      const updated = { ...formData, avatar: avatarUrl };
+      const res = await usersAPI.updateProfile(user._id, updated);
+      updateUser(res.data.user || res.data);
+      setSuccess("Profile updated successfully!");
+      setIsEditing(false);
     } catch (err) {
-      console.error("Error updating profile:", err);
-      setError(err.response?.data?.message || "Failed to update profile");
+      setError(err.response?.data?.message || "Update failed");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleCancel = () => {
-    setFormData({
-      firstName: user?.firstName || "",
-      lastName: user?.lastName || "",
-      email: user?.email || "",
-      phone: user?.phone || "",
-      address: user?.address || "",
-      bio: user?.bio || "",
-      userType: user?.userType || "individual",
-    });
-    setAvatarFile(null);
-    setAvatarPreview(null);
-    setIsEditing(false);
-    setError("");
-    setSuccess("");
+  const generateReceipt = (item) => setSelectedReceipt(item);
+
+  const downloadReceipt = (item) => {
+    const data = `
+════ DONATION RECEIPT ════
+
+Item: ${item.title}
+Quantity: ${item.quantity} ${item.unit}
+Category: ${item.category}
+Status: ${item.status.toUpperCase()}
+
+Donor: ${item?.donor?.firstName || ""} ${item?.donor?.lastName || ""}
+Recipient: ${item?.assignedTo?.firstName || ""} ${
+      item?.assignedTo?.lastName || ""
+    }
+
+Date: ${new Date(item.completedAt || item.createdAt).toLocaleDateString()}
+──────────────────────
+Thank you for supporting your community!
+    `;
+    const blob = new Blob([data], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `donation-receipt-${item._id}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
-  const renderStars = (rating) => {
-    return "⭐".repeat(Math.floor(rating)) + "☆".repeat(5 - Math.floor(rating));
-  };
-
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  };
+  const renderStars = (r) =>
+    "⭐".repeat(Math.floor(r)) + "☆".repeat(5 - Math.floor(r));
 
   const averageRating =
     ratings.length > 0
-      ? ratings.reduce((sum, rating) => sum + rating.rating, 0) / ratings.length
+      ? ratings.reduce((s, r) => s + r.rating, 0) / ratings.length
       : 0;
-
-  if (!user) {
-    return (
-      <LoadingOverlay>
-        <Spinner />
-      </LoadingOverlay>
-    );
-  }
 
   return (
     <ProfileContainer>
@@ -259,17 +251,13 @@ const Profile = () => {
 
       <ProfileCard>
         <CoverPhoto />
-
         <ProfileHeader>
           <AvatarWrapper>
             <Avatar>
               {avatarPreview ? (
-                <img src={avatarPreview} alt="Avatar Preview" />
+                <img src={avatarPreview} alt="avatar" />
               ) : user.avatar ? (
-                <img
-                  src={user.avatar}
-                  alt={`${user.firstName} ${user.lastName}`}
-                />
+                <img src={user.avatar} alt="avatar" />
               ) : (
                 <span>
                   {user.firstName?.[0]}
@@ -277,14 +265,12 @@ const Profile = () => {
                 </span>
               )}
             </Avatar>
-
             {isEditing && (
               <AvatarUpload>
                 <input
                   type="file"
                   accept="image/*"
                   onChange={handleAvatarChange}
-                  id="avatar-upload"
                 />
                 📷
               </AvatarUpload>
@@ -296,17 +282,15 @@ const Profile = () => {
               {user.firstName} {user.lastName}
             </ProfileName>
             <ProfileEmail>📧 {user.email}</ProfileEmail>
-            {user.bio && !isEditing && <ProfileBio>{user.bio}</ProfileBio>}
+            {!isEditing && user.bio && <ProfileBio>{user.bio}</ProfileBio>}
             <ProfileActions>
               {isEditing ? (
                 <>
-                  <ActionButton onClick={handleCancel}>❌ Cancel</ActionButton>
-                  <ActionButton
-                    $primary
-                    onClick={handleSave}
-                    disabled={loading}
-                  >
-                    ✅ Save Changes
+                  <ActionButton onClick={() => setIsEditing(false)}>
+                    ❌ Cancel
+                  </ActionButton>
+                  <ActionButton $primary onClick={handleSave}>
+                    ✅ Save
                   </ActionButton>
                 </>
               ) : (
@@ -321,19 +305,19 @@ const Profile = () => {
         <StatsContainer>
           <StatCard>
             <StatValue>{user.listingsCount || 0}</StatValue>
-            <StatLabel>📦 Total Donations</StatLabel>
+            <StatLabel>Total Donations</StatLabel>
           </StatCard>
           <StatCard>
             <StatValue>{averageRating.toFixed(1)}</StatValue>
-            <StatLabel>⭐ Average Rating</StatLabel>
+            <StatLabel>Average Rating</StatLabel>
           </StatCard>
           <StatCard>
             <StatValue>{ratings.length}</StatValue>
-            <StatLabel>💬 Reviews</StatLabel>
+            <StatLabel>Reviews</StatLabel>
           </StatCard>
           <StatCard>
             <StatValue>{badges.filter((b) => b.unlocked).length}</StatValue>
-            <StatLabel>🏆 Badges Earned</StatLabel>
+            <StatLabel>Badges</StatLabel>
           </StatCard>
         </StatsContainer>
 
@@ -342,7 +326,7 @@ const Profile = () => {
             $active={activeTab === "profile"}
             onClick={() => setActiveTab("profile")}
           >
-            👤 Profile Info
+            👤 Profile
           </Tab>
           <Tab
             $active={activeTab === "badges"}
@@ -356,103 +340,81 @@ const Profile = () => {
           >
             ⭐ Reviews
           </Tab>
+          <Tab
+            $active={activeTab === "impact"}
+            onClick={() => setActiveTab("impact")}
+          >
+            📊 My Impact
+          </Tab>
+          <Tab
+            $active={activeTab === "donations"}
+            onClick={() => setActiveTab("donations")}
+          >
+            🎁 My Donations
+          </Tab>
+          <Tab
+            $active={activeTab === "received"}
+            onClick={() => setActiveTab("received")}
+          >
+            📦 Received Items
+          </Tab>
         </ContentTabs>
 
         <TabContent>
-          {error && <MessageBox $type="error">{error}</MessageBox>}
-          {success && <MessageBox $type="success">{success}</MessageBox>}
-
           {activeTab === "profile" && (
             <FormGrid>
-              <FormGroup>
-                <Label>First Name</Label>
-                <Input
-                  type="text"
-                  name="firstName"
-                  value={formData.firstName}
-                  onChange={handleInputChange}
-                  disabled={!isEditing}
-                />
-              </FormGroup>
-
-              <FormGroup>
-                <Label>Last Name</Label>
-                <Input
-                  type="text"
-                  name="lastName"
-                  value={formData.lastName}
-                  onChange={handleInputChange}
-                  disabled={!isEditing}
-                />
-              </FormGroup>
-
-              <FormGroup>
-                <Label>Email</Label>
-                <Input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  disabled={true}
-                />
-              </FormGroup>
-
-              <FormGroup>
-                <Label>Phone</Label>
-                <Input
-                  type="tel"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleInputChange}
-                  disabled={!isEditing}
-                />
-              </FormGroup>
-
-              <FormGroup style={{ gridColumn: "1 / -1" }}>
-                <Label>Address</Label>
-                <Input
-                  type="text"
-                  name="address"
-                  value={formData.address}
-                  onChange={handleInputChange}
-                  disabled={!isEditing}
-                />
-              </FormGroup>
-
-              <FormGroup style={{ gridColumn: "1 / -1" }}>
-                <Label>Account Type</Label>
-                <Select
-                  name="userType"
-                  value={formData.userType}
-                  onChange={handleInputChange}
-                  disabled={!isEditing}
+              {[
+                "firstName",
+                "lastName",
+                "email",
+                "phone",
+                "address",
+                "userType",
+                "bio",
+              ].map((f) => (
+                <FormGroup
+                  key={f}
+                  style={f === "bio" ? { gridColumn: "1 / -1" } : {}}
                 >
-                  <option value="individual">Individual</option>
-                  <option value="business">Business/Organization</option>
-                </Select>
-              </FormGroup>
-
-              <FormGroup style={{ gridColumn: "1 / -1" }}>
-                <Label>Bio</Label>
-                <TextArea
-                  name="bio"
-                  value={formData.bio}
-                  onChange={handleInputChange}
-                  placeholder="Tell others about yourself..."
-                  disabled={!isEditing}
-                  rows="4"
-                />
-              </FormGroup>
+                  <Label>{f.charAt(0).toUpperCase() + f.slice(1)}</Label>
+                  {f === "bio" ? (
+                    <TextArea
+                      name={f}
+                      value={formData[f]}
+                      onChange={handleInputChange}
+                      disabled={!isEditing}
+                    />
+                  ) : f === "userType" ? (
+                    <Select
+                      name="userType"
+                      value={formData.userType}
+                      onChange={handleInputChange}
+                      disabled={!isEditing}
+                    >
+                      <option value="individual">Individual</option>
+                      <option value="business">Business</option>
+                    </Select>
+                  ) : (
+                    <Input
+                      type="text"
+                      name={f}
+                      value={formData[f]}
+                      onChange={handleInputChange}
+                      disabled={f === "email" || !isEditing}
+                    />
+                  )}
+                </FormGroup>
+              ))}
             </FormGrid>
           )}
 
           {activeTab === "badges" && (
             <BadgesSection>
-              {badges.map((badge) => (
-                <BadgeCard key={badge.id} $unlocked={badge.unlocked}>
-                  <BadgeIcon>{badge.icon}</BadgeIcon>
-                  <BadgeName>{badge.name}</BadgeName>
-                  <BadgeDescription>{badge.description}</BadgeDescription>
+              {badges.map((b) => (
+                <BadgeCard key={b.id} $unlocked={b.unlocked}>
+                  <BadgeIcon>{b.icon}</BadgeIcon>
+                  <BadgeName>{b.name}</BadgeName>
+                  <BadgeDescription>{b.description}</BadgeDescription>
                 </BadgeCard>
               ))}
             </BadgesSection>
@@ -460,51 +422,107 @@ const Profile = () => {
 
           {activeTab === "ratings" && (
             <RatingsSection>
-              {ratings.length > 0 ? (
-                ratings.map((rating, index) => (
-                  <RatingCard key={index}>
-                    <RatingHeader>
-                      <RaterInfo>
-                        <RaterAvatar>
-                          {rating.raterName?.[0] || "?"}
-                        </RaterAvatar>
-                        <div>
-                          <RaterName>
-                            {rating.raterName || "Anonymous User"}
-                          </RaterName>
-                          <RatingDate>
-                            {formatDate(rating.createdAt)}
-                          </RatingDate>
-                        </div>
-                      </RaterInfo>
-                      <Stars>{renderStars(rating.rating)}</Stars>
-                    </RatingHeader>
-                    {rating.comment && (
-                      <RatingComment>"{rating.comment}"</RatingComment>
-                    )}
-                  </RatingCard>
-                ))
-              ) : (
-                <div
-                  style={{
-                    textAlign: "center",
-                    padding: "4rem 2rem",
-                    color: "#a0aec0",
-                  }}
-                >
-                  <div style={{ fontSize: "4rem", marginBottom: "1rem" }}>
-                    ⭐
-                  </div>
-                  <h3 style={{ color: "#4a5568", marginBottom: "0.5rem" }}>
-                    No reviews yet
-                  </h3>
-                  <p>Complete donations to receive reviews from recipients</p>
-                </div>
-              )}
+              {ratings.map((r, i) => (
+                <RatingCard key={i}>
+                  <RatingHeader>
+                    <RaterInfo>
+                      <RaterAvatar>{r.raterName?.[0] || "?"}</RaterAvatar>
+                      <div>
+                        <RaterName>{r.raterName || "Anonymous"}</RaterName>
+                        <RatingDate>
+                          {new Date(r.createdAt).toLocaleDateString()}
+                        </RatingDate>
+                      </div>
+                    </RaterInfo>
+                    <Stars>{renderStars(r.rating)}</Stars>
+                  </RatingHeader>
+                  {r.comment && <RatingComment>"{r.comment}"</RatingComment>}
+                </RatingCard>
+              ))}
             </RatingsSection>
+          )}
+
+          {activeTab === "impact" && stats && (
+            <StatsContainer>
+              <StatCard>
+                <StatValue>{stats.totalListings || 0}</StatValue>
+                <StatLabel>Total Donations</StatLabel>
+              </StatCard>
+              <StatCard>
+                <StatValue>{stats.completedListings || 0}</StatValue>
+                <StatLabel>Completed</StatLabel>
+              </StatCard>
+              <StatCard>
+                <StatValue>{stats.activeListings || 0}</StatValue>
+                <StatLabel>Active</StatLabel>
+              </StatCard>
+              <StatCard>
+                <StatValue>⭐ 4.8</StatValue>
+                <StatLabel>Avg Rating</StatLabel>
+              </StatCard>
+            </StatsContainer>
+          )}
+
+          {(activeTab === "donations" || activeTab === "received") && (
+            <HistorySection>
+              {history.map((item) => (
+                <HistoryItem key={item._id}>
+                  <ItemDetails>
+                    <ItemTitle>{item.title}</ItemTitle>
+                    <ItemMeta>
+                      <span>
+                        📅 {new Date(item.createdAt).toLocaleDateString()}
+                      </span>
+                      <span>
+                        📦 {item.quantity} {item.unit}
+                      </span>
+                      <span>📊 {item.status}</span>
+                    </ItemMeta>
+                  </ItemDetails>
+                  <ReceiptButton onClick={() => generateReceipt(item)}>
+                    📄 Receipt
+                  </ReceiptButton>
+                </HistoryItem>
+              ))}
+            </HistorySection>
           )}
         </TabContent>
       </ProfileCard>
+
+      {selectedReceipt && (
+        <ReceiptModal>
+          <ReceiptHeader>
+            <h2>🎁 DONATION RECEIPT</h2>
+            <p>{selectedReceipt.title}</p>
+          </ReceiptHeader>
+          <ReceiptBody>
+            <ReceiptRow>
+              <span>Quantity:</span>
+              <strong>
+                {selectedReceipt.quantity} {selectedReceipt.unit}
+              </strong>
+            </ReceiptRow>
+            <ReceiptRow>
+              <span>Status:</span>
+              <strong>{selectedReceipt.status}</strong>
+            </ReceiptRow>
+            <ReceiptRow>
+              <span>Date:</span>
+              <strong>
+                {new Date(selectedReceipt.createdAt).toLocaleDateString()}
+              </strong>
+            </ReceiptRow>
+          </ReceiptBody>
+          <div style={{ display: "flex", gap: "1rem", marginTop: "1.5rem" }}>
+            <ReceiptButton onClick={() => downloadReceipt(selectedReceipt)}>
+              💾 Download
+            </ReceiptButton>
+            <ReceiptButton onClick={() => setSelectedReceipt(null)}>
+              Close
+            </ReceiptButton>
+          </div>
+        </ReceiptModal>
+      )}
     </ProfileContainer>
   );
 };

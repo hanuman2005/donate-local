@@ -110,6 +110,15 @@ export const usersAPI = {
   search: (params) => api.get("/users/search", { params }),
 };
 
+// ✅ Impact API
+export const impactAPI = {
+  getPersonalImpact: () => api.get("/impact/personal"),
+  getCommunityImpact: () => api.get("/impact/community"),
+  getImpactHeatmap: (params) => api.get("/impact/heatmap", { params }),
+  getImpactTimeline: (params) => api.get("/impact/timeline", { params }),
+  generateShareCard: () => api.get("/impact/share-card"),
+};
+
 export const uploadAPI = {
   uploadFile: (endpoint, data, onProgress) =>
     api.post(endpoint, data, {
@@ -150,7 +159,14 @@ export const uploadAPI = {
   profileImage: (data) => usersAPI.updateProfileImage(data),
 };
 
+// ✅ Analytics API
+export const analyticsAPI = {
+  // Fetch analytics for the currently authenticated user
+  getUserAnalytics: () => api.get("/analytics/user"),
+
+  // Fetch global platform-wide analytics (requires admin privileges)
+  getPlatformAnalytics: () => api.get("/analytics/platform"),
+};
 
 
-// ✅ Export the axios instance itself
 export default api;
