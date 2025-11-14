@@ -650,6 +650,73 @@ const searchListings = async (req, res) => {
     });
   }
 };
+
+// Check-in endpoint
+const checkIn = async (req, res) => {
+  try {
+    const listing = await Listing.findById(req.params.id);
+
+    if (!listing) {
+      return res.status(404).json({
+        success: false,
+        message: 'Listing not found'
+      });
+    }
+
+    // Verify user is assigned or donor
+    const isDonor = listing.donor.toString() === req.user._id.toString();
+    const isAssigned = listing.assignedTo && 
+      listing.assignedTo.toString() === req.user._id.toString();
+
+    if (!isDonor && !isAssigned) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized to check in'
+      });
+    }
+
+    // Create check-in record
+    const checkIn = {
+      user: req.user._id,
+      timestamp: new Date(),
+      location: req.body.location || null,
+      notes: req.body.notes || ''
+    };
+
+    if (!listing.checkIns) {
+      listing.checkIns = [];
+    }
+
+    listing.checkIns.push(checkIn);
+    await listing.save();
+
+    // Emit real-time event
+    if (req.app.get('io')) {
+      req.app.get('io').emit('checkInRecorded', {
+        listing: listing._id,
+        user: req.user._id,
+        timestamp: checkIn.timestamp
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Check-in recorded successfully',
+      listing: {
+        _id: listing._id,
+        title: listing.title,
+        status: listing.status
+      },
+      checkIn
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Check-in failed',
+      error: error.message
+    });
+  }
+};
 // MAKE SURE TO EXPORT THEM:
 module.exports = {
   createListing,
@@ -663,4 +730,5 @@ module.exports = {
   getUserListings,
   getNearbyListings,
   searchListings,
+  checkIn,
 };

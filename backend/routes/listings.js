@@ -17,6 +17,7 @@ const {
   getUserListings,
   getNearbyListings,
   searchListings,
+  checkIn,
 } = require("../controllers/listingController");
 
 const router = express.Router();
@@ -179,5 +180,8 @@ router.post("/:id/assign", auth, assignValidation, assignListing);
 
 // Complete listing
 router.put("/:id/complete", auth, completeListing);
+
+// Check-in listing
+router.post('/:id/check-in', auth, checkIn);
 
 module.exports = router;
