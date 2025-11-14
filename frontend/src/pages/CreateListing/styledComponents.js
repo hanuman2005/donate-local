@@ -314,3 +314,133 @@ export const SuccessMessage = styled.div`
   border: 1px solid #9ae6b4;
   margin-bottom: 1.5rem;
 `;
+// === Bulk Mode Components ===
+export const BulkModeToggle = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding: 1rem;
+  background: #f7fafc;
+  border-radius: 12px;
+`;
+
+export const Switch = styled.label`
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 30px;
+  input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  span {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: 0.4s;
+    border-radius: 30px;
+    &:before {
+      position: absolute;
+      content: "";
+      height: 22px;
+      width: 22px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: 0.4s;
+      border-radius: 50%;
+    }
+  }
+  input:checked + span {
+    background-color: #667eea;
+  }
+  input:checked + span:before {
+    transform: translateX(30px);
+  }
+`;
+
+export const BulkItemsList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1rem;
+`;
+
+export const BulkItem = styled.div`
+  display: grid;
+  grid-template-columns: 2fr 1fr 1.2fr 50px;
+  gap: 0.8rem;
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 2px solid #e2e8f0;
+  transition: all 0.25s ease;
+
+  &:hover {
+    border-color: #4facfe;
+    background: #fff;
+  }
+
+  input, select {
+    padding: 10px;
+    border-radius: 10px;
+    border: 2px solid #cbd5e0;
+    font-size: 0.95rem;
+    background: #ffffff;
+    transition: all 0.25s ease;
+
+    &:focus {
+      border-color: #4facfe;
+      box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.15);
+    }
+  }
+
+  button {
+    background: #feb2b2;
+    border: none;
+    border-radius: 8px;
+    padding: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.25s ease;
+
+    &:not(:disabled):hover {
+      background: #e53e3e;
+      color: #fff;
+    }
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+  }
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      "name name"
+      "qty category"
+      "remove remove";
+
+    input:first-child {
+      grid-area: name;
+    }
+    input:nth-child(2) {
+      grid-area: qty;
+    }
+    select {
+      grid-area: category;
+    }
+    button {
+      grid-area: remove;
+      width: 100%;
+    }
+  }
+`;
+

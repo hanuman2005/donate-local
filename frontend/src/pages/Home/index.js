@@ -1,3 +1,4 @@
+// src/pages/Home/index.jsx - UPDATED WITH NEW COMPONENTS
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
@@ -6,7 +7,10 @@ import ListingCard from "../../components/ListingCard";
 import FiltersPanel from "../../components/FilterPanel";
 import Footer from "../../components/Footer";
 import LoadingSpinner from "../../components/Common/LoadingSpinner";
-
+// ✅ Import new components
+import LiveStats from "../../components/LiveStats";
+import DonationCenterInfo from "../../components/DonationCenterInfo";
+import LiveDonationFeed from "../../components/LiveDonationFeed";
 import {
   HomeContainer,
   HeroSection,
@@ -35,9 +39,10 @@ import {
 
 const Home = () => {
   const [filteredListings, setFilteredListings] = useState([]);
-  const [loading, setLoading] = useState(true); // ✅ Start with loading true
-  const [error, setError] = useState(null); // ✅ Track errors
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [userLocation, setUserLocation] = useState(null);
+  const [showLiveFeed, setShowLiveFeed] = useState(false); // ✅ Toggle for live feed
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -58,7 +63,6 @@ const Home = () => {
         },
         (error) => {
           console.warn("⚠️ Location error:", error.message);
-          // Set default location (Bhimavaram)
           setUserLocation({
             lat: 16.541936584240865,
             lng: 81.49773371296007,
@@ -66,7 +70,6 @@ const Home = () => {
         }
       );
     } else {
-      // Fallback to default location
       setUserLocation({
         lat: 16.541936584240865,
         lng: 81.49773371296007,
@@ -78,7 +81,6 @@ const Home = () => {
     navigate(user ? "/dashboard" : "/register");
   };
 
-  // ✅ Handle results from FiltersPanel
   const handleFilterResults = (results, isError = false) => {
     console.log("📥 Received listings:", results?.length || 0);
     setFilteredListings(results || []);
@@ -86,19 +88,17 @@ const Home = () => {
     setError(isError ? "Failed to load listings. Please try again." : null);
   };
 
-  // ✅ Add timeout to prevent infinite loading
   useEffect(() => {
     const timeout = setTimeout(() => {
       if (loading) {
         console.warn("⚠️ Loading timeout - forcing display");
         setLoading(false);
       }
-    }, 5000); // 5 second timeout
+    }, 5000);
 
     return () => clearTimeout(timeout);
   }, [loading]);
 
-  // ✅ Show loading state initially
   if (loading) {
     return (
       <HomeContainer>
@@ -112,7 +112,7 @@ const Home = () => {
         }}>
           <LoadingSpinner />
           <p style={{ color: '#718096', fontSize: '1.1rem' }}>
-            Loading food listings...
+            Loading listings...
           </p>
         </div>
       </HomeContainer>
@@ -124,16 +124,30 @@ const Home = () => {
       {/* Hero Section */}
       <HeroSection>
         <HeroContent>
-          <HeroTitle>🍎 Share Food, Build Community</HeroTitle>
+          <HeroTitle>Give what you don't want and take what you want</HeroTitle>
           <HeroSubtitle>
-            Connect with your neighbors to share surplus food and reduce waste.
-            Every meal shared is a step toward a hunger-free community.
+            A real-time platform connecting local communities to share items — reducing waste and helping those in need through technology.
           </HeroSubtitle>
-          <CTAButton onClick={handleGetStarted}>
-            {user ? "📊 Go to Dashboard" : "🚀 Get Started"}
-          </CTAButton>
+          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+            <CTAButton onClick={handleGetStarted}>
+              {user ? "📊 Go to Dashboard" : "🚀 Get Started"}
+            </CTAButton>
+            <CTAButton 
+              onClick={() => setShowLiveFeed(!showLiveFeed)}
+              style={{ 
+                background: showLiveFeed ? '#48bb78' : 'transparent',
+                border: '2px solid #48bb78',
+                color: showLiveFeed ? 'white' : '#48bb78'
+              }}
+            >
+              {showLiveFeed ? "📋 List View" : "⚡ Live Feed"}
+            </CTAButton>
+          </div>
         </HeroContent>
       </HeroSection>
+
+      {/* ✅ Live Stats Component */}
+      <LiveStats />
 
       {/* Stats Section */}
       <StatsSection>
@@ -143,7 +157,7 @@ const Home = () => {
         </StatCard>
         <StatCard>
           <StatNumber>2,500+</StatNumber>
-          <StatLabel>Meals Shared</StatLabel>
+          <StatLabel>Items Shared</StatLabel>
         </StatCard>
         <StatCard>
           <StatNumber>850+</StatNumber>
@@ -155,11 +169,16 @@ const Home = () => {
         </StatCard>
       </StatsSection>
 
+      {/* ✅ Donation Center Info */}
+      <div style={{ maxWidth: '1200px', margin: '2rem auto', padding: '0 2rem' }}>
+        <DonationCenterInfo />
+      </div>
+
       {/* About/How It Works Section */}
       <AboutSection>
-        <AboutTitle>How FoodShare Works</AboutTitle>
+        <AboutTitle>How ShareTogether Works</AboutTitle>
         <AboutSubtitle>
-          Join our mission to reduce food waste and help those in need. 
+          Join our mission to reduce waste and help those in need. 
           It's simple, secure, and makes a real difference in your community.
         </AboutSubtitle>
         <AboutGrid>
@@ -167,15 +186,15 @@ const Home = () => {
             <FeatureIcon>📱</FeatureIcon>
             <FeatureTitle>Create Listing</FeatureTitle>
             <FeatureDescription>
-              Have surplus food? Create a free listing in seconds with photos,
-              description, and pickup details. Help reduce waste and feed your community today!
+              Have items you don't need? Create a free listing in seconds with photos,
+              description, and pickup details. Help reduce waste and help your community today!
             </FeatureDescription>
           </FeatureCard>
           <FeatureCard>
             <FeatureIcon>🔍</FeatureIcon>
             <FeatureTitle>Browse & Connect</FeatureTitle>
             <FeatureDescription>
-              Search for available food near you, filter by category and urgency,
+              Search for available items near you, filter by category and urgency,
               and connect directly with donors through our secure messaging system.
             </FeatureDescription>
           </FeatureCard>
@@ -184,7 +203,7 @@ const Home = () => {
             <FeatureTitle>Pickup with QR</FeatureTitle>
             <FeatureDescription>
               Use our secure QR code system for contactless pickup verification.
-              Safe, simple, and efficient - ensuring smooth food transfers every time!
+              Safe, simple, and efficient - ensuring smooth transfers every time!
             </FeatureDescription>
           </FeatureCard>
         </AboutGrid>
@@ -205,115 +224,123 @@ const Home = () => {
         </div>
       )}
 
-      {/* Filters Panel */}
-      <FiltersPanel
-        autoSearch={true}
-        onResults={(results) => handleFilterResults(results, false)}
-        userLocation={userLocation}
-      />
+      {/* ✅ Live Feed or Regular View */}
+      {showLiveFeed ? (
+        <div style={{ maxWidth: '1400px', margin: '2rem auto', padding: '0 2rem' }}>
+          <LiveDonationFeed />
+        </div>
+      ) : (
+        <>
+          {/* Filters Panel */}
+          <FiltersPanel
+            autoSearch={true}
+            onResults={(results) => handleFilterResults(results, false)}
+            userLocation={userLocation}
+          />
 
-      {/* Content Section */}
-      <ContentSection>
-        {/* Map Section */}
-        <MapSection>
-          <SectionTitle>Find Resources Near You 📍</SectionTitle>
-          {filteredListings.length > 0 ? (
-            <Map
-              listings={filteredListings}
-              userLocation={userLocation}
-              height="400px"
-            />
-          ) : (
-            <div style={{
-              height: '400px',
-              background: '#f7fafc',
-              borderRadius: '15px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#718096'
-            }}>
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🗺️</div>
-                <p>No listings to display on map</p>
-              </div>
-            </div>
-          )}
-        </MapSection>
-
-        {/* Listings Section */}
-        <ListingsSection>
-          <SectionTitle>
-            Recent Listings ({filteredListings.length})
-          </SectionTitle>
-
-          {/* ✅ Improved Empty State */}
-          {filteredListings.length === 0 ? (
-            <div style={{ 
-              textAlign: "center", 
-              padding: "4rem 2rem",
-              background: '#f7fafc',
-              borderRadius: '15px',
-              margin: '2rem 0'
-            }}>
-              <div style={{ fontSize: "4rem", marginBottom: "1rem" }}>📭</div>
-              <h3 style={{ 
-                fontSize: "1.5rem", 
-                color: "#2d3748",
-                marginBottom: "0.5rem"
-              }}>
-                No listings found
-              </h3>
-              <p style={{ 
-                fontSize: "1.1rem", 
-                color: "#718096",
-                marginBottom: "1.5rem"
-              }}>
-                Try adjusting your filters or be the first to share!
-              </p>
-              {user?.userType === 'donor' && (
-                <CTAButton 
-                  onClick={() => navigate('/create-listing')}
-                  style={{ margin: '0 auto' }}
-                >
-                  ➕ Create First Listing
-                </CTAButton>
-              )}
-            </div>
-          ) : (
-            <ListingsGrid>
-              {filteredListings.slice(0, 6).map((listing) => (
-                <ListingCard
-                  key={listing._id}
-                  listing={listing}
-                  showDistance={!!userLocation}
+          {/* Content Section */}
+          <ContentSection>
+            {/* Map Section */}
+            <MapSection>
+              <SectionTitle>Find Resources Near You 📍</SectionTitle>
+              {filteredListings.length > 0 ? (
+                <Map
+                  listings={filteredListings}
                   userLocation={userLocation}
+                  height="400px"
                 />
-              ))}
-            </ListingsGrid>
-          )}
+              ) : (
+                <div style={{
+                  height: '400px',
+                  background: '#f7fafc',
+                  borderRadius: '15px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#718096'
+                }}>
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🗺️</div>
+                    <p>No listings to display on map</p>
+                  </div>
+                </div>
+              )}
+            </MapSection>
 
-          {/* ✅ Show "View All" button if more than 6 listings */}
-          {filteredListings.length > 6 && (
-            <div style={{ 
-              textAlign: 'center', 
-              marginTop: '2rem' 
-            }}>
-              <CTAButton 
-                onClick={() => navigate('/listings')}
-                style={{ 
-                  background: 'transparent',
-                  color: '#667eea',
-                  border: '2px solid #667eea',
-                  margin: '0 auto'
-                }}
-              >
-                View All {filteredListings.length} Listings →
-              </CTAButton>
-            </div>
-          )}
-        </ListingsSection>
-      </ContentSection>
+            {/* Listings Section */}
+            <ListingsSection>
+              <SectionTitle>
+                Recent Listings ({filteredListings.length})
+              </SectionTitle>
+
+              {filteredListings.length === 0 ? (
+                <div style={{ 
+                  textAlign: "center", 
+                  padding: "4rem 2rem",
+                  background: '#f7fafc',
+                  borderRadius: '15px',
+                  margin: '2rem 0'
+                }}>
+                  <div style={{ fontSize: "4rem", marginBottom: "1rem" }}>📭</div>
+                  <h3 style={{ 
+                    fontSize: "1.5rem", 
+                    color: "#2d3748",
+                    marginBottom: "0.5rem"
+                  }}>
+                    No listings found
+                  </h3>
+                  <p style={{ 
+                    fontSize: "1.1rem", 
+                    color: "#718096",
+                    marginBottom: "1.5rem"
+                  }}>
+                    Try adjusting your filters or be the first to share!
+                  </p>
+                  {user?.userType === 'donor' && (
+                    <CTAButton 
+                      onClick={() => navigate('/create-listing')}
+                      style={{ margin: '0 auto' }}
+                    >
+                      ➕ Create First Listing
+                    </CTAButton>
+                  )}
+                </div>
+              ) : (
+                <ListingsGrid>
+                  {filteredListings.slice(0, 6).map((listing) => (
+                    <ListingCard
+                      key={listing._id}
+                      listing={listing}
+                      showQuickClaim={true}
+                      showDistance={!!userLocation}
+                      userLocation={userLocation}
+                    />
+                  ))}
+                </ListingsGrid>
+              )}
+
+              {filteredListings.length > 6 && (
+                <div style={{ 
+                  textAlign: 'center', 
+                  marginTop: '2rem' 
+                }}>
+                  <CTAButton 
+                    onClick={() => navigate('/listings')}
+                    style={{ 
+                      background: 'transparent',
+                      color: '#667eea',
+                      border: '2px solid #667eea',
+                      margin: '0 auto'
+                    }}
+                  >
+                    View All {filteredListings.length} Listings →
+                  </CTAButton>
+                </div>
+              )}
+            </ListingsSection>
+          </ContentSection>
+        </>
+      )}
 
       <Footer />
     </HomeContainer>

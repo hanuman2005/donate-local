@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom"; // ✅ ADD THIS
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { chatAPI } from "../../services/api";
-import { toast } from "react-toastify"; // ✅ ADD THIS
+import { chatAPI, listingsAPI } from "../../services/api";
+import { toast } from "react-toastify";
 import { calculateDistance, formatDistance } from "../../utils/helpers";
 import {
   CardContainer,
@@ -25,27 +25,29 @@ import {
   EditButton,
   DeleteButton,
   LoadingSpinner,
+  QuickClaimButton,
 } from "./styledComponents";
 
 const ListingCard = ({
   listing,
   isOwner = false,
   showDistance = false,
+  showQuickClaim = false,
   userLocation = null,
   onEdit = null,
   onDelete = null,
   onContact = null,
 }) => {
   const [isLoading, setIsLoading] = useState(false);
+  const [isClaiming, setIsClaiming] = useState(false);
   const [imageError, setImageError] = useState(false);
-  const { user, loading: authLoading } = useAuth(); // ✅ Get loading state
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
-  // ✅ Add debug log
   useEffect(() => {
     console.log("ListingCard mounted - User:", user);
     console.log("Auth loading:", authLoading);
-  }, [user, authLoading]); // ✅ ADD THIS
+  }, [user, authLoading]);
 
   const getCategoryEmoji = (category) => {
     const emojis = {
@@ -55,6 +57,10 @@ const ListingCard = ({
       bakery: "🍞",
       "household-items": "🏠",
       clothing: "👕",
+      electronics: "📱",
+      furniture: "🛋️",
+      books: "📚",
+      toys: "🧸",
       other: "📦",
     };
     return emojis[category] || emojis.other;
@@ -72,23 +78,19 @@ const ListingCard = ({
     if (!userLocation || !listing.location?.coordinates) return null;
 
     const coords = listing.location.coordinates;
-    // GeoJSON format is [longitude, latitude]
     const distance = calculateDistance(
       userLocation.latitude,
       userLocation.longitude,
-      coords[1], // latitude
-      coords[0] // longitude
+      coords[1],
+      coords[0]
     );
 
     return formatDistance(distance);
   };
 
-  // ✅ FIXED: View Details handler
   const handleViewDetails = () => {
     navigate(`/listings/${listing._id}`);
   };
-
-  // Find the handleContact function and update it:
 
   const handleContact = async (e) => {
     if (e) {
@@ -100,7 +102,6 @@ const ListingCard = ({
     console.log("👤 Current user:", user);
     console.log("📦 Listing:", listing);
 
-    // Check if user is logged in
     if (!user || !user._id) {
       console.error("❌ User not logged in");
       toast.info("Please login to contact the donor");
@@ -108,7 +109,6 @@ const ListingCard = ({
       return;
     }
 
-    // Extract donor ID
     let donorId = null;
     if (listing.donor) {
       if (typeof listing.donor === "object") {
@@ -121,14 +121,12 @@ const ListingCard = ({
     console.log("🔍 Donor ID:", donorId);
     console.log("🔍 User ID:", user._id);
 
-    // Check if donor exists
     if (!donorId) {
       console.error("❌ Donor ID missing");
       toast.error("Unable to contact donor. Listing information incomplete.");
       return;
     }
 
-    // Check if trying to contact own listing
     if (donorId.toString() === user._id.toString()) {
       console.warn("⚠️ Cannot contact own listing");
       toast.info("This is your own listing");
@@ -139,7 +137,6 @@ const ListingCard = ({
     try {
       console.log("🔄 Creating/getting chat...");
 
-      // Create or get existing chat
       const response = await chatAPI.createOrGet({
         participantId: donorId,
         listingId: listing._id,
@@ -147,7 +144,6 @@ const ListingCard = ({
 
       console.log("✅ Chat response:", response.data);
 
-      // Extract chat data
       const chatData =
         response.data.chat || response.data.data?.chat || response.data;
       const chatId = chatData._id || chatData.id;
@@ -156,7 +152,6 @@ const ListingCard = ({
 
       if (chatId) {
         toast.success("Opening chat...");
-        // Navigate to chat page with the specific chat
         navigate(`/chat/${chatId}`);
       } else {
         console.error("❌ No chat ID in response");
@@ -173,11 +168,44 @@ const ListingCard = ({
       setIsLoading(false);
     }
   };
+
+  const handleQuickClaim = async () => {
+    if (!user || !user._id) {
+      toast.info("Please login first");
+      navigate("/login");
+      return;
+    }
+
+    if (listing.status !== "available") {
+      toast.info("This item is no longer available");
+      return;
+    }
+
+    setIsClaiming(true);
+    try {
+      const response = await listingsAPI.expressInterest(listing._id, {
+        message: "I want this item!",
+      });
+
+      if (response.data.success) {
+        toast.success("Interest expressed! Donor will be notified.");
+      } else {
+        throw new Error(response.data.message || "Failed to express interest");
+      }
+    } catch (error) {
+      console.error("Error expressing interest:", error);
+      toast.error(
+        error.response?.data?.message || "Failed to express interest"
+      );
+    } finally {
+      setIsClaiming(false);
+    }
+  };
+
   const handleEdit = () => {
     if (onEdit) {
       onEdit(listing);
     } else {
-      // Navigate to edit page
       navigate(`/listings/${listing._id}/edit`);
     }
   };
@@ -186,10 +214,8 @@ const ListingCard = ({
     if (onDelete) {
       onDelete(listing);
     } else {
-      // Show delete confirmation
       if (window.confirm("Are you sure you want to delete this listing?")) {
         console.log("Delete listing:", listing._id);
-        // TODO: Implement delete API call
       }
     }
   };
@@ -283,9 +309,28 @@ const ListingCard = ({
           </OwnerActions>
         ) : (
           <>
+            {/* Always show View Details */}
             <ViewButton onClick={handleViewDetails}>👁️ View Details</ViewButton>
 
-            {/* ✅ Only show contact button if not loading auth */}
+            {/* Show Quick Claim button if enabled AND available */}
+            {showQuickClaim && listing.status === "available" && (
+              <QuickClaimButton
+                onClick={handleQuickClaim}
+                disabled={isClaiming || !user}
+                style={{ marginTop: "0.5rem" }}
+              >
+                {isClaiming ? (
+                  <>
+                    <LoadingSpinner />
+                    Claiming...
+                  </>
+                ) : (
+                  <>🎯 I Want This!</>
+                )}
+              </QuickClaimButton>
+            )}
+
+            {/* Always show Contact button */}
             {authLoading ? (
               <ContactButton disabled>⏳ Loading...</ContactButton>
             ) : !user ? (

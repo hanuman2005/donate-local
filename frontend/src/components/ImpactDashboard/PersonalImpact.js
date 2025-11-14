@@ -2,13 +2,15 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import ImpactCard from './ImpactCard';
-import api from '../../services/api';
+import { impactAPI } from '../../services/api';
 import { toast } from 'react-toastify';
 
 const Container = styled.div`
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
+  min-height: 100vh;
+  background: #f7fafc;
 `;
 
 const Header = styled.div`
@@ -41,6 +43,7 @@ const RankCard = styled.div`
   padding: 2rem;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   text-align: center;
+  margin-bottom: 2rem;
 `;
 
 const RankBadge = styled.div`
@@ -164,9 +167,17 @@ const LoadingSpinner = styled.div`
   color: #667eea;
 `;
 
+const ErrorMessage = styled.div`
+  text-align: center;
+  padding: 4rem;
+  color: #e53e3e;
+  font-size: 1.2rem;
+`;
+
 const PersonalImpact = () => {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState(null);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     fetchImpactData();
@@ -174,29 +185,65 @@ const PersonalImpact = () => {
 
   const fetchImpactData = async () => {
     try {
-      const token = localStorage.getItem('token');
-      // ✅ fixed: removed duplicate /api from path
-      const response = await api.get('/impact/personal', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      setLoading(true);
+      setError(null);
+      
+      const response = await impactAPI.getPersonalImpact();
 
       if (response.data.success) {
         setData(response.data);
+      } else {
+        throw new Error(response.data.message || 'Failed to load impact data');
       }
     } catch (error) {
       console.error('Fetch error:', error);
-      toast.error('Failed to load impact data');
+      setError(error.response?.data?.message || 'Failed to load impact data');
+      toast.error('Failed to load your impact data');
     } finally {
       setLoading(false);
     }
   };
 
   if (loading) {
-    return <LoadingSpinner>Loading your impact... 🌍</LoadingSpinner>;
+    return (
+      <Container>
+        <LoadingSpinner>Loading your impact... 🌍</LoadingSpinner>
+      </Container>
+    );
   }
 
-  if (!data) {
-    return <Container>Error loading data</Container>;
+  if (error) {
+    return (
+      <Container>
+        <ErrorMessage>
+          {error}
+          <br />
+          <button 
+            onClick={fetchImpactData}
+            style={{
+              marginTop: '1rem',
+              padding: '0.75rem 1.5rem',
+              background: '#667eea',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontSize: '1rem'
+            }}
+          >
+            Try Again
+          </button>
+        </ErrorMessage>
+      </Container>
+    );
+  }
+
+  if (!data || !data.impact) {
+    return (
+      <Container>
+        <ErrorMessage>No impact data available</ErrorMessage>
+      </Container>
+    );
   }
 
   const { impact, milestones, rank, recentActivities } = data;
@@ -211,7 +258,7 @@ const PersonalImpact = () => {
       <CardsGrid>
         <ImpactCard
           icon="♻️"
-          value={impact.totalWastePreventedKg}
+          value={impact.totalWastePreventedKg || 0}
           label="Waste Prevented"
           subtitle="Kilograms saved from landfills"
           decimals={1}
@@ -221,9 +268,9 @@ const PersonalImpact = () => {
 
         <ImpactCard
           icon="🌍"
-          value={impact.totalCO2SavedKg}
+          value={impact.totalCO2SavedKg || 0}
           label="CO2 Saved"
-          subtitle={`Equivalent to ${impact.treesEquivalent} trees`}
+          subtitle={`Equivalent to ${impact.treesEquivalent || 0} trees`}
           decimals={1}
           suffix=" kg"
           gradient="linear-gradient(135deg, #4299e1 0%, #3182ce 100%)"
@@ -231,15 +278,15 @@ const PersonalImpact = () => {
 
         <ImpactCard
           icon="🍽️"
-          value={impact.totalMealsProvided}
-          label="Meals Provided"
-          subtitle="Feeding our community"
+          value={impact.totalMealsProvided || 0}
+          label="Items Shared"
+          subtitle="Helping our community"
           gradient="linear-gradient(135deg, #ed8936 0%, #dd6b20 100%)"
         />
 
         <ImpactCard
           icon="💧"
-          value={impact.totalWaterSavedLiters}
+          value={impact.totalWaterSavedLiters || 0}
           label="Water Saved"
           subtitle="Liters conserved"
           decimals={0}
@@ -248,19 +295,21 @@ const PersonalImpact = () => {
         />
       </CardsGrid>
 
-      <RankCard>
-        <RankBadge>
-          {rank.position <= 3 ? '🏆' : rank.position <= 10 ? '⭐' : '✨'}
-        </RankBadge>
-        <RankText>Rank #{rank.position}</RankText>
-        <RankSubtext>out of {rank.total} community members</RankSubtext>
-      </RankCard>
+      {rank && (
+        <RankCard>
+          <RankBadge>
+            {rank.position <= 3 ? '🏆' : rank.position <= 10 ? '⭐' : '✨'}
+          </RankBadge>
+          <RankText>Rank #{rank.position || 'N/A'}</RankText>
+          <RankSubtext>out of {rank.total || 0} community members</RankSubtext>
+        </RankCard>
+      )}
 
       {milestones && (
         <MilestonesSection>
           <MilestoneTitle>🎯 Your Achievements</MilestoneTitle>
           
-          {milestones.achieved.length > 0 && (
+          {milestones.achieved && milestones.achieved.length > 0 && (
             <AchievementsList>
               {milestones.achieved.map((achievement, index) => (
                 <Achievement key={index}>{achievement}</Achievement>
@@ -277,10 +326,10 @@ const PersonalImpact = () => {
                 {milestones.nextMilestone.description}
               </div>
               <ProgressBar>
-                <ProgressFill $progress={Math.min(milestones.nextMilestone.progress, 100)} />
+                <ProgressFill $progress={Math.min(milestones.nextMilestone.progress || 0, 100)} />
               </ProgressBar>
               <div style={{ textAlign: 'right', marginTop: '0.5rem', color: '#4a5568', fontSize: '0.85rem' }}>
-                {milestones.nextMilestone.progress.toFixed(0)}% Complete
+                {(milestones.nextMilestone.progress || 0).toFixed(0)}% Complete
               </div>
             </NextMilestone>
           )}
@@ -297,11 +346,11 @@ const PersonalImpact = () => {
               </ActivityIcon>
               <ActivityDetails>
                 <ActivityTitle>
-                  {activity.type === 'donated' ? 'Donated' : 'Received'}: {activity.listing.title}
+                  {activity.type === 'donated' ? 'Donated' : 'Received'}: {activity.listing?.title || 'Item'}
                 </ActivityTitle>
                 <ActivityDate>
                   {new Date(activity.completedAt).toLocaleDateString()} • 
-                  Saved {activity.impact?.wastePreventedKg.toFixed(1)}kg waste
+                  Saved {activity.impact?.wastePreventedKg?.toFixed(1) || 0}kg waste
                 </ActivityDate>
               </ActivityDetails>
             </ActivityItem>

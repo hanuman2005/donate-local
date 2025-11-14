@@ -1,12 +1,12 @@
-// src/pages/Listings/index.jsx - FIXED WITH OWNER ACTIONS
+// src/pages/Listings/index.jsx
 
 import styled from "styled-components";
 import { useState, useEffect } from "react";
 import api from "../../services/api";
 import ListingCard from "../../components/ListingCard";
 import LoadingSpinner from "../../components/Common/LoadingSpinner";
-import { useAuth } from "../../context/AuthContext"; // ✅ ADD THIS
-import { toast } from "react-toastify"; // ✅ ADD THIS
+import { useAuth } from "../../context/AuthContext";
+import { toast } from "react-toastify";
 
 const ListingsContainer = styled.div`
   background: var(--bg-primary);
@@ -41,7 +41,7 @@ const Listings = () => {
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { user } = useAuth(); // ✅ Get current user
+  const { user } = useAuth();
 
   useEffect(() => {
     fetchListings();
@@ -70,7 +70,6 @@ const Listings = () => {
     }
   };
 
-  // ✅ ADD: Delete handler
   const handleDelete = async (listing) => {
     if (!window.confirm(`Are you sure you want to delete "${listing.title}"?`)) {
       return;
@@ -82,7 +81,6 @@ const Listings = () => {
       
       toast.success("Listing deleted successfully");
       
-      // Remove from UI
       setListings(prev => prev.filter(l => l._id !== listing._id));
     } catch (err) {
       console.error("❌ Delete error:", err);
@@ -90,7 +88,6 @@ const Listings = () => {
     }
   };
 
-  // ✅ ADD: Check if user owns a listing
   const isOwner = (listing) => {
     if (!user || !listing.donor) return false;
     
@@ -161,8 +158,9 @@ const Listings = () => {
               <ListingCard 
                 key={listing._id} 
                 listing={listing}
-                isOwner={isOwner(listing)} // ✅ Pass ownership status
-                onDelete={handleDelete} // ✅ Pass delete handler
+                isOwner={isOwner(listing)}
+                showQuickClaim={true}  // ✅ ADD THIS - Shows "I Want This" button
+                onDelete={handleDelete}
               />
             ))}
           </Grid>

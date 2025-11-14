@@ -1,12 +1,16 @@
 import styled from "styled-components";
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import api from "../../services/api";
+import api, { listingsAPI, chatAPI } from "../../services/api";
 import QRCodeGenerator from "../../components/QRCode";
 import QRScanner from "../../components/QRScanner";
 import { useAuth } from "../../context/AuthContext";
 import LoadingSpinner from "../../components/Common/LoadingSpinner";
+import { toast } from "react-toastify";
 
+// =======================
+// Styled Components
+// =======================
 const DetailsContainer = styled.div`
   background: var(--bg-primary);
   color: var(--text-primary);
@@ -28,7 +32,6 @@ const BackButton = styled.button`
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem;
-  
   &:hover {
     text-decoration: underline;
   }
@@ -53,13 +56,18 @@ const StatusBadge = styled.span`
   border-radius: 20px;
   font-size: 0.9rem;
   font-weight: 600;
-  background: ${props => {
-    switch(props.$status) {  // ✅ FIXED: Use $status (transient prop)
-      case 'available': return '#48bb78';
-      case 'pending': return '#ed8936';
-      case 'completed': return '#4299e1';
-      case 'expired': return '#e53e3e';
-      default: return '#a0aec0';
+  background: ${(props) => {
+    switch (props.$status) {
+      case "available":
+        return "#48bb78";
+      case "pending":
+        return "#ed8936";
+      case "completed":
+        return "#4299e1";
+      case "expired":
+        return "#e53e3e";
+      default:
+        return "#a0aec0";
     }
   }};
   color: white;
@@ -70,7 +78,6 @@ const DetailSection = styled.div`
   margin-bottom: 2rem;
   padding-bottom: 2rem;
   border-bottom: 1px solid #e2e8f0;
-
   &:last-child {
     border-bottom: none;
   }
@@ -88,12 +95,106 @@ const Value = styled.p`
   margin-bottom: 0.5rem;
 `;
 
+const ActionButtons = styled.div`
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+  flex-wrap: wrap;
+`;
+
+const ActionButton = styled.button`
+  flex: 1;
+  min-width: 150px;
+  padding: 1rem 2rem;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+`;
+
+const WantButton = styled(ActionButton)`
+  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+  color: white;
+`;
+
+const ContactButton = styled(ActionButton)`
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  color: white;
+`;
+
+const EditButton = styled(ActionButton)`
+  background: #48bb78;
+  color: white;
+`;
+
+const DeleteButton = styled(ActionButton)`
+  background: #e53e3e;
+  color: white;
+`;
+
+const ImageGallery = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+`;
+
+const ImageItem = styled.img`
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: transform 0.3s;
+  &:hover {
+    transform: scale(1.05);
+  }
+`;
+
 const QRSection = styled.div`
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   border-radius: 16px;
   padding: 2rem;
   color: white;
   margin-top: 2rem;
+`;
+
+const QueueSection = styled(QRSection)`
+  margin-top: 2rem;
+`;
+
+const QueueList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1rem;
+`;
+
+const QueueItem = styled.div`
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+const PositionBadge = styled.span`
+  background: ${(props) =>
+    props.$isUser ? "#48bb78" : "rgba(255, 255, 255, 0.2)"};
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-weight: 600;
 `;
 
 const ErrorState = styled.div`
@@ -103,75 +204,155 @@ const ErrorState = styled.div`
   font-size: 1.2rem;
 `;
 
+// =======================
+// Component Logic
+// =======================
 const ListingDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+
   const [listing, setListing] = useState(null);
+  const [queueStatus, setQueueStatus] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isClaiming, setIsClaiming] = useState(false);
+  const [isContacting, setIsContacting] = useState(false);
+  const [loadingQueue, setLoadingQueue] = useState(false);
   const [error, setError] = useState(null);
+
+  const isDonor =
+    listing?.donor?._id === user?._id || listing?.donor === user?._id;
+  const isRecipient =
+    listing?.assignedTo?._id === user?._id || listing?.assignedTo === user?._id;
 
   useEffect(() => {
     fetchListing();
-  }, [id]);
+    if (user) fetchQueueStatus();
+  }, [id, user]);
 
   const fetchListing = async () => {
     try {
       setLoading(true);
-      console.log("🔄 Fetching listing:", id);
-      
       const response = await api.get(`/listings/${id}`);
-      console.log("📥 Full response:", response.data);
-      
-      // Extract listing from response
-      const listingData = response.data.listing || response.data;
-      console.log("📦 Listing data:", listingData);
-      
-      setListing(listingData);
+      const data = response.data.listing || response.data;
+      setListing(data);
       setError(null);
     } catch (err) {
-      console.error("❌ Error fetching listing:", err);
       setError(err.response?.data?.message || "Failed to load listing");
     } finally {
       setLoading(false);
     }
   };
 
-  if (loading) {
+  const fetchQueueStatus = async () => {
+    try {
+      const response = await api.get(`/listings/${id}/queue/status`);
+      setQueueStatus(response.data);
+    } catch (error) {
+      console.error("Queue fetch error:", error);
+    }
+  };
+
+  const handleJoinQueue = async () => {
+    if (!user) {
+      toast.info("Please login to join queue");
+      navigate("/login");
+      return;
+    }
+    setLoadingQueue(true);
+    try {
+      const response = await api.post(`/listings/${id}/queue/join`);
+      toast.success(response.data.message);
+      fetchQueueStatus();
+      fetchListing();
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to join queue");
+    } finally {
+      setLoadingQueue(false);
+    }
+  };
+
+  const handleLeaveQueue = async () => {
+    setLoadingQueue(true);
+    try {
+      await api.delete(`/listings/${id}/queue/leave`);
+      toast.success("Left the queue");
+      fetchQueueStatus();
+      fetchListing();
+    } catch (error) {
+      toast.error("Failed to leave queue");
+    } finally {
+      setLoadingQueue(false);
+    }
+  };
+
+  const handleWantThis = async () => {
+    if (!user) return navigate("/login");
+    if (listing.status !== "available")
+      return toast.info("No longer available");
+
+    setIsClaiming(true);
+    try {
+      const response = await listingsAPI.expressInterest(id, {
+        message: "I want this item!",
+      });
+      if (response.data.success) {
+        toast.success("Interest expressed!");
+        fetchListing();
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to claim");
+    } finally {
+      setIsClaiming(false);
+    }
+  };
+
+  const handleContact = async () => {
+    if (!user) return navigate("/login");
+
+    const donorId =
+      typeof listing.donor === "object" ? listing.donor._id : listing.donor;
+    if (!donorId || donorId === user._id) return;
+
+    setIsContacting(true);
+    try {
+      const response = await chatAPI.createOrGet({
+        participantId: donorId,
+        listingId: id,
+      });
+      const chatId = response.data.chat?._id || response.data.data?.chat?._id;
+      if (chatId) navigate(`/chat/${chatId}`);
+    } catch (error) {
+      toast.error("Failed to contact donor");
+    } finally {
+      setIsContacting(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (window.confirm("Are you sure you want to delete this listing?")) {
+      try {
+        await listingsAPI.delete(id);
+        toast.success("Deleted");
+        navigate("/listings");
+      } catch {
+        toast.error("Failed to delete");
+      }
+    }
+  };
+
+  if (loading)
     return (
       <DetailsContainer>
         <LoadingSpinner />
       </DetailsContainer>
     );
-  }
-
-  if (error || !listing) {
+  if (error || !listing)
     return (
       <DetailsContainer>
-        <ErrorState>
-          ❌ {error || "Listing not found"}
-          <br />
-          <button
-            onClick={() => navigate("/listings")}
-            style={{
-              marginTop: "1rem",
-              padding: "0.5rem 1rem",
-              background: "#f093fb",
-              color: "white",
-              border: "none",
-              borderRadius: "8px",
-              cursor: "pointer",
-            }}
-          >
-            Back to Listings
-          </button>
-        </ErrorState>
+        <ErrorState>{error}</ErrorState>
       </DetailsContainer>
     );
-  }
-
-  const isDonor = listing?.donor?._id === user?._id;
-  const isRecipient = listing?.assignedTo?._id === user?._id;
 
   return (
     <DetailsContainer>
@@ -181,92 +362,148 @@ const ListingDetails = () => {
 
       <Card>
         <Title>{listing.title}</Title>
-        <StatusBadge $status={listing.status}>  {/* ✅ FIXED: Use $status */}
-          {listing.status?.toUpperCase() || 'AVAILABLE'}
+        <StatusBadge $status={listing.status}>
+          {listing.status?.toUpperCase()}
         </StatusBadge>
 
+        {listing.images?.length > 0 && (
+          <ImageGallery>
+            {listing.images.map((img, i) => (
+              <ImageItem key={i} src={img} onClick={() => window.open(img)} />
+            ))}
+          </ImageGallery>
+        )}
+
+        {/* Detail Sections */}
         <DetailSection>
           <Label>📝 Description</Label>
           <Value>{listing.description}</Value>
         </DetailSection>
-
         <DetailSection>
           <Label>📦 Quantity</Label>
-          <Value>{listing.quantity} {listing.unit || 'items'}</Value>
+          <Value>
+            {listing.quantity} {listing.unit}
+          </Value>
         </DetailSection>
-
+        <DetailSection>
+          <Label>🏷️ Category</Label>
+          <Value>{listing.category}</Value>
+        </DetailSection>
         <DetailSection>
           <Label>📍 Pickup Location</Label>
           <Value>{listing.pickupLocation}</Value>
         </DetailSection>
-
-        {listing.pickupTime && (
-          <DetailSection>
-            <Label>🕐 Pickup Time</Label>
-            <Value>{new Date(listing.pickupTime).toLocaleString()}</Value>
-          </DetailSection>
-        )}
-
         {listing.expiryDate && (
           <DetailSection>
-            <Label>⏰ Expires On</Label>
+            <Label>⏰ Expires</Label>
             <Value>{new Date(listing.expiryDate).toLocaleDateString()}</Value>
           </DetailSection>
         )}
-
         <DetailSection>
           <Label>👤 Donor</Label>
           <Value>
-            {listing.donor?.firstName && listing.donor?.lastName
-              ? `${listing.donor.firstName} ${listing.donor.lastName}`
-              : listing.donor?.name || "Anonymous"}
+            {listing.donor?.firstName} {listing.donor?.lastName}
           </Value>
         </DetailSection>
-
         {listing.assignedTo && (
           <DetailSection>
             <Label>🎯 Assigned To</Label>
             <Value>
-              {listing.assignedTo?.firstName && listing.assignedTo?.lastName
-                ? `${listing.assignedTo.firstName} ${listing.assignedTo.lastName}`
-                : listing.assignedTo?.name || "Unknown"}
+              {listing.assignedTo?.firstName} {listing.assignedTo?.lastName}
             </Value>
           </DetailSection>
         )}
+
+        {/* Actions */}
+        <ActionButtons>
+          {isDonor ? (
+            <>
+              <EditButton onClick={() => navigate(`/listings/${id}/edit`)}>
+                ✏️ Edit
+              </EditButton>
+              <DeleteButton onClick={handleDelete}>🗑️ Delete</DeleteButton>
+            </>
+          ) : listing.status === "available" ? (
+            <>
+              <WantButton onClick={handleWantThis} disabled={isClaiming}>
+                {isClaiming ? "Claiming..." : "🎯 I Want This"}
+              </WantButton>
+              <ContactButton onClick={handleContact} disabled={isContacting}>
+                💬 Contact Donor
+              </ContactButton>
+            </>
+          ) : (
+            <Value style={{ fontStyle: "italic", color: "#718096" }}>
+              Not Available
+            </Value>
+          )}
+        </ActionButtons>
       </Card>
 
-      {/* QR Code Section for Donor */}
-      {isDonor && listing.status === 'pending' && (
+      {/* QR for Donor */}
+      {isDonor && listing.status === "pending" && (
         <QRSection>
-          <h2 style={{ marginBottom: '1rem' }}>📱 QR Code for Pickup</h2>
-          <p style={{ marginBottom: '1.5rem', opacity: 0.9 }}>
-            Share this QR code with the recipient for pickup verification
-          </p>
-          <QRCodeGenerator 
-            listing={listing}
-            onPickupComplete={() => {
-              fetchListing();
-              alert('✅ Pickup completed successfully!');
-            }}
-          />
+          <h2>📱 QR Code for Pickup</h2>
+          <QRCodeGenerator listing={listing} onPickupComplete={fetchListing} />
         </QRSection>
       )}
 
-      {/* QR Scanner Section for Recipient */}
-      {isRecipient && listing.status === 'pending' && (
+      {/* QR Scanner for Recipient */}
+      {isRecipient && listing.status === "pending" && (
         <QRSection>
-          <h2 style={{ marginBottom: '1rem' }}>📷 Scan QR Code</h2>
-          <p style={{ marginBottom: '1.5rem', opacity: 0.9 }}>
-            Scan the donor's QR code to confirm pickup
-          </p>
-          <QRScanner
-            onScanComplete={(data) => {
-              console.log('✅ Pickup confirmed:', data);
-              fetchListing();
-              alert('🎉 Thank you! Pickup confirmed.');
-            }}
-          />
+          <h2>📷 Scan QR Code</h2>
+          <QRScanner onScanComplete={fetchListing} />
         </QRSection>
+      )}
+
+      {/* Queue Section */}
+      {listing.status === "pending" && !isDonor && !isRecipient && (
+        <QueueSection>
+          <h2>📋 Waiting List</h2>
+
+          {queueStatus?.userPosition ? (
+            <>
+              <PositionBadge $isUser={true}>
+                Your Position: #{queueStatus.userPosition}
+              </PositionBadge>
+              <p>
+                {queueStatus.userPosition === 1
+                  ? "You're next in line!"
+                  : `${queueStatus.userPosition - 1} ahead of you`}
+              </p>
+              <button onClick={handleLeaveQueue} disabled={loadingQueue}>
+                Leave Queue
+              </button>
+            </>
+          ) : (
+            <>
+              <p>{queueStatus?.queueLength || 0} people waiting</p>
+              <button
+                onClick={handleJoinQueue}
+                disabled={
+                  loadingQueue ||
+                  queueStatus?.queueLength >= queueStatus?.queueLimit
+                }
+              >
+                {loadingQueue ? "Joining..." : "Join Waiting List"}
+              </button>
+            </>
+          )}
+
+          {isDonor && queueStatus?.queue?.length > 0 && (
+            <QueueList>
+              <h3>People Waiting:</h3>
+              {queueStatus.queue.map((q) => (
+                <QueueItem key={q.user._id}>
+                  <div>
+                    #{q.position} - {q.user.firstName} {q.user.lastName}
+                  </div>
+                  <PositionBadge>{q.status}</PositionBadge>
+                </QueueItem>
+              ))}
+            </QueueList>
+          )}
+        </QueueSection>
       )}
     </DetailsContainer>
   );

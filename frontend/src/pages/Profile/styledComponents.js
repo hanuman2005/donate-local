@@ -475,3 +475,84 @@ export const Spinner = styled.div`
   }
 `;
 
+// ===== Additional Components for Donations & Receipts =====
+
+export const HistorySection = styled.div`
+  background: white;
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  margin-top: 1rem;
+`;
+
+export const HistoryItem = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem;
+  border-bottom: 1px solid #e2e8f0;
+  &:last-child { border-bottom: none; }
+`;
+
+export const ItemDetails = styled.div`
+  flex: 1;
+`;
+
+export const ItemTitle = styled.h3`
+  font-size: 1.1rem;
+  color: #2d3748;
+  margin-bottom: 0.25rem;
+`;
+
+export const ItemMeta = styled.div`
+  display: flex;
+  gap: 1rem;
+  font-size: 0.9rem;
+  color: #718096;
+`;
+
+export const ReceiptButton = styled.button`
+  padding: 0.6rem 1rem;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+  &:hover { opacity: 0.9; }
+`;
+
+export const ReceiptModal = styled.div`
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  flex-direction: column;
+  color: #2d3748;
+`;
+
+export const ReceiptHeader = styled.div`
+  background: white;
+  border-radius: 12px 12px 0 0;
+  padding: 1.5rem;
+  width: 400px;
+  text-align: center;
+`;
+
+export const ReceiptBody = styled.div`
+  background: white;
+  padding: 1.5rem;
+  width: 400px;
+  border-radius: 0 0 12px 12px;
+`;
+
+export const ReceiptRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  border-bottom: 1px dashed #e2e8f0;
+`;

@@ -1,9 +1,9 @@
-// src/components/Header/index.jsx - CLEANED VERSION
+// src/components/Header/index.jsx - FIXED VERSION
 import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useSocket } from "../../context/SocketContext";
-import { useNotifications } from "../../context/NotificationContext"; // 🆕 ADD THIS
+import { useNotifications } from "../../context/NotificationContext";
 import ThemeToggle from "../ThemeToggle";
 
 import {
@@ -31,45 +31,16 @@ import {
 const Header = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-  const { unreadCount } = useNotifications();
-
   const dropdownRef = useRef(null);
   const { user, logout } = useAuth();
   const { socket } = useSocket();
   const navigate = useNavigate();
   const location = useLocation();
 
-  const isDonor = user?.userType === "donor";
+  // ✅ Get unread count from NotificationContext
+  const { unreadCount } = useNotifications();
 
-  // ❌ REMOVE THESE - No longer needed since we use context
-  // useEffect(() => {
-  //   if (user) {
-  //     fetchUnreadCount();
-  //   }
-  // }, [user]);
-
-  // useEffect(() => {
-  //   if (socket && user) {
-  //     socket.on("newNotification", () => {
-  //       fetchUnreadCount();
-  //     });
-  //     return () => {
-  //       socket.off("newNotification");
-  //     };
-  //   }
-  // }, [socket, user]);
-
-  // const fetchUnreadCount = async () => {
-  //   try {
-  //     const response = await api.get("/notifications", {
-  //       params: { unreadOnly: true, limit: 1 },
-  //     });
-  //     setUnreadCount(response.data.unreadCount || 0);
-  //   } catch (error) {
-  //     console.error("Error fetching unread count:", error);
-  //   }
-  // };
+  const isDonor = user?.userType === "donor" || user?.userType === "both";
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -131,12 +102,8 @@ const Header = () => {
     <HeaderContainer>
       <HeaderContent>
         <Logo as={Link} to="/" onClick={closeMobileMenu}>
-          <span role="img" aria-label="food">
-            🍎
-          </span>
-          <LogoText>FoodShare</LogoText>
+          <LogoText>ShareTogether</LogoText>
         </Logo>
-
         <Navigation>
           <NavLink as={Link} to="/" $active={isActive("/")}>
             Home
@@ -144,12 +111,16 @@ const Header = () => {
           <NavLink as={Link} to="/listings" $active={isActive("/listings")}>
             Listings
           </NavLink>
+          {/* ✅ Optional: Add Feed route if you create LiveDonationFeed */}
+          {/* <NavLink as={Link} to="/feed" $active={isActive("/feed")}>
+            Live Feed
+          </NavLink> */}
           <NavLink
             as={Link}
             to="/impact/community"
             $active={isActive("/impact/community")}
           >
-            🌍 Community
+            Community
           </NavLink>
 
           {user && (
@@ -161,7 +132,7 @@ const Header = () => {
               >
                 Dashboard
               </NavLink>
-              {isDonor && (
+              {(isDonor || user?.userType === "both") && (
                 <NavLink
                   as={Link}
                   to="/create-listing"
@@ -228,10 +199,10 @@ const Header = () => {
                 {isDropdownOpen && (
                   <DropdownMenu>
                     <DropdownItem onClick={handleDashboardClick}>
-                      <span>📊</span> Dashboard
+                      📊 Dashboard
                     </DropdownItem>
                     <DropdownItem onClick={handleProfileClick}>
-                      <span>👤</span> Profile
+                      👤 Profile
                     </DropdownItem>
                     <DropdownItem
                       onClick={() => {
@@ -239,7 +210,7 @@ const Header = () => {
                         navigate("/impact/personal");
                       }}
                     >
-                      <span>🌱</span> My Impact
+                      🌍 My Impact
                     </DropdownItem>
                     <DropdownItem
                       onClick={() => {
@@ -247,24 +218,24 @@ const Header = () => {
                         navigate("/verify-pickup");
                       }}
                     >
-                      <span>📷</span> Scan QR
+                      📷 Scan QR
                     </DropdownItem>
                     <DropdownItem onClick={handleNotificationsClick}>
-                      <span>🔔</span> Notifications
+                      🔔 Notifications
                       {unreadCount > 0 && (
                         <NotificationBadge style={{ marginLeft: "auto" }}>
                           {unreadCount}
                         </NotificationBadge>
                       )}
                     </DropdownItem>
-                    {isDonor && (
+                    {(isDonor || user?.userType === "both") && (
                       <DropdownItem
                         onClick={() => {
                           setIsDropdownOpen(false);
                           navigate("/create-listing");
                         }}
                       >
-                        <span>➕</span> Create Listing
+                        ➕ Create Listing
                       </DropdownItem>
                     )}
                     <div
@@ -273,8 +244,11 @@ const Header = () => {
                         margin: "0.5rem 0",
                       }}
                     />
-                    <DropdownItem onClick={handleLogout}>
-                      <span>🚪</span> Logout
+                    <DropdownItem
+                      onClick={handleLogout}
+                      style={{ color: "#e53e3e" }}
+                    >
+                      🚪 Logout
                     </DropdownItem>
                   </DropdownMenu>
                 )}
@@ -327,7 +301,7 @@ const Header = () => {
             onClick={closeMobileMenu}
             $active={isActive("/impact/community")}
           >
-            🌍 Community Impact
+            Community Impact
           </MobileNavLink>
 
           {user ? (
@@ -346,7 +320,7 @@ const Header = () => {
                 onClick={closeMobileMenu}
                 $active={isActive("/impact/personal")}
               >
-                🌱 My Impact
+                My Impact
               </MobileNavLink>
               <MobileNavLink
                 as={Link}
@@ -362,14 +336,14 @@ const Header = () => {
                 onClick={closeMobileMenu}
                 $active={isActive("/notifications")}
               >
-                🔔 Notifications
+                Notifications
                 {unreadCount > 0 && (
                   <NotificationBadge style={{ marginLeft: "0.5rem" }}>
                     {unreadCount}
                   </NotificationBadge>
                 )}
               </MobileNavLink>
-              {isDonor && (
+              {(isDonor || user?.userType === "both") && (
                 <MobileNavLink
                   as={Link}
                   to="/create-listing"

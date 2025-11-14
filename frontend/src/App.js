@@ -1,8 +1,8 @@
-// src/App.js - COMPLETE WITH NOTIFICATION SYSTEM
+// src/App.js - UPDATED WITH NEW COMPONENT ROUTES
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css"; 
+import "react-toastify/dist/ReactToastify.css";
 
 import Header from "./components/Header";
 import LoadingSpinner from "./components/Common/LoadingSpinner";
@@ -25,7 +25,7 @@ import Notifications from "./pages/Notifications";
 import Chat from "./components/Chat";
 import ContactModal from "./components/ContactModal";
 
-// New Features
+// Impact Pages
 import VerifyPickup from "./pages/VerifyPickup";
 import PersonalImpact from "./components/ImpactDashboard/PersonalImpact";
 import CommunityStats from "./components/ImpactDashboard/CommunityStats";
@@ -121,7 +121,6 @@ function App() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <FloatingChatbot />
-      {/* 🆕 ADD TOAST CONTAINER */}
       <ToastContainer
         position="top-right"
         autoClose={5000}
