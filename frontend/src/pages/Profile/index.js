@@ -1,8 +1,11 @@
+// src/pages/Profile/index.jsx - POLISHED WITH FRAMER MOTION
 import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../../context/AuthContext";
 import { usersAPI, uploadAPI } from "../../services/api";
 import api from "../../services/api";
 import { toast } from "react-toastify";
+import { motionVariants } from "../../animations/motionVariants";
 
 import {
   ProfileContainer,
@@ -48,9 +51,6 @@ import {
   MessageBox,
   LoadingOverlay,
   Spinner,
-} from "./styledComponents";
-
-import {
   HistorySection,
   HistoryItem,
   ItemDetails,
@@ -197,8 +197,10 @@ const Profile = () => {
       updateUser(res.data.user || res.data);
       setSuccess("Profile updated successfully!");
       setIsEditing(false);
+      setTimeout(() => setSuccess(""), 3000);
     } catch (err) {
       setError(err.response?.data?.message || "Update failed");
+      setTimeout(() => setError(""), 3000);
     } finally {
       setLoading(false);
     }
@@ -216,9 +218,7 @@ Category: ${item.category}
 Status: ${item.status.toUpperCase()}
 
 Donor: ${item?.donor?.firstName || ""} ${item?.donor?.lastName || ""}
-Recipient: ${item?.assignedTo?.firstName || ""} ${
-      item?.assignedTo?.lastName || ""
-    }
+Recipient: ${item?.assignedTo?.firstName || ""} ${item?.assignedTo?.lastName || ""}
 
 Date: ${new Date(item.completedAt || item.createdAt).toLocaleDateString()}
 ──────────────────────
@@ -233,27 +233,65 @@ Thank you for supporting your community!
     URL.revokeObjectURL(url);
   };
 
-  const renderStars = (r) =>
-    "⭐".repeat(Math.floor(r)) + "☆".repeat(5 - Math.floor(r));
+  const renderStars = (r) => "⭐".repeat(Math.floor(r)) + "☆".repeat(5 - Math.floor(r));
 
   const averageRating =
-    ratings.length > 0
-      ? ratings.reduce((s, r) => s + r.rating, 0) / ratings.length
-      : 0;
+    ratings.length > 0 ? ratings.reduce((s, r) => s + r.rating, 0) / ratings.length : 0;
 
   return (
-    <ProfileContainer>
-      {loading && (
-        <LoadingOverlay>
-          <Spinner />
-        </LoadingOverlay>
-      )}
+    <ProfileContainer
+      as={motion.div}
+      variants={motionVariants.pageTransition}
+      initial="hidden"
+      animate="show"
+      exit="exit"
+    >
+      <AnimatePresence>
+        {loading && (
+          <LoadingOverlay
+            as={motion.div}
+            variants={motionVariants.modalBackdrop}
+            initial="hidden"
+            animate="show"
+            exit="exit"
+          >
+            <motion.div
+              variants={motionVariants.scalePop}
+              initial="hidden"
+              animate="show"
+            >
+              <Spinner />
+            </motion.div>
+          </LoadingOverlay>
+        )}
+      </AnimatePresence>
 
-      <ProfileCard>
-        <CoverPhoto />
+      <ProfileCard
+        as={motion.div}
+        variants={motionVariants.scaleIn}
+        initial="hidden"
+        animate="show"
+      >
+        <CoverPhoto
+          as={motion.div}
+          initial={{ opacity: 0, scale: 1.1 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.6 }}
+        />
+
         <ProfileHeader>
-          <AvatarWrapper>
-            <Avatar>
+          <AvatarWrapper
+            as={motion.div}
+            variants={motionVariants.scaleIn}
+            initial="hidden"
+            animate="show"
+            transition={{ delay: 0.2 }}
+          >
+            <Avatar
+              as={motion.div}
+              whileHover={{ scale: 1.05 }}
+              transition={{ type: "spring", stiffness: 300 }}
+            >
               {avatarPreview ? (
                 <img src={avatarPreview} alt="avatar" />
               ) : user.avatar ? (
@@ -266,263 +304,409 @@ Thank you for supporting your community!
               )}
             </Avatar>
             {isEditing && (
-              <AvatarUpload>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleAvatarChange}
-                />
+              <AvatarUpload
+                as={motion.label}
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+              >
+                <input type="file" accept="image/*" onChange={handleAvatarChange} />
                 📷
               </AvatarUpload>
             )}
           </AvatarWrapper>
 
-          <ProfileInfo>
-            <ProfileName>
-              {user.firstName} {user.lastName}
-            </ProfileName>
+          <ProfileInfo
+            as={motion.div}
+            variants={motionVariants.fadeSlideUp}
+            initial="hidden"
+            animate="show"
+            transition={{ delay: 0.3 }}
+          >
+            <ProfileName>{user.firstName} {user.lastName}</ProfileName>
             <ProfileEmail>📧 {user.email}</ProfileEmail>
             {!isEditing && user.bio && <ProfileBio>{user.bio}</ProfileBio>}
-            <ProfileActions>
-              {isEditing ? (
-                <>
-                  <ActionButton onClick={() => setIsEditing(false)}>
-                    ❌ Cancel
-                  </ActionButton>
-                  <ActionButton $primary onClick={handleSave}>
-                    ✅ Save
-                  </ActionButton>
-                </>
-              ) : (
-                <ActionButton $primary onClick={() => setIsEditing(true)}>
-                  ✏️ Edit Profile
-                </ActionButton>
+
+            <AnimatePresence mode="wait">
+              {(success || error) && (
+                <MessageBox
+                  as={motion.div}
+                  variants={motionVariants.dropDownSpring}
+                  initial="hidden"
+                  animate="show"
+                  exit="exit"
+                  $type={error ? "error" : "success"}
+                >
+                  {success || error}
+                </MessageBox>
               )}
+            </AnimatePresence>
+
+            <ProfileActions>
+              <AnimatePresence mode="wait">
+                {isEditing ? (
+                  <motion.div
+                    key="editing"
+                    style={{ display: "flex", gap: "1rem" }}
+                    variants={motionVariants.fadeSlide}
+                    initial="hidden"
+                    animate="show"
+                    exit="exit"
+                  >
+                    <ActionButton
+                      as={motion.button}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setIsEditing(false)}
+                    >
+                      ❌ Cancel
+                    </ActionButton>
+                    <ActionButton
+                      as={motion.button}
+                      $primary
+                      whileHover={{ scale: 1.05, y: -2 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={handleSave}
+                    >
+                      ✅ Save Changes
+                    </ActionButton>
+                  </motion.div>
+                ) : (
+                  <ActionButton
+                    key="not-editing"
+                    as={motion.button}
+                    $primary
+                    variants={motionVariants.fadeSlide}
+                    initial="hidden"
+                    animate="show"
+                    exit="exit"
+                    whileHover={{ scale: 1.05, y: -2 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setIsEditing(true)}
+                  >
+                    ✏️ Edit Profile
+                  </ActionButton>
+                )}
+              </AnimatePresence>
             </ProfileActions>
           </ProfileInfo>
         </ProfileHeader>
 
-        <StatsContainer>
-          <StatCard>
-            <StatValue>{user.listingsCount || 0}</StatValue>
-            <StatLabel>Total Donations</StatLabel>
-          </StatCard>
-          <StatCard>
-            <StatValue>{averageRating.toFixed(1)}</StatValue>
-            <StatLabel>Average Rating</StatLabel>
-          </StatCard>
-          <StatCard>
-            <StatValue>{ratings.length}</StatValue>
-            <StatLabel>Reviews</StatLabel>
-          </StatCard>
-          <StatCard>
-            <StatValue>{badges.filter((b) => b.unlocked).length}</StatValue>
-            <StatLabel>Badges</StatLabel>
-          </StatCard>
+        <StatsContainer
+          as={motion.div}
+          variants={motionVariants.staggerContainer}
+          initial="hidden"
+          animate="show"
+        >
+          {[
+            { value: user.listingsCount || 0, label: "Total Donations" },
+            { value: averageRating.toFixed(1), label: "Average Rating" },
+            { value: ratings.length, label: "Reviews" },
+            { value: badges.filter((b) => b.unlocked).length, label: "Badges" },
+          ].map((stat, i) => (
+            <StatCard
+              key={i}
+              as={motion.div}
+              variants={motionVariants.scaleIn}
+              whileHover={{ y: -8, scale: 1.03 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <StatValue>{stat.value}</StatValue>
+              <StatLabel>{stat.label}</StatLabel>
+            </StatCard>
+          ))}
         </StatsContainer>
 
-        <ContentTabs>
-          <Tab
-            $active={activeTab === "profile"}
-            onClick={() => setActiveTab("profile")}
-          >
-            👤 Profile
-          </Tab>
-          <Tab
-            $active={activeTab === "badges"}
-            onClick={() => setActiveTab("badges")}
-          >
-            🏆 Achievements
-          </Tab>
-          <Tab
-            $active={activeTab === "ratings"}
-            onClick={() => setActiveTab("ratings")}
-          >
-            ⭐ Reviews
-          </Tab>
-          <Tab
-            $active={activeTab === "impact"}
-            onClick={() => setActiveTab("impact")}
-          >
-            📊 My Impact
-          </Tab>
-          <Tab
-            $active={activeTab === "donations"}
-            onClick={() => setActiveTab("donations")}
-          >
-            🎁 My Donations
-          </Tab>
-          <Tab
-            $active={activeTab === "received"}
-            onClick={() => setActiveTab("received")}
-          >
-            📦 Received Items
-          </Tab>
+        <ContentTabs
+          as={motion.div}
+          variants={motionVariants.fadeSlideDown}
+          initial="hidden"
+          animate="show"
+        >
+          {[
+            { id: "profile", icon: "👤", label: "Profile" },
+            { id: "badges", icon: "🏆", label: "Achievements" },
+            { id: "ratings", icon: "⭐", label: "Reviews" },
+            { id: "impact", icon: "📊", label: "My Impact" },
+            { id: "donations", icon: "🎁", label: "My Donations" },
+            { id: "received", icon: "📦", label: "Received Items" },
+          ].map((tab) => (
+            <Tab
+              key={tab.id}
+              as={motion.button}
+              $active={activeTab === tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              {tab.icon} {tab.label}
+            </Tab>
+          ))}
         </ContentTabs>
 
-        <TabContent>
-          {activeTab === "profile" && (
-            <FormGrid>
-              {[
-                "firstName",
-                "lastName",
-                "email",
-                "phone",
-                "address",
-                "userType",
-                "bio",
-              ].map((f) => (
-                <FormGroup
-                  key={f}
-                  style={f === "bio" ? { gridColumn: "1 / -1" } : {}}
-                >
-                  <Label>{f.charAt(0).toUpperCase() + f.slice(1)}</Label>
-                  {f === "bio" ? (
-                    <TextArea
-                      name={f}
-                      value={formData[f]}
-                      onChange={handleInputChange}
-                      disabled={!isEditing}
-                    />
-                  ) : f === "userType" ? (
-                    <Select
-                      name="userType"
-                      value={formData.userType}
-                      onChange={handleInputChange}
-                      disabled={!isEditing}
+        <AnimatePresence mode="wait">
+          <TabContent
+            as={motion.div}
+            key={activeTab}
+            variants={motionVariants.tabContent}
+            initial="hidden"
+            animate="show"
+            exit="exit"
+          >
+            {/* Profile Tab */}
+            {activeTab === "profile" && (
+              <FormGrid
+                as={motion.div}
+                variants={motionVariants.staggerContainer}
+                initial="hidden"
+                animate="show"
+              >
+                {["firstName", "lastName", "email", "phone", "address", "userType", "bio"].map(
+                  (f) => (
+                    <FormGroup
+                      key={f}
+                      as={motion.div}
+                      variants={motionVariants.listItemSlideUp}
+                      style={f === "bio" ? { gridColumn: "1 / -1" } : {}}
                     >
-                      <option value="individual">Individual</option>
-                      <option value="business">Business</option>
-                    </Select>
-                  ) : (
-                    <Input
-                      type="text"
-                      name={f}
-                      value={formData[f]}
-                      onChange={handleInputChange}
-                      disabled={f === "email" || !isEditing}
-                    />
-                  )}
-                </FormGroup>
-              ))}
-            </FormGrid>
-          )}
+                      <Label>{f.charAt(0).toUpperCase() + f.slice(1)}</Label>
+                      {f === "bio" ? (
+                        <TextArea
+                          as={motion.textarea}
+                          whileFocus={{ scale: 1.01 }}
+                          name={f}
+                          value={formData[f]}
+                          onChange={handleInputChange}
+                          disabled={!isEditing}
+                        />
+                      ) : f === "userType" ? (
+                        <Select
+                          as={motion.select}
+                          whileFocus={{ scale: 1.01 }}
+                          name="userType"
+                          value={formData.userType}
+                          onChange={handleInputChange}
+                          disabled={!isEditing}
+                        >
+                          <option value="individual">Individual</option>
+                          <option value="business">Business</option>
+                        </Select>
+                      ) : (
+                        <Input
+                          as={motion.input}
+                          whileFocus={{ scale: 1.01 }}
+                          type="text"
+                          name={f}
+                          value={formData[f]}
+                          onChange={handleInputChange}
+                          disabled={f === "email" || !isEditing}
+                        />
+                      )}
+                    </FormGroup>
+                  )
+                )}
+              </FormGrid>
+            )}
 
-          {activeTab === "badges" && (
-            <BadgesSection>
-              {badges.map((b) => (
-                <BadgeCard key={b.id} $unlocked={b.unlocked}>
-                  <BadgeIcon>{b.icon}</BadgeIcon>
-                  <BadgeName>{b.name}</BadgeName>
-                  <BadgeDescription>{b.description}</BadgeDescription>
-                </BadgeCard>
-              ))}
-            </BadgesSection>
-          )}
+            {/* Badges Tab */}
+            {activeTab === "badges" && (
+              <BadgesSection
+                as={motion.div}
+                variants={motionVariants.staggerContainer}
+                initial="hidden"
+                animate="show"
+              >
+                {badges.map((b, i) => (
+                  <BadgeCard
+                    key={b.id}
+                    as={motion.div}
+                    variants={motionVariants.scaleIn}
+                    custom={i}
+                    $unlocked={b.unlocked}
+                    whileHover={b.unlocked ? { y: -10, scale: 1.05 } : {}}
+                  >
+                    <BadgeIcon
+                      as={motion.div}
+                      animate={
+                        b.unlocked
+                          ? {
+                              rotate: [0, 10, -10, 0],
+                              transition: { duration: 2, repeat: Infinity },
+                            }
+                          : {}
+                      }
+                    >
+                      {b.icon}
+                    </BadgeIcon>
+                    <BadgeName>{b.name}</BadgeName>
+                    <BadgeDescription>{b.description}</BadgeDescription>
+                  </BadgeCard>
+                ))}
+              </BadgesSection>
+            )}
 
-          {activeTab === "ratings" && (
-            <RatingsSection>
-              {ratings.map((r, i) => (
-                <RatingCard key={i}>
-                  <RatingHeader>
-                    <RaterInfo>
-                      <RaterAvatar>{r.raterName?.[0] || "?"}</RaterAvatar>
-                      <div>
-                        <RaterName>{r.raterName || "Anonymous"}</RaterName>
-                        <RatingDate>
-                          {new Date(r.createdAt).toLocaleDateString()}
-                        </RatingDate>
-                      </div>
-                    </RaterInfo>
-                    <Stars>{renderStars(r.rating)}</Stars>
-                  </RatingHeader>
-                  {r.comment && <RatingComment>"{r.comment}"</RatingComment>}
-                </RatingCard>
-              ))}
-            </RatingsSection>
-          )}
+            {/* Ratings Tab */}
+            {activeTab === "ratings" && (
+              <RatingsSection
+                as={motion.div}
+                variants={motionVariants.staggerContainer}
+                initial="hidden"
+                animate="show"
+              >
+                {ratings.map((r, i) => (
+                  <RatingCard
+                    key={i}
+                    as={motion.div}
+                    variants={motionVariants.listItemSlideUp}
+                    custom={i}
+                    whileHover={{ x: 5, scale: 1.01 }}
+                  >
+                    <RatingHeader>
+                      <RaterInfo>
+                        <RaterAvatar>{r.raterName?.[0] || "?"}</RaterAvatar>
+                        <div>
+                          <RaterName>{r.raterName || "Anonymous"}</RaterName>
+                          <RatingDate>
+                            {new Date(r.createdAt).toLocaleDateString()}
+                          </RatingDate>
+                        </div>
+                      </RaterInfo>
+                      <Stars>{renderStars(r.rating)}</Stars>
+                    </RatingHeader>
+                    {r.comment && <RatingComment>"{r.comment}"</RatingComment>}
+                  </RatingCard>
+                ))}
+              </RatingsSection>
+            )}
 
-          {activeTab === "impact" && stats && (
-            <StatsContainer>
-              <StatCard>
-                <StatValue>{stats.totalListings || 0}</StatValue>
-                <StatLabel>Total Donations</StatLabel>
-              </StatCard>
-              <StatCard>
-                <StatValue>{stats.completedListings || 0}</StatValue>
-                <StatLabel>Completed</StatLabel>
-              </StatCard>
-              <StatCard>
-                <StatValue>{stats.activeListings || 0}</StatValue>
-                <StatLabel>Active</StatLabel>
-              </StatCard>
-              <StatCard>
-                <StatValue>⭐ 4.8</StatValue>
-                <StatLabel>Avg Rating</StatLabel>
-              </StatCard>
-            </StatsContainer>
-          )}
+            {/* Impact Tab */}
+            {activeTab === "impact" && stats && (
+              <StatsContainer
+                as={motion.div}
+                variants={motionVariants.staggerContainer}
+                initial="hidden"
+                animate="show"
+              >
+                {[
+                  { value: stats.totalListings || 0, label: "Total Donations" },
+                  { value: stats.completedListings || 0, label: "Completed" },
+                  { value: stats.activeListings || 0, label: "Active" },
+                  { value: "⭐ 4.8", label: "Avg Rating" },
+                ].map((stat, i) => (
+                  <StatCard
+                    key={i}
+                    as={motion.div}
+                    variants={motionVariants.scaleIn}
+                    whileHover={{ y: -8, scale: 1.03 }}
+                  >
+                    <StatValue>{stat.value}</StatValue>
+                    <StatLabel>{stat.label}</StatLabel>
+                  </StatCard>
+                ))}
+              </StatsContainer>
+            )}
 
-          {(activeTab === "donations" || activeTab === "received") && (
-            <HistorySection>
-              {history.map((item) => (
-                <HistoryItem key={item._id}>
-                  <ItemDetails>
-                    <ItemTitle>{item.title}</ItemTitle>
-                    <ItemMeta>
-                      <span>
-                        📅 {new Date(item.createdAt).toLocaleDateString()}
-                      </span>
-                      <span>
-                        📦 {item.quantity} {item.unit}
-                      </span>
-                      <span>📊 {item.status}</span>
-                    </ItemMeta>
-                  </ItemDetails>
-                  <ReceiptButton onClick={() => generateReceipt(item)}>
-                    📄 Receipt
-                  </ReceiptButton>
-                </HistoryItem>
-              ))}
-            </HistorySection>
-          )}
-        </TabContent>
+            {/* Donations/Received Tabs */}
+            {(activeTab === "donations" || activeTab === "received") && (
+              <HistorySection
+                as={motion.div}
+                variants={motionVariants.staggerContainer}
+                initial="hidden"
+                animate="show"
+              >
+                {history.map((item, i) => (
+                  <HistoryItem
+                    key={item._id}
+                    as={motion.div}
+                    variants={motionVariants.listItem}
+                    custom={i}
+                    whileHover={{ x: 5, backgroundColor: "#f7fafc" }}
+                  >
+                    <ItemDetails>
+                      <ItemTitle>{item.title}</ItemTitle>
+                      <ItemMeta>
+                        <span>📅 {new Date(item.createdAt).toLocaleDateString()}</span>
+                        <span>📦 {item.quantity} {item.unit}</span>
+                        <span>📊 {item.status}</span>
+                      </ItemMeta>
+                    </ItemDetails>
+                    <ReceiptButton
+                      as={motion.button}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => generateReceipt(item)}
+                    >
+                      📄 Receipt
+                    </ReceiptButton>
+                  </HistoryItem>
+                ))}
+              </HistorySection>
+            )}
+          </TabContent>
+        </AnimatePresence>
       </ProfileCard>
 
-      {selectedReceipt && (
-        <ReceiptModal>
-          <ReceiptHeader>
-            <h2>🎁 DONATION RECEIPT</h2>
-            <p>{selectedReceipt.title}</p>
-          </ReceiptHeader>
-          <ReceiptBody>
-            <ReceiptRow>
-              <span>Quantity:</span>
-              <strong>
-                {selectedReceipt.quantity} {selectedReceipt.unit}
-              </strong>
-            </ReceiptRow>
-            <ReceiptRow>
-              <span>Status:</span>
-              <strong>{selectedReceipt.status}</strong>
-            </ReceiptRow>
-            <ReceiptRow>
-              <span>Date:</span>
-              <strong>
-                {new Date(selectedReceipt.createdAt).toLocaleDateString()}
-              </strong>
-            </ReceiptRow>
-          </ReceiptBody>
-          <div style={{ display: "flex", gap: "1rem", marginTop: "1.5rem" }}>
-            <ReceiptButton onClick={() => downloadReceipt(selectedReceipt)}>
-              💾 Download
-            </ReceiptButton>
-            <ReceiptButton onClick={() => setSelectedReceipt(null)}>
-              Close
-            </ReceiptButton>
-          </div>
-        </ReceiptModal>
-      )}
+      {/* Receipt Modal */}
+      <AnimatePresence>
+        {selectedReceipt && (
+          <ReceiptModal
+            as={motion.div}
+            variants={motionVariants.modalBackdrop}
+            initial="hidden"
+            animate="show"
+            exit="exit"
+            onClick={() => setSelectedReceipt(null)}
+          >
+            <motion.div
+              variants={motionVariants.modalContent}
+              initial="hidden"
+              animate="show"
+              exit="exit"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <ReceiptHeader>
+                <h2>🎁 DONATION RECEIPT</h2>
+                <p>{selectedReceipt.title}</p>
+              </ReceiptHeader>
+              <ReceiptBody>
+                <ReceiptRow>
+                  <span>Quantity:</span>
+                  <strong>{selectedReceipt.quantity} {selectedReceipt.unit}</strong>
+                </ReceiptRow>
+                <ReceiptRow>
+                  <span>Status:</span>
+                  <strong>{selectedReceipt.status}</strong>
+                </ReceiptRow>
+                <ReceiptRow>
+                  <span>Date:</span>
+                  <strong>
+                    {new Date(selectedReceipt.createdAt).toLocaleDateString()}
+                  </strong>
+                </ReceiptRow>
+              </ReceiptBody>
+              <div style={{ display: "flex", gap: "1rem", marginTop: "1.5rem" }}>
+                <ReceiptButton
+                  as={motion.button}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => downloadReceipt(selectedReceipt)}
+                >
+                  💾 Download
+                </ReceiptButton>
+                <ReceiptButton
+                  as={motion.button}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setSelectedReceipt(null)}
+                >
+                  Close
+                </ReceiptButton>
+              </div>
+            </motion.div>
+          </ReceiptModal>
+        )}
+      </AnimatePresence>
     </ProfileContainer>
   );
 };

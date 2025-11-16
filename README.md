@@ -1,10 +1,12 @@
-# 🍎 FoodShare - Community Food Donation Platform
+# ShareTogether
 
-> A real-time MERN platform connecting food donors with recipients in local communities — reducing food waste and fighting hunger through technology.
+> Give what you don't want and take what you want
+
+A real-time MERN platform connecting local communities to share items — reducing waste and helping those in need through technology.
 
 [![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/)
-[![Node.js](https://img.shields.io/badge/Node.js-v16+-green)](https://nodejs.org/)
-[![React](https://img.shields.io/badge/React-v18+-blue)](https://reactjs.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-v18+-green)](https://nodejs.org/)
+[![React](https://img.shields.io/badge/React-v19+-blue)](https://reactjs.org/)
 [![MongoDB](https://img.shields.io/badge/MongoDB-v5+-green)](https://www.mongodb.com/)
 
 [Live Demo](#) | [Report Bug](#) | [Request Feature](#)
@@ -13,15 +15,34 @@
 
 ## 📋 Table of Contents
 
+- [About](#-about)
 - [Features](#-features)
 - [Tech Stack](#️-tech-stack)
-- [Getting Started](#-getting-started)
 - [Project Structure](#-project-structure)
-- [API Documentation](#-api-documentation)
+- [Getting Started](#-getting-started)
+- [Documentation](#-documentation)
 - [Screenshots](#-screenshots)
-- [Roadmap](#️-roadmap)
+- [API Documentation](#-api-documentation)
 - [Contributing](#-contributing)
 - [License](#-license)
+
+---
+
+## 🎯 About
+
+ShareTogether is a community-driven platform that enables users to donate items they no longer need and find items they want. Whether it's food, clothing, furniture, electronics, books, toys, or any other items, ShareTogether connects neighbors to reduce waste and build stronger communities.
+
+### The Problem
+- 🗑️ Billions of items wasted globally every year
+- 😢 Many people in need of basic items
+- 🌍 Waste contributes significantly to environmental issues
+
+### Our Solution
+ShareTogether creates a circular economy that:
+- ✅ Reduces waste at the source
+- ✅ Helps those in need in local communities
+- ✅ Decreases environmental impact
+- ✅ Builds stronger community bonds
 
 ---
 
@@ -29,11 +50,11 @@
 
 ### 🎯 Core Functionality
 
-- **📝 Smart Listing Management**
-  - Create listings with title, description, category, quantity, and expiry date
+- **📝 Universal Item Donations**
+  - Create listings for any type of item (food, clothing, furniture, electronics, books, toys, etc.)
   - Upload multiple images (up to 5) via Cloudinary integration
   - Real-time status updates (Available → Pending → Completed)
-  - Auto-categorization with 10+ food categories
+  - 10+ item categories
 
 - **📍 Location-Aware Discovery**
   - Geospatial search using MongoDB 2dsphere indexes
@@ -54,17 +75,26 @@
   - Completion reminders
   - Toast notifications for instant feedback
 
-- **👤 User Profiles**
-  - Complete profile management (first name, last name, bio, avatar)
-  - Rating system with 5-star reviews
-  - Activity tracking (listings created, donations made)
-  - User statistics dashboard
+- **📱 QR Code Verification**
+  - Generate unique QR codes for transactions
+  - Secure hash-based verification
+  - Camera scanning functionality
+  - Download QR as PNG
+  - Transaction history tracking
 
-- **🤖 AI Chatbot Assistant**
-  - 24/7 support for common questions
-  - Quick reply suggestions
-  - Platform navigation help
-  - Floating UI for easy access
+- **📊 Impact Tracking**
+  - Personal impact dashboard
+  - Community-wide statistics
+  - Geographic heatmap
+  - Historical timeline
+  - Shareable impact cards
+  - CO2, waste, items saved metrics
+
+- **👤 User Profiles**
+  - Complete profile management
+  - Rating system with 5-star reviews
+  - Activity tracking
+  - User statistics dashboard
 
 ### 🔐 Security & Authentication
 
@@ -75,30 +105,26 @@
 - CORS protection
 - Input validation using express-validator
 
-### 📊 Analytics & Insights
-
-- User dashboard with personal statistics
-- Platform-wide analytics (admin only)
-- Activity tracking and engagement metrics
-- Listings by category breakdown
-- Growth trends visualization
-
 ---
 
 ## 🛠️ Tech Stack
 
 ### Frontend
+
 | Technology | Purpose |
 |------------|---------|
-| **React 18** | UI framework with hooks |
-| **React Router v6** | Client-side routing |
+| **React 19** | UI framework with hooks |
+| **React Router v7** | Client-side routing |
 | **Styled Components** | Component styling |
 | **Axios** | HTTP client with interceptors |
 | **Socket.IO Client** | Real-time communication |
 | **React Toastify** | Notifications |
 | **Leaflet** | Interactive maps |
+| **QRCode.react** | QR code generation |
+| **ZXing WASM** | QR code scanning |
 
 ### Backend
+
 | Technology | Purpose |
 |------------|---------|
 | **Node.js** | Runtime environment |
@@ -112,6 +138,7 @@
 | **Multer** | File upload handling |
 
 ### DevOps & Tools
+
 | Technology | Purpose |
 |------------|---------|
 | **Nodemon** | Auto-restart dev server |
@@ -122,31 +149,67 @@
 
 ---
 
+## 📁 Project Structure
+
+```
+sharetogether/
+├── backend/
+│   ├── config/              # Database & Cloudinary setup
+│   ├── controllers/         # Business logic
+│   ├── middleware/          # Auth, upload, error handling
+│   ├── models/              # Database schemas
+│   ├── routes/               # API routes
+│   ├── socket/               # Socket.IO handlers
+│   ├── utils/                # Helper functions
+│   ├── server.js             # Entry point
+│   └── package.json
+│
+├── frontend/
+│   ├── public/              # Static assets
+│   ├── src/
+│   │   ├── components/      # Reusable components
+│   │   ├── pages/           # Page components
+│   │   ├── context/         # State management
+│   │   ├── services/        # API services
+│   │   ├── styles/          # Global styles
+│   │   ├── utils/            # Utility functions
+│   │   ├── App.js            # Root component
+│   │   └── index.js          # Entry point
+│   └── package.json
+│
+└── README.md                 # This file
+```
+
+---
+
 ## 🚀 Getting Started
 
 ### Prerequisites
 
 ```bash
-node >= 16.0.0
-npm >= 8.0.0
-mongodb >= 5.0.0
+Node.js >= 18.0.0
+npm >= 9.0.0
+MongoDB >= 5.0.0
 ```
 
 ### Installation
 
 1. **Clone the repository**
+
 ```bash
-git clone https://github.com/hanuman2005/foodshare-platform.git
-cd foodshare-platform
+git clone https://github.com/hanuman2005/donate-local.git
+cd donate-local
 ```
 
 2. **Install Backend Dependencies**
+
 ```bash
 cd backend
 npm install
 ```
 
 3. **Install Frontend Dependencies**
+
 ```bash
 cd ../frontend
 npm install
@@ -154,15 +217,15 @@ npm install
 
 4. **Environment Variables**
 
-Create `backend/.env`:
+**Backend** (`backend/.env`):
 ```env
 # Server Configuration
 PORT=5000
 NODE_ENV=development
 
 # Database
-MONGO_URI=mongodb://localhost:27017/foodshare
-# Or MongoDB Atlas: mongodb+srv://username:password@cluster.mongodb.net/foodshare
+MONGO_URI=mongodb://localhost:27017/sharetogether
+# Or MongoDB Atlas: mongodb+srv://username:password@cluster.mongodb.net/sharetogether
 
 # Authentication
 JWT_SECRET=your_super_secret_jwt_key_change_this_in_production_min_32_chars
@@ -176,7 +239,7 @@ CLOUDINARY_API_SECRET=your_api_secret
 CLIENT_URL=http://localhost:3000
 ```
 
-Create `frontend/.env`:
+**Frontend** (`frontend/.env`):
 ```env
 REACT_APP_API_URL=http://localhost:5000/api
 REACT_APP_SOCKET_URL=http://localhost:5000
@@ -184,107 +247,30 @@ REACT_APP_SOCKET_URL=http://localhost:5000
 
 5. **Start Development Servers**
 
-Backend:
+**Backend** (Terminal 1):
 ```bash
 cd backend
 npm run dev
 ```
 
-Frontend (new terminal):
+**Frontend** (Terminal 2):
 ```bash
 cd frontend
 npm start
 ```
 
 6. **Access the Application**
+
 - Frontend: http://localhost:3000
 - Backend API: http://localhost:5000/api
-- API Documentation: http://localhost:5000/api-docs (if configured)
+- API Health Check: http://localhost:5000
 
 ---
 
-## 📂 Project Structure
+## 📚 Documentation
 
-```
-foodshare-platform/
-├── backend/
-│   ├── config/
-│   │   ├── db.js                    # MongoDB connection
-│   │   └── cloudinary.js            # Cloudinary setup
-│   ├── controllers/
-│   │   ├── authController.js        # Auth logic
-│   │   ├── listingController.js     # Listing CRUD
-│   │   ├── chatController.js        # Chat operations
-│   │   ├── userController.js        # User management
-│   │   ├── notificationController.js # Notifications
-│   │   └── analyticsController.js   # Analytics data
-│   ├── middleware/
-│   │   ├── auth.js                  # JWT verification
-│   │   ├── upload.js                # Multer config
-│   │   └── errorHandler.js          # Global error handling
-│   ├── models/
-│   │   ├── User.js                  # User schema
-│   │   ├── Listing.js               # Listing schema
-│   │   ├── Chat.js                  # Chat schema
-│   │   ├── Message.js               # Message schema
-│   │   └── Notification.js          # Notification schema
-│   ├── routes/
-│   │   ├── auth.js                  # Auth routes
-│   │   ├── listings.js              # Listing routes
-│   │   ├── chat.js                  # Chat routes
-│   │   ├── users.js                 # User routes
-│   │   ├── notifications.js         # Notification routes
-│   │   └── analytics.js             # Analytics routes
-│   ├── socket/
-│   │   └── socketHandler.js         # Socket.IO events
-│   ├── utils/
-│   │   └── notificationHelper.js    # Notification triggers
-│   ├── .env                         # Environment variables
-│   ├── server.js                    # Entry point
-│   └── package.json
-│
-├── frontend/
-│   ├── public/
-│   │   └── index.html
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── Header/              # Navigation header
-│   │   │   ├── ListingCard/         # Listing display card
-│   │   │   ├── Chat/                # Chat interface
-│   │   │   ├── Map/                 # Interactive map
-│   │   │   ├── FloatingChatbot/     # AI assistant
-│   │   │   ├── ProtectedRoute/      # Route guard
-│   │   │   └── Common/              # Shared components
-│   │   ├── context/
-│   │   │   ├── AuthContext.js       # Auth state management
-│   │   │   ├── SocketContext.js     # Socket.IO connection
-│   │   │   └── LanguageContext.js   # i18n support
-│   │   ├── pages/
-│   │   │   ├── Home/                # Landing page
-│   │   │   ├── Login/               # Login form
-│   │   │   ├── Register/            # Registration
-│   │   │   ├── Dashboard/           # User dashboard
-│   │   │   ├── Listings/            # Browse listings
-│   │   │   ├── ListingDetails/      # Single listing view
-│   │   │   ├── CreateListing/       # Create form
-│   │   │   ├── Profile/             # User profile
-│   │   │   ├── Notifications/       # Notification center
-│   │   │   ├── Chat/                # Chat page
-│   │   │   ├── About/               # About page
-│   │   │   └── Contact/             # Contact form
-│   │   ├── services/
-│   │   │   └── api.js               # Axios instance & API calls
-│   │   ├── styles/
-│   │   │   └── globalStyles.js      # Global CSS
-│   │   ├── utils/
-│   │   │   └── helpers.js           # Utility functions
-│   │   ├── App.js                   # Root component
-│   │   └── index.js                 # Entry point
-│   ├── .env                         # Environment variables
-│   └── package.json
-│
-└── README.md
-```
+- [Backend Documentation](./backend/BACKEND_README.md) - Complete backend API documentation
+- [Frontend Documentation](./frontend/FRONTEND_README.md) - Frontend component and page documentation
 
 ---
 
@@ -304,167 +290,27 @@ foodshare-platform/
 | Method | Endpoint | Description | Auth Required |
 |--------|----------|-------------|---------------|
 | GET | `/api/listings` | Get all listings | ❌ |
-| GET | `/api/listings/search` | Search listings | ❌ |
 | GET | `/api/listings/nearby` | Get nearby listings | ❌ |
-| GET | `/api/listings/user` | Get user's listings | ✅ |
-| GET | `/api/listings/:id` | Get single listing | ❌ |
 | POST | `/api/listings` | Create listing | ✅ |
 | PUT | `/api/listings/:id` | Update listing | ✅ |
 | DELETE | `/api/listings/:id` | Delete listing | ✅ |
-| POST | `/api/listings/:id/interest` | Express interest | ✅ |
-| POST | `/api/listings/:id/assign` | Assign listing | ✅ |
-| PUT | `/api/listings/:id/complete` | Mark as completed | ✅ |
 
-### Chat Endpoints
+### QR Code Endpoints
 
 | Method | Endpoint | Description | Auth Required |
 |--------|----------|-------------|---------------|
-| POST | `/api/chat` | Create/get chat | ✅ |
-| GET | `/api/chat` | Get user chats | ✅ |
-| GET | `/api/chat/:chatId` | Get messages | ✅ |
-| POST | `/api/chat/:chatId/messages` | Send message | ✅ |
-| PUT | `/api/chat/:chatId/read` | Mark as read | ✅ |
+| POST | `/api/qr/generate` | Generate QR code | ✅ |
+| POST | `/api/qr/verify` | Verify QR code | ✅ |
+| GET | `/api/qr/my-transactions` | Get transactions | ✅ |
 
-### Notification Endpoints
+### Impact Endpoints
 
 | Method | Endpoint | Description | Auth Required |
 |--------|----------|-------------|---------------|
-| GET | `/api/notifications` | Get notifications | ✅ |
-| PUT | `/api/notifications/:id/read` | Mark as read | ✅ |
-| PUT | `/api/notifications/read-all` | Mark all as read | ✅ |
-| DELETE | `/api/notifications/:id` | Delete notification | ✅ |
+| GET | `/api/impact/personal` | Personal impact | ✅ |
+| GET | `/api/impact/community` | Community stats | ❌ |
 
-### Socket.IO Events
-
-| Event | Direction | Description |
-|-------|-----------|-------------|
-| `connection` | Server → Client | User connected |
-| `disconnect` | Server → Client | User disconnected |
-| `userOnline` | Server → Client | User came online |
-| `userOffline` | Server → Client | User went offline |
-| `joinChat` | Client → Server | Join chat room |
-| `leaveChat` | Client → Server | Leave chat room |
-| `sendMessage` | Client → Server | Send chat message |
-| `newMessage` | Server → Client | Receive new message |
-| `receiveMessage` | Server → Client | Message received |
-| `typing` | Client → Server | User typing |
-| `userTyping` | Server → Client | Show typing indicator |
-| `markAsRead` | Client → Server | Mark messages as read |
-| `messagesRead` | Server → Client | Messages marked as read |
-| `newNotification` | Server → Client | New notification received |
-
----
-
-## 🔄 How It Works - Complete Flow
-
-### Visual Flow Diagram
-
-```
-┌─────────────────┐          ┌─────────────────┐          ┌─────────────────┐
-│  DONOR (User A) │          │     SYSTEM      │          │ RECIPIENT (B)   │
-└────────┬────────┘          └────────┬────────┘          └────────┬────────┘
-         │                            │                            │
-         │ 1. Create Listing          │                            │
-         │──────────────────────────→ │                            │
-         │                            │ • Save to MongoDB          │
-         │                            │ • Status: "available"      │
-         │                            │ • Generate coordinates     │
-         │                            │                            │
-         │                            │ ←────── 2. Browse Listings │
-         │                            │                            │
-         │                            │ • Query available listings │
-         │                            │ • Filter by location       │
-         │                            │ • Sort by distance         │
-         │                            │                            │
-         │                            │ ──────────────────────────→│
-         │                            │   Show listings with map   │
-         │                            │                            │
-         │                            │ ←─── 3. Express Interest ──│
-         │                            │   { userId, message }      │
-         │                            │                            │
-         │ ←────── 4. 🔔 Notification │                            │
-         │    "User B is interested"  │                            │
-         │    (Real-time via Socket)  │                            │
-         │                            │                            │
-         │                            │ ←──── 5. Contact (Chat) ───│
-         │                            │   Create/Get chat room     │
-         │                            │                            │
-         │ ←──── 6. 💬 Chat Message ──┼─────────────────────────── │
-         │    "Is this available?"    │   (Socket.IO real-time)    │
-         │                            │                            │
-         │ ─────── 💬 Reply ─────────→│ ───────────────────────→   │
-         │    "Yes! Pickup at 5pm"    │                            │
-         │                            │                            │
-         │ 7. Assign Listing          │                            │
-         │──────────────────────────→ │                            │
-         │    { recipientId }         │                            │
-         │                            │ • Update status: "pending" │
-         │                            │ • Set assignedTo: User B   │
-         │                            │                            │
-         │                            │ ──────→ 8. 🔔 Notification │
-         │                            │    "Assigned to you!"      │
-         │                            │    (Real-time via Socket)  │
-         │                            │                            │
-         ├──────────────────────────────────────────────────────────┤
-         │                  << PICKUP HAPPENS >>                     │
-         │              (Users coordinate via chat)                  │
-         ├──────────────────────────────────────────────────────────┤
-         │                            │                            │
-         │ 9. Mark Complete           │                            │
-         │──────────────────────────→ │                            │
-         │                            │ • Status: "completed"      │
-         │                            │ • completedAt: timestamp   │
-         │                            │                            │
-         │                            │ ─────→ 10. 🔔 Notification │
-         │                            │    "Please rate donor!"    │
-         │                            │                            │
-         │                            │ ←────── 11. Rate Donor ────│
-         │                            │    { rating: 5, review }   │
-         │                            │                            │
-         │                            │ • Save rating              │
-         │                            │ • Update avg rating        │
-         │                            │                            │
-         │ ←───── 12. 🔔 Notification │                            │
-         │    "You got 5 stars! ⭐"   │                            │
-         │                            │                            │
-         ▼                            ▼                            ▼
-```
-
-### Key Components in Action
-
-| Step | Technology | Description |
-|------|------------|-------------|
-| **1-2** | REST API | Listing creation & retrieval |
-| **3** | MongoDB | Store interest in `interestedUsers` array |
-| **4, 8, 10, 12** | Socket.IO | Real-time notifications |
-| **5-6** | Socket.IO + MongoDB | Real-time chat with message persistence |
-| **7** | REST API | Update listing status & assignment |
-| **9** | REST API | Mark as completed, trigger rating flow |
-| **11** | REST API | Store rating, update user profile |
-
-### Notification Flow Detail
-
-```
-┌──────────────────────────────────────────────────────────────┐
-│                    Notification System                       │
-├──────────────────────────────────────────────────────────────┤
-│                                                              │
-│  1. Event Triggered (Interest/Assignment/Completion)        │
-│                          ↓                                   │
-│  2. notificationHelper.onXXX(listing, user, io)            │
-│                          ↓                                   │
-│  3. Save to MongoDB (Notification Model)                    │
-│                          ↓                                   │
-│  4. Socket.IO: io.to(userId).emit('newNotification')       │
-│                          ↓                                   │
-│  5. Frontend: SocketContext receives event                  │
-│                          ↓                                   │
-│  6. Update notification badge + Show toast                  │
-│                          ↓                                   │
-│  7. Store in state for Notification Center                  │
-│                                                              │
-└──────────────────────────────────────────────────────────────┘
-```
+For complete API documentation, see [Backend README](./backend/BACKEND_README.md)
 
 ---
 
@@ -476,7 +322,7 @@ foodshare-platform/
 
 ### Listings Page
 ![Listings](./screenshots/listings.png)
-*Browse all available food donations with filters*
+*Browse all available donations with filters*
 
 ### Chat Interface
 ![Chat](./screenshots/chat.png)
@@ -491,6 +337,7 @@ foodshare-platform/
 ## 🗺️ Roadmap
 
 ### ✅ Completed (v1.0)
+
 - [x] User authentication & authorization
 - [x] Listing CRUD operations
 - [x] Real-time chat system
@@ -498,10 +345,12 @@ foodshare-platform/
 - [x] Interactive map with geospatial search
 - [x] Image upload & management
 - [x] User profiles & ratings
-- [x] AI chatbot assistant
+- [x] QR code verification
+- [x] Impact tracking system
 - [x] Responsive design
 
 ### 🚧 In Progress (v1.1)
+
 - [ ] Email notifications via SendGrid
 - [ ] SMS notifications via Twilio
 - [ ] Pickup scheduling with calendar integration
@@ -509,6 +358,7 @@ foodshare-platform/
 - [ ] Listing expiry automation
 
 ### 🔮 Planned (v2.0)
+
 - [ ] Mobile app (React Native)
 - [ ] Push notifications (PWA)
 - [ ] Multi-language support (i18n)
@@ -516,8 +366,6 @@ foodshare-platform/
 - [ ] Admin dashboard enhancements
 - [ ] Impact analytics & reports
 - [ ] Social media sharing
-- [ ] QR code generation for listings
-- [ ] Blockchain-based donation tracking
 - [ ] AI-powered matching algorithm
 
 ---
@@ -549,7 +397,7 @@ Contributions make the open-source community amazing! Any contributions you make
 - [ ] Image upload limited to 5MB per file
 - [ ] Search radius limited to 100km
 
-Report issues at: [GitHub Issues](https://github.com/hanuman2005/foodshare-platform/issues)
+Report issues at: [GitHub Issues](https://github.com/hanuman2005/donate-local/issues)
 
 ---
 
@@ -599,44 +447,52 @@ SOFTWARE.
 - [MongoDB Documentation](https://docs.mongodb.com/)
 - [Socket.IO Documentation](https://socket.io/docs/)
 - [Cloudinary](https://cloudinary.com/)
-- [Unsplash](https://unsplash.com/) for placeholder images
+- [Leaflet](https://leafletjs.com/)
 - All contributors who helped shape this project
 
 ---
 
 ## 📊 Project Stats
 
-![GitHub stars](https://img.shields.io/github/stars/hanuman2005/foodshare-platform?style=social)
-![GitHub forks](https://img.shields.io/github/forks/hanuman2005/foodshare-platform?style=social)
-![GitHub watchers](https://img.shields.io/github/watchers/hanuman2005/foodshare-platform?style=social)
+![GitHub stars](https://img.shields.io/github/stars/hanuman2005/donate-local?style=social)
+![GitHub forks](https://img.shields.io/github/forks/hanuman2005/donate-local?style=social)
+![GitHub watchers](https://img.shields.io/github/watchers/hanuman2005/donate-local?style=social)
 
 ---
 
-## 💡 Why FoodShare Matters
+## 💡 Why ShareTogether Matters
 
 **The Problem:**
-- 🗑️ 1.3 billion tons of food wasted globally every year
-- 😢 820 million people go hungry daily
-- 🌍 Food waste contributes 8% of global greenhouse gas emissions
+- 🗑️ Billions of items wasted globally every year
+- 😢 Many people in need of basic items
+- 🌍 Waste contributes significantly to environmental issues
 
 **Our Solution:**
-FoodShare connects those with surplus food to those in need, creating a circular economy that:
-- ✅ Reduces food waste at the source
-- ✅ Fights hunger in local communities
+ShareTogether connects those with items to donate to those in need, creating a circular economy that:
+- ✅ Reduces waste at the source
+- ✅ Helps those in need in local communities
 - ✅ Decreases environmental impact
 - ✅ Builds stronger community bonds
 
 **Impact to Date:**
 - 📦 X listings created
 - 🤝 Y donations completed
-- 🌱 Z kg of food saved from waste
+- 🌱 Z items saved from waste
 
 ---
 
 <div align="center">
 
-**Made with ❤️ for a hunger-free, waste-free world**
+**Made with ❤️ for a waste-free, sustainable world**
 
-[⬆ Back to Top](#-foodshare---community-food-donation-platform)
+[⬆ Back to Top](#sharetogether)
 
 </div>
+
+---
+
+**Last Updated**: January 2025  
+**Version**: 1.0.0  
+**Status**: ✅ PRODUCTION READY
+
+Copy this into your root `README.md` file. It includes your branding, tagline, and links to your backend and frontend documentation.

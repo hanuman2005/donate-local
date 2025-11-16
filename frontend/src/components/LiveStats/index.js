@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import styled, { keyframes, css } from 'styled-components';
-import { useSocket } from '../../context/SocketContext';
-import api from '../../services/api';
+import React, { useState, useEffect } from "react";
+import styled, { keyframes, css } from "styled-components";
+import { useSocket } from "../../context/SocketContext";
+import api from "../../services/api";
 
 const pulse = keyframes`
   0% { transform: scale(1); }
@@ -48,16 +48,18 @@ const StatBox = styled.div`
     transform: translateY(-5px);
   }
 
-  ${props => props.$pulse && css`
-    animation: ${pulse} 2s infinite;
-  `}
+  ${(props) =>
+    props.$pulse &&
+    css`
+      animation: ${pulse} 2s infinite;
+    `}
 `;
 
 const StatValue = styled.div`
   font-size: 2.5rem;
   font-weight: bold;
   margin-bottom: 0.5rem;
-  font-family: 'Arial', sans-serif;
+  font-family: "Arial", sans-serif;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
 `;
 
@@ -101,12 +103,12 @@ const ActivityItem = styled.div`
 `;
 
 const LiveStats = () => {
-const { socket } = useSocket();
+  const { socket } = useSocket();
   const [stats, setStats] = useState({
     totalDonations: 0,
     activeDonors: 0,
     itemsShared: 0,
-    kgSaved: 0
+    kgSaved: 0,
   });
   const [recentActivities, setRecentActivities] = useState([]);
   const [lastUpdate, setLastUpdate] = useState(new Date());
@@ -124,59 +126,68 @@ const { socket } = useSocket();
     if (!socket) return;
 
     // Listen for real-time updates
-    socket.on('newDonation', (data) => {
-      setStats(prev => ({
+    socket.on("newDonation", (data) => {
+      setStats((prev) => ({
         ...prev,
         totalDonations: prev.totalDonations + 1,
-        itemsShared: prev.itemsShared + (data.quantity || 1)
+        itemsShared: prev.itemsShared + (data.quantity || 1),
       }));
 
-      setRecentActivities(prev => [
+      setRecentActivities((prev) => [
         {
           id: data._id,
           text: `🎁 ${data.title} donated by ${data.donor}`,
-          time: new Date()
+          time: new Date(),
         },
-        ...prev.slice(0, 4)
+        ...prev.slice(0, 4),
       ]);
 
       setLastUpdate(new Date());
     });
 
-    socket.on('donationCompleted', (data) => {
-      setStats(prev => ({
+    socket.on("donationCompleted", (data) => {
+      setStats((prev) => ({
         ...prev,
-        kgSaved: prev.kgSaved + (data.quantity || 1)
+        kgSaved: prev.kgSaved + (data.quantity || 1),
       }));
 
-      setRecentActivities(prev => [
+      setRecentActivities((prev) => [
         {
           id: data._id,
           text: `✅ ${data.title} picked up!`,
-          time: new Date()
+          time: new Date(),
         },
-        ...prev.slice(0, 4)
+        ...prev.slice(0, 4),
       ]);
     });
 
     return () => {
-      socket.off('newDonation');
-      socket.off('donationCompleted');
+      socket.off("newDonation");
+      socket.off("donationCompleted");
     };
   }, [socket]);
 
   const fetchStats = async () => {
     try {
-      const response = await api.get('/analytics/platform');
-      
+      const response = await api.get("/analytics/user"); // ✔ personal analytics
+
+      const analytics = response.data.analytics || {};
+
       setStats({
-        totalDonations: response.data.analytics.totalListings || 0,
-        activeDonors: response.data.analytics.totalUsers || 0,
-        itemsShared: response.data.analytics.totalListings || 0,
-        kgSaved: Math.floor(response.data.analytics.totalListings * 2.5) // Estimate
+        totalDonations: analytics.totalListings || 0,
+        activeDonors: analytics.activeListings || 0,
+        itemsShared: analytics.completedListings || 0,
+        kgSaved: Math.floor((analytics.completedListings || 0) * 2.5),
       });
     } catch (error) {
-      console.error('Error fetching stats:', error);
+      console.error("Error fetching stats:", error);
+
+      setStats({
+        totalDonations: 0,
+        activeDonors: 0,
+        itemsShared: 0,
+        kgSaved: 0,
+      });
     }
   };
 
@@ -191,9 +202,7 @@ const { socket } = useSocket();
         <span>LIVE IMPACT TRACKER</span>
       </LiveIndicator>
 
-      <h2 style={{ margin: 0, fontSize: '1.5rem' }}>
-        🌟 Community Impact
-      </h2>
+      <h2 style={{ margin: 0, fontSize: "1.5rem" }}>🌟 Community Impact</h2>
 
       <StatsGrid>
         <StatBox $pulse={lastUpdate}>
@@ -219,13 +228,19 @@ const { socket } = useSocket();
 
       {recentActivities.length > 0 && (
         <RecentActivity>
-          <h3 style={{ fontSize: '1rem', marginBottom: '1rem', opacity: 0.9 }}>
+          <h3 style={{ fontSize: "1rem", marginBottom: "1rem", opacity: 0.9 }}>
             ⚡ Recent Activity
           </h3>
           {recentActivities.map((activity, index) => (
             <ActivityItem key={activity.id + index}>
               <span>{activity.text}</span>
-              <span style={{ marginLeft: 'auto', fontSize: '0.85rem', opacity: 0.8 }}>
+              <span
+                style={{
+                  marginLeft: "auto",
+                  fontSize: "0.85rem",
+                  opacity: 0.8,
+                }}
+              >
                 {Math.floor((new Date() - activity.time) / 1000)}s ago
               </span>
             </ActivityItem>
@@ -233,12 +248,14 @@ const { socket } = useSocket();
         </RecentActivity>
       )}
 
-      <div style={{ 
-        marginTop: '1.5rem', 
-        fontSize: '0.85rem', 
-        opacity: 0.8,
-        textAlign: 'center'
-      }}>
+      <div
+        style={{
+          marginTop: "1.5rem",
+          fontSize: "0.85rem",
+          opacity: 0.8,
+          textAlign: "center",
+        }}
+      >
         Last updated: {lastUpdate.toLocaleTimeString()}
       </div>
     </StatsContainer>

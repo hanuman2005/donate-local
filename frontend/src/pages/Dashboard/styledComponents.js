@@ -1,22 +1,29 @@
+// client/src/pages/Dashboard/styledComponents.js - COMPLETE & OPTIMIZED
 import styled from "styled-components";
 
 export const DashboardContainer = styled.div`
   max-width: 1400px;
   margin: 0 auto;
   padding: 2rem;
+  margin-top: 80px;
+  min-height: calc(100vh - 80px);
   animation: fadeIn 0.5s ease;
 
   @keyframes fadeIn {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @media (max-width: 1024px) {
+    max-width: 100%;
   }
 
   @media (max-width: 768px) {
-    padding: 1rem;
+    padding: 1.5rem 1rem;
+  }
+
+  @media (max-width: 480px) {
+    padding: 1rem 0.75rem;
   }
 `;
 
@@ -31,15 +38,26 @@ export const DashboardHeader = styled.header`
   align-items: center;
   gap: 2rem;
 
+  @media (max-width: 1024px) {
+    padding: 2rem;
+  }
+
   @media (max-width: 768px) {
     flex-direction: column;
     align-items: flex-start;
     padding: 1.5rem;
+    gap: 1.5rem;
+  }
+
+  @media (max-width: 480px) {
+    padding: 1.25rem;
+    border-radius: 16px;
   }
 `;
 
 export const WelcomeSection = styled.div`
   flex: 1;
+  min-width: 0; /* Prevents flex overflow */
 `;
 
 export const WelcomeTitle = styled.h1`
@@ -47,28 +65,44 @@ export const WelcomeTitle = styled.h1`
   font-size: 2.2rem;
   font-weight: 800;
   margin-bottom: 0.5rem;
+  line-height: 1.2;
 
   @media (max-width: 768px) {
     font-size: 1.8rem;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 1.5rem;
   }
 `;
 
 export const WelcomeSubtitle = styled.p`
   color: rgba(255, 255, 255, 0.9);
   font-size: 1.1rem;
+  line-height: 1.5;
+  margin: 0;
 
   @media (max-width: 768px) {
     font-size: 1rem;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 0.95rem;
   }
 `;
 
 export const QuickActions = styled.div`
   display: flex;
   gap: 1rem;
+  flex-wrap: wrap;
 
   @media (max-width: 768px) {
     width: 100%;
+  }
+
+  @media (max-width: 480px) {
     flex-direction: column;
+    gap: 0.75rem;
   }
 `;
 
@@ -80,6 +114,7 @@ export const ActionButton = styled.button`
   border: none;
   cursor: pointer;
   transition: all 0.3s ease;
+  white-space: nowrap;
 
   ${(props) =>
     props.$primary
@@ -110,12 +145,19 @@ export const ActionButton = styled.button`
 
   @media (max-width: 768px) {
     width: 100%;
+    padding: 0.875rem 1.5rem;
+    font-size: 1rem;
+  }
+
+  @media (max-width: 480px) {
+    padding: 0.75rem 1.25rem;
+    font-size: 0.95rem;
   }
 `;
 
 export const StatsRow = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 1.5rem;
   margin-bottom: 2.5rem;
   animation: slideUp 0.6s ease;
@@ -129,6 +171,17 @@ export const StatsRow = styled.div`
       opacity: 1;
       transform: translateY(0);
     }
+  }
+
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  @media (max-width: 480px) {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.875rem;
   }
 `;
 
@@ -156,6 +209,10 @@ export const StatCard = styled.div`
   box-shadow: ${(props) => shadows[props.$variant] || shadows.purple};
   transition: all 0.3s ease;
   cursor: pointer;
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 
   &:hover {
     transform: translateY(-5px);
@@ -168,15 +225,30 @@ export const StatCard = styled.div`
   &:active {
     transform: translateY(-2px);
   }
+
+  @media (max-width: 768px) {
+    padding: 1.25rem;
+    min-height: 100px;
+  }
+
+  @media (max-width: 480px) {
+    padding: 1rem;
+    min-height: 90px;
+  }
 `;
 
 export const StatValue = styled.div`
   font-size: 3rem;
   font-weight: 800;
   margin-bottom: 0.5rem;
+  line-height: 1;
 
   @media (max-width: 768px) {
     font-size: 2.5rem;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 2rem;
   }
 `;
 
@@ -184,6 +256,15 @@ export const StatLabel = styled.div`
   font-size: 0.95rem;
   color: rgba(255, 255, 255, 0.9);
   font-weight: 600;
+  line-height: 1.3;
+
+  @media (max-width: 768px) {
+    font-size: 0.9rem;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 0.85rem;
+  }
 `;
 
 export const DashboardContent = styled.div`
@@ -191,8 +272,14 @@ export const DashboardContent = styled.div`
   grid-template-columns: 1fr 350px;
   gap: 2rem;
 
+  @media (max-width: 1200px) {
+    grid-template-columns: 1fr 300px;
+    gap: 1.5rem;
+  }
+
   @media (max-width: 1024px) {
     grid-template-columns: 1fr;
+    gap: 2rem;
   }
 `;
 
@@ -200,12 +287,20 @@ export const MainSection = styled.main`
   display: flex;
   flex-direction: column;
   gap: 2rem;
+
+  @media (max-width: 768px) {
+    gap: 1.5rem;
+  }
 `;
 
 export const Sidebar = styled.aside`
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+
+  @media (max-width: 768px) {
+    gap: 1.25rem;
+  }
 `;
 
 export const Section = styled.section`
@@ -222,6 +317,15 @@ export const Section = styled.section`
   &:hover {
     box-shadow: 0 6px 30px rgba(0, 0, 0, 0.12);
   }
+
+  @media (max-width: 768px) {
+    padding: 1.5rem;
+    border-radius: 16px;
+  }
+
+  @media (max-width: 480px) {
+    padding: 1.25rem;
+  }
 `;
 
 export const SectionHeader = styled.div`
@@ -231,15 +335,26 @@ export const SectionHeader = styled.div`
   margin-bottom: 1.5rem;
   flex-wrap: wrap;
   gap: 1rem;
+
+  @media (max-width: 480px) {
+    margin-bottom: 1.25rem;
+    gap: 0.75rem;
+  }
 `;
 
 export const SectionTitle = styled.h2`
   font-size: 1.5rem;
   font-weight: 800;
   color: ${(props) => (props.$impact ? "white" : "#2d3748")};
+  line-height: 1.2;
+  margin: 0;
 
   @media (max-width: 768px) {
     font-size: 1.3rem;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 1.2rem;
   }
 `;
 
@@ -250,9 +365,15 @@ export const GradientText = styled.h2`
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  line-height: 1.2;
+  margin: 0;
 
   @media (max-width: 768px) {
     font-size: 1.3rem;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 1.2rem;
   }
 `;
 
@@ -267,6 +388,7 @@ export const ViewAllButton = styled.button`
   cursor: pointer;
   box-shadow: 0 4px 15px rgba(67, 233, 123, 0.3);
   transition: all 0.3s ease;
+  white-space: nowrap;
 
   &:hover {
     transform: translateY(-2px);
@@ -276,6 +398,16 @@ export const ViewAllButton = styled.button`
   &:active {
     transform: translateY(0);
   }
+
+  @media (max-width: 768px) {
+    padding: 0.7rem 1.5rem;
+    font-size: 0.9rem;
+  }
+
+  @media (max-width: 480px) {
+    padding: 0.6rem 1.25rem;
+    font-size: 0.85rem;
+  }
 `;
 
 export const TabContainer = styled.div`
@@ -284,6 +416,12 @@ export const TabContainer = styled.div`
   background: #f7fafc;
   border-radius: 12px;
   padding: 0.3rem;
+  flex-wrap: wrap;
+
+  @media (max-width: 480px) {
+    padding: 0.25rem;
+    gap: 0.4rem;
+  }
 `;
 
 export const Tab = styled.button`
@@ -299,6 +437,7 @@ export const Tab = styled.button`
       ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
       : "transparent"};
   color: ${(props) => (props.$active ? "white" : "#4a5568")};
+  white-space: nowrap;
 
   &:hover {
     ${(props) =>
@@ -309,8 +448,13 @@ export const Tab = styled.button`
   }
 
   @media (max-width: 768px) {
-    padding: 0.5rem 0.8rem;
+    padding: 0.5rem 1rem;
     font-size: 0.85rem;
+  }
+
+  @media (max-width: 480px) {
+    padding: 0.45rem 0.8rem;
+    font-size: 0.8rem;
   }
 `;
 
@@ -325,6 +469,7 @@ export const ListingsGrid = styled.div`
 
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
+    gap: 1.25rem;
   }
 `;
 
@@ -332,6 +477,10 @@ export const MapContainer = styled.div`
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+
+  @media (max-width: 480px) {
+    border-radius: 12px;
+  }
 `;
 
 export const EmptyState = styled.div`
@@ -343,11 +492,28 @@ export const EmptyState = styled.div`
   flex-direction: column;
   align-items: center;
   gap: 0.5rem;
+
+  @media (max-width: 768px) {
+    padding: ${(props) => (props.$compact ? "1.5rem" : "2.5rem")};
+  }
+
+  @media (max-width: 480px) {
+    padding: ${(props) => (props.$compact ? "1.25rem" : "2rem")};
+  }
 `;
 
 export const EmptyStateIcon = styled.div`
   font-size: ${(props) => (props.$small ? "2.5rem" : "4rem")};
   margin-bottom: 1rem;
+  line-height: 1;
+
+  @media (max-width: 768px) {
+    font-size: ${(props) => (props.$small ? "2.2rem" : "3.5rem")};
+  }
+
+  @media (max-width: 480px) {
+    font-size: ${(props) => (props.$small ? "2rem" : "3rem")};
+  }
 `;
 
 export const EmptyStateText = styled.p`
@@ -358,6 +524,16 @@ export const EmptyStateText = styled.p`
     return "1rem";
   }};
   margin-bottom: ${(props) => (props.$large ? "0.5rem" : "0")};
+  line-height: 1.5;
+  margin: 0;
+
+  @media (max-width: 768px) {
+    font-size: ${(props) => {
+      if (props.$large) return "1.1rem";
+      if (props.$small) return "0.8rem";
+      return "0.95rem";
+    }};
+  }
 `;
 
 export const LoadingContainer = styled.div`
@@ -372,6 +548,11 @@ export const LoadingContainer = styled.div`
 export const LoadingText = styled.p`
   color: #718096;
   font-size: 1.1rem;
+  margin: 0;
+
+  @media (max-width: 768px) {
+    font-size: 1rem;
+  }
 `;
 
 export const ImpactStat = styled.div`
@@ -388,12 +569,25 @@ export const ImpactStat = styled.div`
 export const ImpactIcon = styled.div`
   font-size: 1.5rem;
   flex-shrink: 0;
+  line-height: 1;
+
+  @media (max-width: 480px) {
+    font-size: 1.3rem;
+  }
 `;
 
 export const ImpactText = styled.div`
   font-size: 1rem;
   line-height: 1.6;
   color: rgba(255, 255, 255, 0.95);
+
+  @media (max-width: 768px) {
+    font-size: 0.95rem;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 0.9rem;
+  }
 `;
 
 export const ImpactValue = styled.strong`

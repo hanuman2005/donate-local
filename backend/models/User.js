@@ -1,12 +1,11 @@
 // ============================================
-// models/User.js - FIXED
+// 1. models/User.js - FIXED (No Duplicate Indexes)
 // ============================================
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 
 const userSchema = new mongoose.Schema(
   {
-    // ✅ FIXED: Split name into firstName and lastName to match frontend
     firstName: {
       type: String,
       required: [true, "First name is required"],
@@ -22,7 +21,7 @@ const userSchema = new mongoose.Schema(
     email: {
       type: String,
       required: [true, "Email is required"],
-      unique: true,
+      unique: true, // ✅ This creates the index - DON'T add schema.index() below
       lowercase: true,
       match: [
         /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
@@ -43,6 +42,10 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: false,
     },
+    phoneNumber: { // ✅ ADDED: Backend expects this
+      type: String,
+      required: false,
+    },
     address: {
       street: String,
       city: String,
@@ -57,23 +60,22 @@ const userSchema = new mongoose.Schema(
         default: "Point",
       },
       coordinates: {
-        type: [Number], // [longitude, latitude]
+        type: [Number],
+        default: [0, 0],
         validate: {
           validator: function(v) {
             return v.length === 2 && 
-                   v[0] >= -180 && v[0] <= 180 && // longitude
-                   v[1] >= -90 && v[1] <= 90;     // latitude
+                   v[0] >= -180 && v[0] <= 180 &&
+                   v[1] >= -90 && v[1] <= 90;
           },
           message: 'Invalid coordinates'
         }
       },
     },
-    // ✅ FIXED: Renamed to 'avatar' to match frontend
     avatar: {
       type: String,
       default: "",
     },
-    // ✅ ADDED: Bio field
     bio: {
       type: String,
       maxlength: [500, "Bio cannot exceed 500 characters"],
@@ -83,7 +85,6 @@ const userSchema = new mongoose.Schema(
       average: { type: Number, default: 0, min: 0, max: 5 },
       count: { type: Number, default: 0, min: 0 },
     },
-    // ✅ ADDED: Count of listings for frontend
     listingsCount: {
       type: Number,
       default: 0,
@@ -100,25 +101,23 @@ const userSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true }
   }
 );
 
-// Index for geospatial queries
+// ✅ ONLY geospatial index - email already has unique index from schema
 userSchema.index({ location: "2dsphere" });
-userSchema.index({ email: 1 });
-userSchema.set('toObject', {
-  transform: function (doc, ret) {
-    delete ret.password;
-    return ret;
-  }
-});
+
+// ✅ Remove this line if it exists - it creates duplicate index
+// userSchema.index({ email: 1 }); // ❌ DELETE THIS
 
 // Hash password before saving
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
 
   try {
-    const salt = await bcrypt.genSalt(10); // ✅ Reduced from 12 to 10 for better performance
+    const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
     next();
   } catch (error) {
@@ -138,11 +137,14 @@ userSchema.methods.toJSON = function () {
   return user;
 };
 
-// ✅ ADDED: Virtual for full name
+// Virtual for full name
 userSchema.virtual('name').get(function() {
   return `${this.firstName} ${this.lastName}`;
 });
 
+userSchema.methods.incrementListingsCount = async function () {
+  this.listingsCount += 1;
+  await this.save();
+};
+
 module.exports = mongoose.model("User", userSchema);
-
-
