@@ -1,7 +1,10 @@
+// src/pages/Register/index.jsx - POLISHED WITH FRAMER MOTION
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../../context/AuthContext";
 import LoadingSpinner from "../../components/Common/LoadingSpinner";
+import { motionVariants } from "../../animations/motionVariants";
 import {
   RegisterContainer,
   RegisterCard,
@@ -90,14 +93,13 @@ const Register = () => {
     try {
       const { confirmPassword, ...rest } = formData;
 
-      // ✅ FIXED: Send firstName and lastName separately
       const payload = {
         firstName: rest.firstName,
         lastName: rest.lastName,
         email: rest.email,
         password: rest.password,
         phoneNumber: rest.phone,
-        userType: rest.userType, // "donor", "recipient", or "both"
+        userType: rest.userType,
         address: {
           street: rest.address,
           city: "",
@@ -138,171 +140,341 @@ const Register = () => {
     formData.password.length >= 6;
 
   return (
-    <RegisterContainer>
-      <RegisterCard>
-        <RegisterHeader>
-          <RegisterTitle>Join Our Community</RegisterTitle>
+    <RegisterContainer
+      as={motion.div}
+      variants={motionVariants.pageTransition}
+      initial="hidden"
+      animate="show"
+      exit="exit"
+    >
+      <RegisterCard
+        as={motion.div}
+        variants={motionVariants.scaleIn}
+        initial="hidden"
+        animate="show"
+      >
+        <RegisterHeader
+          as={motion.div}
+          variants={motionVariants.fadeSlideDown}
+          initial="hidden"
+          animate="show"
+          transition={{ delay: 0.1 }}
+        >
+          <RegisterTitle>Join Our Community 🌟</RegisterTitle>
           <RegisterSubtitle>
             Create your account to start sharing and receiving resources
           </RegisterSubtitle>
         </RegisterHeader>
 
-        <RegisterForm onSubmit={handleSubmit}>
-          {error && <ErrorMessage>{error}</ErrorMessage>}
-
-          <FormRow>
-            <FormGroup>
-              <Label htmlFor="firstName">First Name</Label>
-              <Input
-                type="text"
-                id="firstName"
-                name="firstName"
-                value={formData.firstName}
-                onChange={handleChange}
-                placeholder="Enter first name"
-                required
-                autoComplete="given-name"
-              />
-              {validationErrors.firstName && (
-                <ErrorMessage>{validationErrors.firstName}</ErrorMessage>
-              )}
-            </FormGroup>
-
-            <FormGroup>
-              <Label htmlFor="lastName">Last Name</Label>
-              <Input
-                type="text"
-                id="lastName"
-                name="lastName"
-                value={formData.lastName}
-                onChange={handleChange}
-                placeholder="Enter last name"
-                required
-                autoComplete="family-name"
-              />
-              {validationErrors.lastName && (
-                <ErrorMessage>{validationErrors.lastName}</ErrorMessage>
-              )}
-            </FormGroup>
-          </FormRow>
-
-          <FormGroup>
-            <Label htmlFor="email">Email Address</Label>
-            <Input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="Enter your email"
-              required
-              autoComplete="email"
-            />
-            {validationErrors.email && (
-              <ErrorMessage>{validationErrors.email}</ErrorMessage>
+        <RegisterForm as={motion.form} onSubmit={handleSubmit}>
+          <AnimatePresence mode="wait">
+            {error && (
+              <ErrorMessage
+                as={motion.div}
+                key="global-error"
+                variants={motionVariants.dropDownSpring}
+                initial="hidden"
+                animate="show"
+                exit="exit"
+              >
+                {error}
+              </ErrorMessage>
             )}
-          </FormGroup>
+          </AnimatePresence>
 
-          <FormRow>
-            <FormGroup>
-              <Label htmlFor="password">Password</Label>
-              <Input
-                type="password"
-                id="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                placeholder="Enter password"
-                required
-                autoComplete="new-password"
-              />
-              {validationErrors.password && (
-                <ErrorMessage>{validationErrors.password}</ErrorMessage>
-              )}
-            </FormGroup>
-
-            <FormGroup>
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
-              <Input
-                type="password"
-                id="confirmPassword"
-                name="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                placeholder="Confirm password"
-                required
-                autoComplete="new-password"
-              />
-              {validationErrors.confirmPassword && (
-                <ErrorMessage>{validationErrors.confirmPassword}</ErrorMessage>
-              )}
-            </FormGroup>
-          </FormRow>
-
-          <FormGroup>
-            <Label htmlFor="phone">Phone Number</Label>
-            <Input
-              type="tel"
-              id="phone"
-              name="phone"
-              value={formData.phone}
-              onChange={handleChange}
-              placeholder="Enter phone number"
-              required
-              autoComplete="tel"
-            />
-            {validationErrors.phone && (
-              <ErrorMessage>{validationErrors.phone}</ErrorMessage>
-            )}
-          </FormGroup>
-
-          <FormGroup>
-            <Label htmlFor="userType">Account Type</Label>
-            <Select
-              id="userType"
-              name="userType"
-              value={formData.userType}
-              onChange={handleChange}
-              required
+          <motion.div
+            variants={motionVariants.staggerContainer}
+            initial="hidden"
+            animate="show"
+          >
+            {/* Name Row */}
+            <FormRow
+              as={motion.div}
+              variants={motionVariants.fadeSlideUp}
             >
-              <option value="donor">Donor</option>
-              <option value="recipient">Recipient</option>
-              <option value="both">Both</option>
-            </Select>
-          </FormGroup>
+              <FormGroup>
+                <Label htmlFor="firstName">First Name</Label>
+                <Input
+                  as={motion.input}
+                  whileFocus={{ scale: 1.01 }}
+                  type="text"
+                  id="firstName"
+                  name="firstName"
+                  value={formData.firstName}
+                  onChange={handleChange}
+                  placeholder="Enter first name"
+                  required
+                  autoComplete="given-name"
+                />
+                <AnimatePresence>
+                  {validationErrors.firstName && (
+                    <ErrorMessage
+                      as={motion.div}
+                      variants={motionVariants.dropDownSpring}
+                      initial="hidden"
+                      animate="show"
+                      exit="exit"
+                    >
+                      {validationErrors.firstName}
+                    </ErrorMessage>
+                  )}
+                </AnimatePresence>
+              </FormGroup>
 
-          <FormGroup>
-            <Label htmlFor="address">Street Address</Label>
-            <Input
-              type="text"
-              id="address"
-              name="address"
-              value={formData.address}
-              onChange={handleChange}
-              placeholder="Enter your street address"
-              required
-              autoComplete="street-address"
-            />
-            {validationErrors.address && (
-              <ErrorMessage>{validationErrors.address}</ErrorMessage>
-            )}
-          </FormGroup>
+              <FormGroup>
+                <Label htmlFor="lastName">Last Name</Label>
+                <Input
+                  as={motion.input}
+                  whileFocus={{ scale: 1.01 }}
+                  type="text"
+                  id="lastName"
+                  name="lastName"
+                  value={formData.lastName}
+                  onChange={handleChange}
+                  placeholder="Enter last name"
+                  required
+                  autoComplete="family-name"
+                />
+                <AnimatePresence>
+                  {validationErrors.lastName && (
+                    <ErrorMessage
+                      as={motion.div}
+                      variants={motionVariants.dropDownSpring}
+                      initial="hidden"
+                      animate="show"
+                      exit="exit"
+                    >
+                      {validationErrors.lastName}
+                    </ErrorMessage>
+                  )}
+                </AnimatePresence>
+              </FormGroup>
+            </FormRow>
 
-          <RegisterButton type="submit" disabled={!isFormValid || isSubmitting}>
-            {isSubmitting ? <LoadingSpinner size="small" /> : "Create Account"}
-          </RegisterButton>
+            {/* Email */}
+            <FormGroup
+              as={motion.div}
+              variants={motionVariants.fadeSlideUp}
+            >
+              <Label htmlFor="email">Email Address</Label>
+              <Input
+                as={motion.input}
+                whileFocus={{ scale: 1.01 }}
+                type="email"
+                id="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="Enter your email"
+                required
+                autoComplete="email"
+              />
+              <AnimatePresence>
+                {validationErrors.email && (
+                  <ErrorMessage
+                    as={motion.div}
+                    variants={motionVariants.dropDownSpring}
+                    initial="hidden"
+                    animate="show"
+                    exit="exit"
+                  >
+                    {validationErrors.email}
+                  </ErrorMessage>
+                )}
+              </AnimatePresence>
+            </FormGroup>
+
+            {/* Password Row */}
+            <FormRow
+              as={motion.div}
+              variants={motionVariants.fadeSlideUp}
+            >
+              <FormGroup>
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  as={motion.input}
+                  whileFocus={{ scale: 1.01 }}
+                  type="password"
+                  id="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  placeholder="Enter password"
+                  required
+                  autoComplete="new-password"
+                />
+                <AnimatePresence>
+                  {validationErrors.password && (
+                    <ErrorMessage
+                      as={motion.div}
+                      variants={motionVariants.dropDownSpring}
+                      initial="hidden"
+                      animate="show"
+                      exit="exit"
+                    >
+                      {validationErrors.password}
+                    </ErrorMessage>
+                  )}
+                </AnimatePresence>
+              </FormGroup>
+
+              <FormGroup>
+                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <Input
+                  as={motion.input}
+                  whileFocus={{ scale: 1.01 }}
+                  type="password"
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  placeholder="Confirm password"
+                  required
+                  autoComplete="new-password"
+                />
+                <AnimatePresence>
+                  {validationErrors.confirmPassword && (
+                    <ErrorMessage
+                      as={motion.div}
+                      variants={motionVariants.dropDownSpring}
+                      initial="hidden"
+                      animate="show"
+                      exit="exit"
+                    >
+                      {validationErrors.confirmPassword}
+                    </ErrorMessage>
+                  )}
+                </AnimatePresence>
+              </FormGroup>
+            </FormRow>
+
+            {/* Phone */}
+            <FormGroup
+              as={motion.div}
+              variants={motionVariants.fadeSlideUp}
+            >
+              <Label htmlFor="phone">Phone Number</Label>
+              <Input
+                as={motion.input}
+                whileFocus={{ scale: 1.01 }}
+                type="tel"
+                id="phone"
+                name="phone"
+                value={formData.phone}
+                onChange={handleChange}
+                placeholder="Enter phone number"
+                required
+                autoComplete="tel"
+              />
+              <AnimatePresence>
+                {validationErrors.phone && (
+                  <ErrorMessage
+                    as={motion.div}
+                    variants={motionVariants.dropDownSpring}
+                    initial="hidden"
+                    animate="show"
+                    exit="exit"
+                  >
+                    {validationErrors.phone}
+                  </ErrorMessage>
+                )}
+              </AnimatePresence>
+            </FormGroup>
+
+            {/* User Type */}
+            <FormGroup
+              as={motion.div}
+              variants={motionVariants.fadeSlideUp}
+            >
+              <Label htmlFor="userType">Account Type</Label>
+              <Select
+                as={motion.select}
+                whileFocus={{ scale: 1.01 }}
+                id="userType"
+                name="userType"
+                value={formData.userType}
+                onChange={handleChange}
+                required
+              >
+                <option value="donor">🎁 Donor - I want to give</option>
+                <option value="recipient">📦 Recipient - I need help</option>
+                <option value="both">🤝 Both - Give & Receive</option>
+              </Select>
+            </FormGroup>
+
+            {/* Address */}
+            <FormGroup
+              as={motion.div}
+              variants={motionVariants.fadeSlideUp}
+            >
+              <Label htmlFor="address">Street Address</Label>
+              <Input
+                as={motion.input}
+                whileFocus={{ scale: 1.01 }}
+                type="text"
+                id="address"
+                name="address"
+                value={formData.address}
+                onChange={handleChange}
+                placeholder="Enter your street address"
+                required
+                autoComplete="street-address"
+              />
+              <AnimatePresence>
+                {validationErrors.address && (
+                  <ErrorMessage
+                    as={motion.div}
+                    variants={motionVariants.dropDownSpring}
+                    initial="hidden"
+                    animate="show"
+                    exit="exit"
+                  >
+                    {validationErrors.address}
+                  </ErrorMessage>
+                )}
+              </AnimatePresence>
+            </FormGroup>
+
+            {/* Submit Button */}
+            <RegisterButton
+              as={motion.button}
+              variants={motionVariants.fadeSlideUp}
+              type="submit"
+              disabled={!isFormValid || isSubmitting}
+              whileHover={!isSubmitting ? { scale: 1.02, y: -2 } : {}}
+              whileTap={!isSubmitting ? { scale: 0.98 } : {}}
+            >
+              {isSubmitting ? (
+                <LoadingSpinner size="small" />
+              ) : (
+                "Create Account 🚀"
+              )}
+            </RegisterButton>
+          </motion.div>
         </RegisterForm>
 
-        <DividerContainer>
+        <DividerContainer
+          as={motion.div}
+          variants={motionVariants.fadeSlideUp}
+          initial="hidden"
+          animate="show"
+          transition={{ delay: 0.4 }}
+        >
           <DividerLine />
           <DividerText>or</DividerText>
           <DividerLine />
         </DividerContainer>
 
-        <RegisterFooter>
+        <RegisterFooter
+          as={motion.div}
+          variants={motionVariants.fadeSlideUp}
+          initial="hidden"
+          animate="show"
+          transition={{ delay: 0.5 }}
+        >
           <FooterText>
             Already have an account?{" "}
-            <FooterLink as={Link} to="/login">
+            <FooterLink as={Link} to="/login" style={{ cursor: "pointer" }}>
               Sign in here
             </FooterLink>
           </FooterText>

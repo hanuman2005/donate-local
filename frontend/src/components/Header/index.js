@@ -1,10 +1,12 @@
-// src/components/Header/index.jsx - FIXED VERSION
+// src/components/Header/index.jsx - ANIMATED WITH FRAMER MOTION
 import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../../context/AuthContext";
 import { useSocket } from "../../context/SocketContext";
 import { useNotifications } from "../../context/NotificationContext";
 import ThemeToggle from "../ThemeToggle";
+import { motionVariants } from "../../animations/motionVariants";
 
 import {
   HeaderContainer,
@@ -36,8 +38,6 @@ const Header = () => {
   const { socket } = useSocket();
   const navigate = useNavigate();
   const location = useLocation();
-
-  // ✅ Get unread count from NotificationContext
   const { unreadCount } = useNotifications();
 
   const isDonor = user?.userType === "donor" || user?.userType === "both";
@@ -99,67 +99,85 @@ const Header = () => {
   };
 
   return (
-    <HeaderContainer>
+    <HeaderContainer
+      as={motion.header}
+      initial={{ y: -80 }}
+      animate={{ y: 0 }}
+      transition={{ type: "spring", stiffness: 100, damping: 20 }}
+    >
       <HeaderContent>
-        <Logo as={Link} to="/" onClick={closeMobileMenu}>
+        <Logo
+          as={motion(Link)}
+          to="/"
+          onClick={closeMobileMenu}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
           <LogoText>ShareTogether</LogoText>
         </Logo>
-        <Navigation>
-          <NavLink as={Link} to="/" $active={isActive("/")}>
-            Home
-          </NavLink>
-          <NavLink as={Link} to="/listings" $active={isActive("/listings")}>
-            Listings
-          </NavLink>
-          {/* ✅ Optional: Add Feed route if you create LiveDonationFeed */}
-          {/* <NavLink as={Link} to="/feed" $active={isActive("/feed")}>
-            Live Feed
-          </NavLink> */}
-          <NavLink
-            as={Link}
-            to="/impact/community"
-            $active={isActive("/impact/community")}
-          >
-            Community
-          </NavLink>
 
-          {user && (
-            <>
-              <NavLink
-                as={Link}
-                to="/dashboard"
-                $active={isActive("/dashboard")}
-              >
-                Dashboard
-              </NavLink>
-              {(isDonor || user?.userType === "both") && (
-                <NavLink
-                  as={Link}
-                  to="/create-listing"
-                  $active={isActive("/create-listing")}
-                >
-                  Create Listing
-                </NavLink>
-              )}
-            </>
-          )}
+        <Navigation
+          as={motion.nav}
+          variants={motionVariants.staggerContainerFast}
+          initial="hidden"
+          animate="show"
+        >
+          {[
+            { path: "/", label: "Home" },
+            { path: "/listings", label: "Listings" },
+            { path: "/impact/community", label: "Community" },
+            ...(user
+              ? [
+                  { path: "/dashboard", label: "Dashboard" },
+                  ...(isDonor
+                    ? [{ path: "/create-listing", label: "Create Listing" }]
+                    : []),
+                ]
+              : []),
+          ].map((link) => (
+            <NavLink
+              key={link.path}
+              as={motion(Link)}
+              to={link.path}
+              $active={isActive(link.path)}
+              variants={motionVariants.scaleIn}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              {link.label}
+            </NavLink>
+          ))}
         </Navigation>
 
         <UserSection>
           <ThemeToggle showLabel={false} />
+
           {user ? (
             <>
-              <NotificationBell onClick={handleNotificationsClick}>
+              <NotificationBell
+                as={motion.button}
+                onClick={handleNotificationsClick}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+              >
                 🔔
-                {unreadCount > 0 && (
-                  <NotificationBadge>
-                    {unreadCount > 9 ? "9+" : unreadCount}
-                  </NotificationBadge>
-                )}
+                <AnimatePresence>
+                  {unreadCount > 0 && (
+                    <NotificationBadge
+                      as={motion.span}
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      exit={{ scale: 0 }}
+                      transition={{ type: "spring", stiffness: 500 }}
+                    >
+                      {unreadCount > 9 ? "9+" : unreadCount}
+                    </NotificationBadge>
+                  )}
+                </AnimatePresence>
               </NotificationBell>
 
               <UserMenu ref={dropdownRef}>
-                <div
+                <motion.div
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                   style={{
                     cursor: "pointer",
@@ -167,15 +185,10 @@ const Header = () => {
                     alignItems: "center",
                     gap: "0.5rem",
                   }}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      setIsDropdownOpen(!isDropdownOpen);
-                    }
-                  }}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                 >
-                  <UserAvatar>
+                  <UserAvatar as={motion.div} whileHover={{ scale: 1.05 }}>
                     {user.avatar ? (
                       <img
                         src={user.avatar}
@@ -191,208 +204,239 @@ const Header = () => {
                   <UserName>
                     {user.firstName} {user.lastName}
                   </UserName>
-                  <span style={{ fontSize: "0.8rem", color: "#64748b" }}>
-                    {isDropdownOpen ? "▲" : "▼"}
-                  </span>
-                </div>
+                  <motion.span
+                    style={{ fontSize: "0.8rem", color: "#64748b" }}
+                    animate={{ rotate: isDropdownOpen ? 180 : 0 }}
+                  >
+                    ▼
+                  </motion.span>
+                </motion.div>
 
-                {isDropdownOpen && (
-                  <DropdownMenu>
-                    <DropdownItem onClick={handleDashboardClick}>
-                      📊 Dashboard
-                    </DropdownItem>
-                    <DropdownItem onClick={handleProfileClick}>
-                      👤 Profile
-                    </DropdownItem>
-                    <DropdownItem
-                      onClick={() => {
-                        setIsDropdownOpen(false);
-                        navigate("/impact/personal");
-                      }}
+                <AnimatePresence>
+                  {isDropdownOpen && (
+                    <DropdownMenu
+                      as={motion.div}
+                      variants={motionVariants.dropDownSpring}
+                      initial="hidden"
+                      animate="show"
+                      exit="exit"
                     >
-                      🌍 My Impact
-                    </DropdownItem>
-                    <DropdownItem
-                      onClick={() => {
-                        setIsDropdownOpen(false);
-                        navigate("/verify-pickup");
-                      }}
-                    >
-                      📷 Scan QR
-                    </DropdownItem>
-                    <DropdownItem onClick={handleNotificationsClick}>
-                      🔔 Notifications
-                      {unreadCount > 0 && (
-                        <NotificationBadge style={{ marginLeft: "auto" }}>
-                          {unreadCount}
-                        </NotificationBadge>
-                      )}
-                    </DropdownItem>
-                    {(isDonor || user?.userType === "both") && (
-                      <DropdownItem
-                        onClick={() => {
-                          setIsDropdownOpen(false);
-                          navigate("/create-listing");
-                        }}
+                      <motion.div
+                        variants={motionVariants.staggerContainerFast}
+                        initial="hidden"
+                        animate="show"
                       >
-                        ➕ Create Listing
-                      </DropdownItem>
-                    )}
-                    <div
-                      style={{
-                        borderTop: "1px solid #e2e8f0",
-                        margin: "0.5rem 0",
-                      }}
-                    />
-                    <DropdownItem
-                      onClick={handleLogout}
-                      style={{ color: "#e53e3e" }}
-                    >
-                      🚪 Logout
-                    </DropdownItem>
-                  </DropdownMenu>
-                )}
+                        {[
+                          {
+                            label: "📊 Dashboard",
+                            onClick: handleDashboardClick,
+                          },
+                          { label: "👤 Profile", onClick: handleProfileClick },
+                          {
+                            label: "🌍 My Impact",
+                            onClick: () => {
+                              setIsDropdownOpen(false);
+                              navigate("/impact/personal");
+                            },
+                          },
+                          {
+                            label: "📷 Scan QR",
+                            onClick: () => {
+                              setIsDropdownOpen(false);
+                              navigate("/verify-pickup");
+                            },
+                          },
+                          {
+                            label: (
+                              <>
+                                🔔 Notifications
+                                {unreadCount > 0 && (
+                                  <NotificationBadge
+                                    style={{ marginLeft: "auto" }}
+                                  >
+                                    {unreadCount}
+                                  </NotificationBadge>
+                                )}
+                              </>
+                            ),
+                            onClick: handleNotificationsClick,
+                          },
+                          ...(isDonor
+                            ? [
+                                {
+                                  label: "➕ Create Listing",
+                                  onClick: () => {
+                                    setIsDropdownOpen(false);
+                                    navigate("/create-listing");
+                                  },
+                                },
+                              ]
+                            : []),
+                        ].map((item, index) => (
+                          <DropdownItem
+                            key={index}
+                            as={motion.button}
+                            variants={motionVariants.listItem}
+                            whileHover={{ x: 5, backgroundColor: "#f7fafc" }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={item.onClick}
+                          >
+                            {item.label}
+                          </DropdownItem>
+                        ))}
+
+                        <motion.div
+                          style={{
+                            borderTop: "1px solid #e2e8f0",
+                            margin: "0.5rem 0",
+                          }}
+                        />
+
+                        <DropdownItem
+                          as={motion.button}
+                          variants={motionVariants.listItem}
+                          whileHover={{ x: 5, backgroundColor: "#fed7d7" }}
+                          whileTap={{ scale: 0.98 }}
+                          onClick={handleLogout}
+                          style={{ color: "#e53e3e" }}
+                        >
+                          🚪 Logout
+                        </DropdownItem>
+                      </motion.div>
+                    </DropdownMenu>
+                  )}
+                </AnimatePresence>
               </UserMenu>
             </>
           ) : (
-            <>
-              <LoginButton as={Link} to="/login">
+            <motion.div
+              style={{ display: "flex", gap: "1rem" }}
+              variants={motionVariants.staggerContainerFast}
+              initial="hidden"
+              animate="show"
+            >
+              <LoginButton
+                as={motion(Link)}
+                to="/login"
+                variants={motionVariants.scaleIn}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
                 Login
               </LoginButton>
-              <RegisterButton as={Link} to="/register">
+              <RegisterButton
+                as={motion(Link)}
+                to="/register"
+                variants={motionVariants.scaleIn}
+                whileHover={{ scale: 1.05, y: -2 }}
+                whileTap={{ scale: 0.95 }}
+              >
                 Sign Up
               </RegisterButton>
-            </>
+            </motion.div>
           )}
         </UserSection>
 
         <MobileMenuButton
+          as={motion.button}
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          whileTap={{ scale: 0.9 }}
           aria-label="Toggle mobile menu"
           aria-expanded={isMobileMenuOpen}
         >
-          <span></span>
-          <span></span>
-          <span></span>
+          <motion.span
+            animate={{
+              rotate: isMobileMenuOpen ? 45 : 0,
+              y: isMobileMenuOpen ? 6 : 0,
+            }}
+          />
+          <motion.span
+            animate={{
+              opacity: isMobileMenuOpen ? 0 : 1,
+            }}
+          />
+          <motion.span
+            animate={{
+              rotate: isMobileMenuOpen ? -45 : 0,
+              y: isMobileMenuOpen ? -6 : 0,
+            }}
+          />
         </MobileMenuButton>
       </HeaderContent>
 
-      {isMobileMenuOpen && (
-        <MobileMenu>
-          <MobileNavLink
-            as={Link}
-            to="/"
-            onClick={closeMobileMenu}
-            $active={isActive("/")}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <MobileMenu
+            as={motion.div}
+            variants={motionVariants.fadeSlideDown}
+            initial="hidden"
+            animate="show"
+            exit="exit"
           >
-            Home
-          </MobileNavLink>
-          <MobileNavLink
-            as={Link}
-            to="/listings"
-            onClick={closeMobileMenu}
-            $active={isActive("/listings")}
-          >
-            Listings
-          </MobileNavLink>
-          <MobileNavLink
-            as={Link}
-            to="/impact/community"
-            onClick={closeMobileMenu}
-            $active={isActive("/impact/community")}
-          >
-            Community Impact
-          </MobileNavLink>
-
-          {user ? (
-            <>
-              <MobileNavLink
-                as={Link}
-                to="/dashboard"
-                onClick={closeMobileMenu}
-                $active={isActive("/dashboard")}
-              >
-                Dashboard
-              </MobileNavLink>
-              <MobileNavLink
-                as={Link}
-                to="/impact/personal"
-                onClick={closeMobileMenu}
-                $active={isActive("/impact/personal")}
-              >
-                My Impact
-              </MobileNavLink>
-              <MobileNavLink
-                as={Link}
-                to="/verify-pickup"
-                onClick={closeMobileMenu}
-                $active={isActive("/verify-pickup")}
-              >
-                📷 Scan QR Code
-              </MobileNavLink>
-              <MobileNavLink
-                as={Link}
-                to="/notifications"
-                onClick={closeMobileMenu}
-                $active={isActive("/notifications")}
-              >
-                Notifications
-                {unreadCount > 0 && (
-                  <NotificationBadge style={{ marginLeft: "0.5rem" }}>
-                    {unreadCount}
-                  </NotificationBadge>
-                )}
-              </MobileNavLink>
-              {(isDonor || user?.userType === "both") && (
+            <motion.div
+              variants={motionVariants.staggerContainerFast}
+              initial="hidden"
+              animate="show"
+            >
+              {[
+                { path: "/", label: "Home" },
+                { path: "/listings", label: "Listings" },
+                { path: "/impact/community", label: "Community Impact" },
+                ...(user
+                  ? [
+                      { path: "/dashboard", label: "Dashboard" },
+                      { path: "/impact/personal", label: "My Impact" },
+                      { path: "/verify-pickup", label: "📷 Scan QR Code" },
+                      {
+                        path: "/notifications",
+                        label: `Notifications ${
+                          unreadCount > 0 ? `(${unreadCount})` : ""
+                        }`,
+                      },
+                      ...(isDonor
+                        ? [{ path: "/create-listing", label: "Create Listing" }]
+                        : []),
+                      { path: "/profile", label: "Profile" },
+                    ]
+                  : [
+                      { path: "/login", label: "Login" },
+                      { path: "/register", label: "Sign Up" },
+                    ]),
+              ].map((link, index) => (
                 <MobileNavLink
-                  as={Link}
-                  to="/create-listing"
+                  key={link.path}
+                  as={motion(Link)}
+                  to={link.path}
                   onClick={closeMobileMenu}
-                  $active={isActive("/create-listing")}
+                  $active={isActive(link.path)}
+                  variants={motionVariants.listItem}
+                  custom={index}
+                  whileHover={{ x: 5 }}
+                  whileTap={{ scale: 0.98 }}
                 >
-                  Create Listing
+                  {link.label}
+                </MobileNavLink>
+              ))}
+
+              {user && (
+                <MobileNavLink
+                  as={motion.button}
+                  variants={motionVariants.listItem}
+                  whileHover={{ x: 5 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => {
+                    handleLogout();
+                    closeMobileMenu();
+                  }}
+                  style={{ color: "#e53e3e" }}
+                >
+                  Logout
                 </MobileNavLink>
               )}
-              <MobileNavLink
-                as={Link}
-                to="/profile"
-                onClick={closeMobileMenu}
-                $active={isActive("/profile")}
-              >
-                Profile
-              </MobileNavLink>
-              <MobileNavLink
-                onClick={() => {
-                  handleLogout();
-                  closeMobileMenu();
-                }}
-                style={{ color: "#e53e3e" }}
-              >
-                Logout
-              </MobileNavLink>
-            </>
-          ) : (
-            <>
-              <MobileNavLink
-                as={Link}
-                to="/login"
-                onClick={closeMobileMenu}
-                $active={isActive("/login")}
-              >
-                Login
-              </MobileNavLink>
-              <MobileNavLink
-                as={Link}
-                to="/register"
-                onClick={closeMobileMenu}
-                $active={isActive("/register")}
-              >
-                Sign Up
-              </MobileNavLink>
-            </>
-          )}
-        </MobileMenu>
-      )}
+            </motion.div>
+          </MobileMenu>
+        )}
+      </AnimatePresence>
     </HeaderContainer>
   );
 };

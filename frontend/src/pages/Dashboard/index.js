@@ -1,17 +1,17 @@
-// src/pages/Dashboard/index.jsx - UPDATED WITH NEW COMPONENTS
+// src/pages/Dashboard/index.jsx - POLISHED WITH FRAMER MOTION
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../../context/AuthContext";
 import { listingsAPI, chatAPI } from "../../services/api";
 import Map from "../../components/Map";
 import ListingCard from "../../components/ListingCard";
 import Chat from "../../components/Chat";
 import LoadingSpinner from "../../components/Common/LoadingSpinner";
-// ✅ Import new components
 import DonationCenterInfo from "../../components/DonationCenterInfo";
 import LiveDonationFeed from "../../components/LiveDonationFeed";
 import LiveStats from "../../components/LiveStats";
-
+import { motionVariants, useScrollAnimation } from "../../animations/motionVariants";
 import {
   DashboardContainer,
   DashboardHeader,
@@ -57,10 +57,11 @@ const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("available");
   const [userLocation, setUserLocation] = useState(null);
   const [selectedChat, setSelectedChat] = useState(null);
-  const [showLiveFeed, setShowLiveFeed] = useState(false); // ✅ Toggle for live feed
+  const [showLiveFeed, setShowLiveFeed] = useState(false);
 
   const { user } = useAuth();
   const navigate = useNavigate();
+  const scrollAnimation = useScrollAnimation();
 
   const getCurrentLocation = () => {
     if (navigator.geolocation) {
@@ -71,9 +72,7 @@ const Dashboard = () => {
             lng: position.coords.longitude,
           });
         },
-        (error) => {
-          console.error("Error getting location:", error);
-        }
+        (error) => console.error("Error getting location:", error)
       );
     }
   };
@@ -88,10 +87,8 @@ const Dashboard = () => {
         chatAPI.getUserChats(),
       ]);
 
-      const myItems =
-        myListingsRes.data.listings || myListingsRes.data.data || [];
-      const allItems =
-        allListingsRes.data.listings || allListingsRes.data.data || [];
+      const myItems = myListingsRes.data.listings || myListingsRes.data.data || [];
+      const allItems = allListingsRes.data.listings || allListingsRes.data.data || [];
       const myChats = chatsRes.data.chats || chatsRes.data.data || [];
 
       const uniqueChats = [];
@@ -133,17 +130,17 @@ const Dashboard = () => {
     getCurrentLocation();
   }, [fetchDashboardData]);
 
-  const handleCreateListing = () => {
-    navigate("/create-listing");
-  };
-
-  const handleChatSelect = (chat) => {
-    setSelectedChat(chat);
-  };
+  const handleCreateListing = () => navigate("/create-listing");
+  const handleChatSelect = (chat) => setSelectedChat(chat);
 
   if (loading) {
     return (
-      <LoadingContainer>
+      <LoadingContainer
+        as={motion.div}
+        variants={motionVariants.fadeSlide}
+        initial="hidden"
+        animate="show"
+      >
         <LoadingSpinner />
         <LoadingText>Loading your dashboard...</LoadingText>
       </LoadingContainer>
@@ -169,9 +166,20 @@ const Dashboard = () => {
   };
 
   return (
-    <DashboardContainer>
+    <DashboardContainer
+      as={motion.div}
+      variants={motionVariants.pageTransition}
+      initial="hidden"
+      animate="show"
+      exit="exit"
+    >
       {/* Header */}
-      <DashboardHeader>
+      <DashboardHeader
+        as={motion.header}
+        variants={motionVariants.fadeSlideDown}
+        initial="hidden"
+        animate="show"
+      >
         <WelcomeSection>
           <WelcomeTitle>
             {getGreeting()}, {user?.firstName}! 👋
@@ -183,66 +191,144 @@ const Dashboard = () => {
           </WelcomeSubtitle>
         </WelcomeSection>
 
-        <QuickActions>
+        <QuickActions
+          as={motion.div}
+          variants={motionVariants.staggerContainerFast}
+          initial="hidden"
+          animate="show"
+        >
           {isDonor && (
-            <ActionButton $primary onClick={handleCreateListing}>
+            <ActionButton
+              as={motion.button}
+              variants={motionVariants.listItem}
+              whileHover={{ scale: 1.05, y: -2 }}
+              whileTap={{ scale: 0.98 }}
+              $primary
+              onClick={handleCreateListing}
+            >
               ➕ Share Item
             </ActionButton>
           )}
-          <ActionButton onClick={() => navigate("/listings")}>
+          <ActionButton
+            as={motion.button}
+            variants={motionVariants.listItem}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => navigate("/listings")}
+          >
             🔍 Browse All
           </ActionButton>
-          <ActionButton onClick={() => setShowLiveFeed(!showLiveFeed)}>
+          <ActionButton
+            as={motion.button}
+            variants={motionVariants.listItem}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => setShowLiveFeed(!showLiveFeed)}
+          >
             {showLiveFeed ? "📋 List View" : "⚡ Live Feed"}
           </ActionButton>
         </QuickActions>
       </DashboardHeader>
 
-      {/* ✅ Live Stats Component */}
-      <LiveStats />
+      {/* Live Stats Component */}
+      <motion.div
+        variants={motionVariants.fadeSlideUp}
+        {...scrollAnimation}
+      >
+        <LiveStats />
+      </motion.div>
 
       {/* Stats Cards */}
-      <StatsRow>
+      <StatsRow
+        as={motion.div}
+        variants={motionVariants.staggerContainer}
+        initial="hidden"
+        animate="show"
+      >
         {isDonor ? (
           <>
-            <StatCard $variant="purple">
+            <StatCard
+              as={motion.div}
+              variants={motionVariants.scaleIn}
+              whileHover={{ y: -8, scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              $variant="purple"
+            >
               <StatValue>{stats.myActive}</StatValue>
               <StatLabel>📦 Active Donations</StatLabel>
             </StatCard>
 
-            <StatCard $variant="pink">
+            <StatCard
+              as={motion.div}
+              variants={motionVariants.scaleIn}
+              whileHover={{ y: -8, scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              $variant="pink"
+            >
               <StatValue>{stats.myPending}</StatValue>
               <StatLabel>⏳ Pending Pickups</StatLabel>
             </StatCard>
 
-            <StatCard $variant="blue">
+            <StatCard
+              as={motion.div}
+              variants={motionVariants.scaleIn}
+              whileHover={{ y: -8, scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              $variant="blue"
+            >
               <StatValue>{stats.myCompleted}</StatValue>
               <StatLabel>✅ Completed</StatLabel>
             </StatCard>
 
-            <StatCard $variant="green">
+            <StatCard
+              as={motion.div}
+              variants={motionVariants.scaleIn}
+              whileHover={{ y: -8, scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              $variant="green"
+            >
               <StatValue>{chats.length}</StatValue>
               <StatLabel>💬 Active Chats</StatLabel>
             </StatCard>
           </>
         ) : (
           <>
-            <StatCard $variant="orange">
+            <StatCard
+              as={motion.div}
+              variants={motionVariants.scaleIn}
+              whileHover={{ y: -8, scale: 1.02 }}
+              $variant="orange"
+            >
               <StatValue>{stats.availableNearby}</StatValue>
               <StatLabel>📦 Available Near You</StatLabel>
             </StatCard>
 
-            <StatCard $variant="purple">
+            <StatCard
+              as={motion.div}
+              variants={motionVariants.scaleIn}
+              whileHover={{ y: -8, scale: 1.02 }}
+              $variant="purple"
+            >
               <StatValue>{stats.myRequests}</StatValue>
               <StatLabel>📝 My Requests</StatLabel>
             </StatCard>
 
-            <StatCard $variant="blue">
+            <StatCard
+              as={motion.div}
+              variants={motionVariants.scaleIn}
+              whileHover={{ y: -8, scale: 1.02 }}
+              $variant="blue"
+            >
               <StatValue>{stats.myCompleted}</StatValue>
               <StatLabel>✅ Items Received</StatLabel>
             </StatCard>
 
-            <StatCard $variant="green">
+            <StatCard
+              as={motion.div}
+              variants={motionVariants.scaleIn}
+              whileHover={{ y: -8, scale: 1.02 }}
+              $variant="green"
+            >
               <StatValue>{chats.length}</StatValue>
               <StatLabel>💬 Conversations</StatLabel>
             </StatCard>
@@ -252,203 +338,330 @@ const Dashboard = () => {
 
       <DashboardContent>
         <MainSection>
-          {/* ✅ Live Donation Feed or Regular View */}
-          {showLiveFeed ? (
-            <Section>
-              <SectionHeader>
-                <GradientText $variant="green">
-                  ⚡ Live Donation Feed
-                </GradientText>
-                <ActionButton onClick={() => setShowLiveFeed(false)}>
-                  📋 Switch to List View
-                </ActionButton>
-              </SectionHeader>
-              <LiveDonationFeed />
-            </Section>
-          ) : (
-            <>
-              {/* Donor's Listings Section */}
-              {isDonor && (
-                <Section>
+          <AnimatePresence mode="wait">
+            {showLiveFeed ? (
+              <Section
+                as={motion.section}
+                key="live-feed"
+                variants={motionVariants.fadeSlide}
+                initial="hidden"
+                animate="show"
+                exit="exit"
+              >
+                <SectionHeader>
+                  <GradientText $variant="green">
+                    ⚡ Live Donation Feed
+                  </GradientText>
+                  <ActionButton
+                    as={motion.button}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => setShowLiveFeed(false)}
+                  >
+                    📋 Switch to List View
+                  </ActionButton>
+                </SectionHeader>
+                <LiveDonationFeed />
+              </Section>
+            ) : (
+              <motion.div
+                key="list-view"
+                variants={motionVariants.fadeSlide}
+                initial="hidden"
+                animate="show"
+                exit="exit"
+              >
+                {/* Donor's Listings Section */}
+                {isDonor && (
+                  <Section
+                    as={motion.section}
+                    {...scrollAnimation}
+                    variants={motionVariants.fadeSlideUp}
+                  >
+                    <SectionHeader>
+                      <GradientText $variant="purple">
+                        📦 Your Donations
+                      </GradientText>
+                      <TabContainer>
+                        {["active", "pending", "completed"].map((tab) => (
+                          <Tab
+                            key={tab}
+                            as={motion.button}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            $active={activeTab === tab}
+                            onClick={() => setActiveTab(tab)}
+                          >
+                            {tab.charAt(0).toUpperCase() + tab.slice(1)} (
+                            {tab === "active"
+                              ? stats.myActive
+                              : tab === "pending"
+                              ? stats.myPending
+                              : stats.myCompleted}
+                            )
+                          </Tab>
+                        ))}
+                      </TabContainer>
+                    </SectionHeader>
+
+                    <AnimatePresence mode="wait">
+                      <TabContent
+                        as={motion.div}
+                        key={activeTab}
+                        variants={motionVariants.tabContent}
+                        initial="hidden"
+                        animate="show"
+                        exit="exit"
+                      >
+                        {myListings.filter((listing) => {
+                          if (activeTab === "active")
+                            return listing.status === "available";
+                          if (activeTab === "pending")
+                            return listing.status === "pending";
+                          if (activeTab === "completed")
+                            return listing.status === "completed";
+                          return true;
+                        }).length > 0 ? (
+                          <ListingsGrid
+                            as={motion.div}
+                            variants={motionVariants.staggerContainer}
+                            initial="hidden"
+                            animate="show"
+                          >
+                            {myListings
+                              .filter((listing) => {
+                                if (activeTab === "active")
+                                  return listing.status === "available";
+                                if (activeTab === "pending")
+                                  return listing.status === "pending";
+                                if (activeTab === "completed")
+                                  return listing.status === "completed";
+                                return true;
+                              })
+                              .slice(0, 6)
+                              .map((listing, index) => (
+                                <motion.div
+                                  key={listing._id}
+                                  variants={motionVariants.listItemSlideUp}
+                                  custom={index}
+                                >
+                                  <ListingCard
+                                    listing={listing}
+                                    isOwner={true}
+                                  />
+                                </motion.div>
+                              ))}
+                          </ListingsGrid>
+                        ) : (
+                          <EmptyState
+                            as={motion.div}
+                            variants={motionVariants.scalePop}
+                            initial="hidden"
+                            animate="show"
+                          >
+                            <EmptyStateIcon>📦</EmptyStateIcon>
+                            <EmptyStateText $large>
+                              No {activeTab} donations yet
+                            </EmptyStateText>
+                            <EmptyStateText>
+                              {activeTab === "active" &&
+                                "Share items to help your community"}
+                              {activeTab === "pending" &&
+                                "No pending pickups at the moment"}
+                              {activeTab === "completed" &&
+                                "Complete donations will appear here"}
+                            </EmptyStateText>
+                            {activeTab === "active" && (
+                              <ActionButton
+                                as={motion.button}
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                $primary
+                                onClick={handleCreateListing}
+                              >
+                                ➕ Share Your First Item
+                              </ActionButton>
+                            )}
+                          </EmptyState>
+                        )}
+                      </TabContent>
+                    </AnimatePresence>
+                  </Section>
+                )}
+
+                {/* Available Items Section */}
+                <Section
+                  as={motion.section}
+                  {...scrollAnimation}
+                  variants={motionVariants.fadeSlideUp}
+                >
                   <SectionHeader>
-                    <GradientText $variant="purple">
-                      📦 Your Donations
+                    <GradientText $variant="green">
+                      {isDonor ? "🌍 Community Items" : "📦 Available Near You"}
                     </GradientText>
                     <TabContainer>
                       <Tab
-                        $active={activeTab === "active"}
-                        onClick={() => setActiveTab("active")}
+                        as={motion.button}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        $active={activeTab === "available"}
+                        onClick={() => setActiveTab("available")}
                       >
-                        Active ({stats.myActive})
+                        📋 List
                       </Tab>
                       <Tab
-                        $active={activeTab === "pending"}
-                        onClick={() => setActiveTab("pending")}
+                        as={motion.button}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        $active={activeTab === "map"}
+                        onClick={() => setActiveTab("map")}
                       >
-                        Pending ({stats.myPending})
-                      </Tab>
-                      <Tab
-                        $active={activeTab === "completed"}
-                        onClick={() => setActiveTab("completed")}
-                      >
-                        Completed ({stats.myCompleted})
+                        🗺️ Map
                       </Tab>
                     </TabContainer>
                   </SectionHeader>
 
-                  <TabContent>
-                    {myListings.filter((listing) => {
-                      if (activeTab === "active")
-                        return listing.status === "available";
-                      if (activeTab === "pending")
-                        return listing.status === "pending";
-                      if (activeTab === "completed")
-                        return listing.status === "completed";
-                      return true;
-                    }).length > 0 ? (
-                      <ListingsGrid>
-                        {myListings
-                          .filter((listing) => {
-                            if (activeTab === "active")
-                              return listing.status === "available";
-                            if (activeTab === "pending")
-                              return listing.status === "pending";
-                            if (activeTab === "completed")
-                              return listing.status === "completed";
-                            return true;
-                          })
-                          .slice(0, 6)
-                          .map((listing) => (
-                            <ListingCard
+                  <AnimatePresence mode="wait">
+                    <TabContent
+                      as={motion.div}
+                      key={activeTab}
+                      variants={motionVariants.tabContent}
+                      initial="hidden"
+                      animate="show"
+                      exit="exit"
+                    >
+                      {activeTab === "map" ? (
+                        <MapContainer>
+                          <Map
+                            listings={availableListings}
+                            userLocation={userLocation}
+                            height="500px"
+                          />
+                        </MapContainer>
+                      ) : availableListings.length > 0 ? (
+                        <ListingsGrid
+                          as={motion.div}
+                          variants={motionVariants.staggerContainer}
+                          initial="hidden"
+                          animate="show"
+                        >
+                          {availableListings.slice(0, 6).map((listing, index) => (
+                            <motion.div
                               key={listing._id}
-                              listing={listing}
-                              isOwner={true}
-                            />
+                              variants={motionVariants.listItemSlideUp}
+                              custom={index}
+                            >
+                              <ListingCard
+                                listing={listing}
+                                showQuickClaim={true}
+                                showDistance={!!userLocation}
+                                userLocation={userLocation}
+                              />
+                            </motion.div>
                           ))}
-                      </ListingsGrid>
-                    ) : (
-                      <EmptyState>
-                        <EmptyStateIcon>📦</EmptyStateIcon>
-                        <EmptyStateText $large>
-                          No {activeTab} donations yet
-                        </EmptyStateText>
-                        <EmptyStateText>
-                          {activeTab === "active" &&
-                            "Share items to help your community"}
-                          {activeTab === "pending" &&
-                            "No pending pickups at the moment"}
-                          {activeTab === "completed" &&
-                            "Complete donations will appear here"}
-                        </EmptyStateText>
-                        {activeTab === "active" && (
-                          <ActionButton $primary onClick={handleCreateListing}>
-                            ➕ Share Your First Item
-                          </ActionButton>
-                        )}
-                      </EmptyState>
-                    )}
-                  </TabContent>
+                        </ListingsGrid>
+                      ) : (
+                        <EmptyState
+                          as={motion.div}
+                          variants={motionVariants.scalePop}
+                        >
+                          <EmptyStateIcon>🔍</EmptyStateIcon>
+                          <EmptyStateText $large>
+                            No items available nearby
+                          </EmptyStateText>
+                          <EmptyStateText>
+                            Check back later or expand your search
+                          </EmptyStateText>
+                        </EmptyState>
+                      )}
+                    </TabContent>
+                  </AnimatePresence>
+
+                  {availableListings.length > 6 && (
+                    <motion.div
+                      style={{ textAlign: "center", marginTop: "1.5rem" }}
+                      variants={motionVariants.fadeSlideUp}
+                      {...scrollAnimation}
+                    >
+                      <ViewAllButton
+                        as={motion.button}
+                        whileHover={{ scale: 1.05, y: -2 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => navigate("/listings")}
+                      >
+                        View All {availableListings.length} Listings →
+                      </ViewAllButton>
+                    </motion.div>
+                  )}
                 </Section>
-              )}
 
-              {/* Available Items Section */}
-              <Section>
-                <SectionHeader>
-                  <GradientText $variant="green">
-                    {isDonor ? "🌍 Community Items" : "📦 Available Near You"}
-                  </GradientText>
-                  <TabContainer>
-                    <Tab
-                      $active={activeTab === "available"}
-                      onClick={() => setActiveTab("available")}
+                {/* My Requests Section */}
+                {interestedListings.length > 0 && (
+                  <Section
+                    as={motion.section}
+                    {...scrollAnimation}
+                    variants={motionVariants.fadeSlideUp}
+                  >
+                    <SectionHeader>
+                      <GradientText $variant="pink">📝 My Requests</GradientText>
+                    </SectionHeader>
+                    <ListingsGrid
+                      as={motion.div}
+                      variants={motionVariants.staggerContainer}
+                      initial="hidden"
+                      animate="show"
                     >
-                      📋 List
-                    </Tab>
-                    <Tab
-                      $active={activeTab === "map"}
-                      onClick={() => setActiveTab("map")}
-                    >
-                      🗺️ Map
-                    </Tab>
-                  </TabContainer>
-                </SectionHeader>
-
-                <TabContent>
-                  {activeTab === "map" ? (
-                    <MapContainer>
-                      <Map
-                        listings={availableListings}
-                        userLocation={userLocation}
-                        height="500px"
-                      />
-                    </MapContainer>
-                  ) : availableListings.length > 0 ? (
-                    <ListingsGrid>
-                      {availableListings.slice(0, 6).map((listing) => (
-                        <ListingCard
+                      {interestedListings.map((listing, index) => (
+                        <motion.div
                           key={listing._id}
-                          listing={listing}
-                          showQuickClaim={true}
-                          showDistance={!!userLocation}
-                          userLocation={userLocation}
-                        />
+                          variants={motionVariants.listItemSlideUp}
+                          custom={index}
+                        >
+                          <ListingCard
+                            listing={listing}
+                            showDistance={!!userLocation}
+                            userLocation={userLocation}
+                          />
+                        </motion.div>
                       ))}
                     </ListingsGrid>
-                  ) : (
-                    <EmptyState>
-                      <EmptyStateIcon>🔍</EmptyStateIcon>
-                      <EmptyStateText $large>
-                        No items available nearby
-                      </EmptyStateText>
-                      <EmptyStateText>
-                        Check back later or expand your search
-                      </EmptyStateText>
-                    </EmptyState>
-                  )}
-                </TabContent>
-
-                {availableListings.length > 6 && (
-                  <div style={{ textAlign: "center", marginTop: "1.5rem" }}>
-                    <ViewAllButton onClick={() => navigate("/listings")}>
-                      View All {availableListings.length} Listings →
-                    </ViewAllButton>
-                  </div>
+                  </Section>
                 )}
-              </Section>
-
-              {/* My Requests Section */}
-              {interestedListings.length > 0 && (
-                <Section>
-                  <SectionHeader>
-                    <GradientText $variant="pink">📝 My Requests</GradientText>
-                  </SectionHeader>
-                  <ListingsGrid>
-                    {interestedListings.map((listing) => (
-                      <ListingCard
-                        key={listing._id}
-                        listing={listing}
-                        showDistance={!!userLocation}
-                        userLocation={userLocation}
-                      />
-                    ))}
-                  </ListingsGrid>
-                </Section>
-              )}
-            </>
-          )}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </MainSection>
 
-        <Sidebar>
-          {/* ✅ Donation Center Info */}
-          <DonationCenterInfo />
+        <Sidebar
+          as={motion.aside}
+          variants={motionVariants.fadeSlideLeft}
+          initial="hidden"
+          animate="show"
+        >
+          {/* Donation Center Info */}
+          <motion.div
+            variants={motionVariants.scaleIn}
+            {...scrollAnimation}
+          >
+            <DonationCenterInfo />
+          </motion.div>
 
           {/* Messages Section */}
-          <Section>
+          <Section
+            as={motion.section}
+            variants={motionVariants.fadeSlideUp}
+            {...scrollAnimation}
+          >
             <SectionHeader>
               <GradientText $variant="purple">
                 💬 Messages ({chats.length})
               </GradientText>
-              <ViewAllButton onClick={() => navigate("/chat")}>
+              <ViewAllButton
+                as={motion.button}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => navigate("/chat")}
+              >
                 View All →
               </ViewAllButton>
             </SectionHeader>
@@ -461,7 +674,11 @@ const Dashboard = () => {
                 compact={true}
               />
             ) : (
-              <EmptyState $compact>
+              <EmptyState
+                as={motion.div}
+                variants={motionVariants.scalePop}
+                $compact
+              >
                 <EmptyStateIcon>💬</EmptyStateIcon>
                 <EmptyStateText>No messages yet</EmptyStateText>
                 <EmptyStateText $small>
@@ -472,19 +689,34 @@ const Dashboard = () => {
           </Section>
 
           {/* Impact Card */}
-          <Section $impact>
+          <Section
+            as={motion.section}
+            variants={motionVariants.scaleIn}
+            {...scrollAnimation}
+            $impact
+          >
             <SectionTitle>🌟 Your Impact</SectionTitle>
-            <div>
+            <motion.div
+              variants={motionVariants.staggerContainer}
+              initial="hidden"
+              animate="show"
+            >
               {isDonor ? (
                 <>
-                  <ImpactStat>
+                  <ImpactStat
+                    as={motion.div}
+                    variants={motionVariants.listItem}
+                  >
                     <ImpactIcon>✨</ImpactIcon>
                     <ImpactText>
                       <ImpactValue>{stats.myCompleted}</ImpactValue> donations
                       completed
                     </ImpactText>
                   </ImpactStat>
-                  <ImpactStat>
+                  <ImpactStat
+                    as={motion.div}
+                    variants={motionVariants.listItem}
+                  >
                     <ImpactIcon>🌱</ImpactIcon>
                     <ImpactText>
                       Approx.{" "}
@@ -492,7 +724,10 @@ const Dashboard = () => {
                       prevented
                     </ImpactText>
                   </ImpactStat>
-                  <ImpactStat>
+                  <ImpactStat
+                    as={motion.div}
+                    variants={motionVariants.listItem}
+                  >
                     <ImpactIcon>💚</ImpactIcon>
                     <ImpactText>
                       <ImpactValue>{stats.myCompleted * 3}</ImpactValue> items
@@ -502,20 +737,29 @@ const Dashboard = () => {
                 </>
               ) : (
                 <>
-                  <ImpactStat>
+                  <ImpactStat
+                    as={motion.div}
+                    variants={motionVariants.listItem}
+                  >
                     <ImpactIcon>🙏</ImpactIcon>
                     <ImpactText>
                       <ImpactValue>{stats.myCompleted}</ImpactValue> items
                       received
                     </ImpactText>
                   </ImpactStat>
-                  <ImpactStat>
+                  <ImpactStat
+                    as={motion.div}
+                    variants={motionVariants.listItem}
+                  >
                     <ImpactIcon>🌍</ImpactIcon>
                     <ImpactText>
                       Part of <ImpactValue>850+</ImpactValue> member community
                     </ImpactText>
                   </ImpactStat>
-                  <ImpactStat>
+                  <ImpactStat
+                    as={motion.div}
+                    variants={motionVariants.listItem}
+                  >
                     <ImpactIcon>💪</ImpactIcon>
                     <ImpactText>
                       Together we've saved <ImpactValue>1,200+ lbs</ImpactValue>
@@ -523,7 +767,7 @@ const Dashboard = () => {
                   </ImpactStat>
                 </>
               )}
-            </div>
+            </motion.div>
           </Section>
         </Sidebar>
       </DashboardContent>

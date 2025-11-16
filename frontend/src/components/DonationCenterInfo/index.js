@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
-import api from "../../services/api";
+import { centersAPI } from "../../services/api"; // <-- using correct API layer
 
 const CenterCard = styled.div`
   background: white;
@@ -45,25 +45,6 @@ const InfoItem = styled.div`
   gap: 0.75rem;
 `;
 
-const InfoIcon = styled.div`
-  font-size: 1.5rem;
-`;
-
-const InfoContent = styled.div`
-  flex: 1;
-`;
-
-const InfoLabel = styled.div`
-  font-size: 0.85rem;
-  color: #718096;
-  margin-bottom: 0.25rem;
-`;
-
-const InfoValue = styled.div`
-  color: #2d3748;
-  font-weight: 600;
-`;
-
 const MapButton = styled.button`
   width: 100%;
   padding: 1rem;
@@ -73,7 +54,6 @@ const MapButton = styled.button`
   border-radius: 12px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s;
 
   &:hover {
     transform: translateY(-2px);
@@ -97,64 +77,48 @@ const HourRow = styled.div`
 
 const DonationCenterInfo = ({ centerId }) => {
   const [center, setCenter] = useState(null);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchCenterInfo();
+    if (!centerId) return; // Prevent unnecessary calls
+
+    const fetchData = async () => {
+      try {
+        const res = await centersAPI.getById(centerId);
+        setCenter(res.data.center);
+      } catch (err) {
+        console.error("Error loading center:", err);
+      }
+    };
+
+    fetchData();
   }, [centerId]);
 
-  const fetchCenterInfo = async () => {
-    try {
-      setLoading(true);
-      const response = await api.get(`/donation-centers/${centerId}`);
-      setCenter(response.data.center);
-    } catch (error) {
-      console.error("Error fetching center info:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  if (!centerId || !center) return null;
 
   const isOpen = () => {
-    if (!center?.hours) return false;
-
     const now = new Date();
     const day = now.toLocaleDateString("en-US", { weekday: "long" });
-    const currentHour = now.getHours();
-    const currentMinute = now.getMinutes();
-    const currentTime = currentHour + currentMinute / 60;
+    const h = center.hours?.[day];
+    if (!h || h.closed) return false;
 
-    const todayHours = center.hours[day];
-    if (!todayHours || todayHours.closed) return false;
+    const [oh, om] = h.open.split(":").map(Number);
+    const [ch, cm] = h.close.split(":").map(Number);
+    const current = now.getHours() + now.getMinutes() / 60;
 
-    const [openHour, openMinute] = todayHours.open.split(":").map(Number);
-    const [closeHour, closeMinute] = todayHours.close.split(":").map(Number);
-
-    const openTime = openHour + openMinute / 60;
-    const closeTime = closeHour + closeMinute / 60;
-
-    return currentTime >= openTime && currentTime <= closeTime;
+    return current >= oh + om / 60 && current <= ch + cm / 60;
   };
 
-  const openGoogleMaps = () => {
-    const address = encodeURIComponent(center.address);
+  const openMap = () =>
     window.open(
-      `https://www.google.com/maps/search/?api=1&query=${address}`,
+      `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+        center.address
+      )}`,
       "_blank"
     );
-  };
 
-  const getCurrentDay = () => {
-    return new Date().toLocaleDateString("en-US", { weekday: "long" });
-  };
-
-  if (loading) {
-    return <div>Loading center information...</div>;
-  }
-
-  if (!center) {
-    return <div>Center information not available</div>;
-  }
+  const currentDay = new Date().toLocaleDateString("en-US", {
+    weekday: "long",
+  });
 
   return (
     <CenterCard>
@@ -166,72 +130,23 @@ const DonationCenterInfo = ({ centerId }) => {
       </CenterHeader>
 
       <InfoGrid>
-        <InfoItem>
-          <InfoIcon>📍</InfoIcon>
-          <InfoContent>
-            <InfoLabel>Address</InfoLabel>
-            <InfoValue>{center.address}</InfoValue>
-          </InfoContent>
-        </InfoItem>
-
-        <InfoItem>
-          <InfoIcon>📞</InfoIcon>
-          <InfoContent>
-            <InfoLabel>Phone</InfoLabel>
-            <InfoValue>{center.phone}</InfoValue>
-          </InfoContent>
-        </InfoItem>
-
-        <InfoItem>
-          <InfoIcon>🚗</InfoIcon>
-          <InfoContent>
-            <InfoLabel>Distance</InfoLabel>
-            <InfoValue>{center.distance || "Calculating..."}</InfoValue>
-          </InfoContent>
-        </InfoItem>
-
-        <InfoItem>
-          <InfoIcon>📦</InfoIcon>
-          <InfoContent>
-            <InfoLabel>Items Accepted</InfoLabel>
-            <InfoValue>{center.acceptedItems?.join(", ")}</InfoValue>
-          </InfoContent>
-        </InfoItem>
+        <InfoItem>📍 {center.address}</InfoItem>
+        <InfoItem>📞 {center.phone}</InfoItem>
+        <InfoItem>📦 {center.acceptedItems?.join(", ")}</InfoItem>
       </InfoGrid>
 
-      <MapButton onClick={openGoogleMaps}>🗺️ Get Directions</MapButton>
+      <MapButton onClick={openMap}>🗺️ Get Directions</MapButton>
 
       {center.hours && (
         <HoursTable>
-          <h3 style={{ marginBottom: "1rem", color: "#2d3748" }}>
-            Operating Hours
-          </h3>
-          {Object.entries(center.hours).map(([day, hours]) => (
-            <HourRow key={day} $isToday={day === getCurrentDay()}>
+          <h3>Operating Hours</h3>
+          {Object.entries(center.hours).map(([day, h]) => (
+            <HourRow key={day} $isToday={day === currentDay}>
               <span>{day}</span>
-              <span>
-                {hours.closed ? "Closed" : `${hours.open} - ${hours.close}`}
-              </span>
+              <span>{h.closed ? "Closed" : `${h.open} - ${h.close}`}</span>
             </HourRow>
           ))}
         </HoursTable>
-      )}
-
-      {center.specialNotes && (
-        <div
-          style={{
-            marginTop: "1.5rem",
-            padding: "1rem",
-            background: "#fff5e6",
-            borderRadius: "8px",
-            borderLeft: "4px solid #f59e0b",
-          }}
-        >
-          <strong>📝 Special Notes:</strong>
-          <p style={{ margin: "0.5rem 0 0 0", color: "#78350f" }}>
-            {center.specialNotes}
-          </p>
-        </div>
       )}
     </CenterCard>
   );

@@ -91,8 +91,10 @@ export const qrAPI = {
     api.post("/qr/generate", { listingId, recipientId }),
   verifyQR: (qrCode, location = null) =>
     api.post("/qr/verify", { qrCode, location }),
-  getTransaction: (transactionId) => api.get(`/qr/transaction/${transactionId}`),
-  getMyTransactions: (params = {}) => api.get("/qr/my-transactions", { params }),
+  getTransaction: (transactionId) =>
+    api.get(`/qr/transaction/${transactionId}`),
+  getMyTransactions: (params = {}) =>
+    api.get("/qr/my-transactions", { params }),
   downloadQR: (transactionId) =>
     api.get(`/qr/download/${transactionId}`, { responseType: "blob" }),
 };
@@ -140,8 +142,7 @@ export const uploadAPI = {
       headers: { "Content-Type": "multipart/form-data" },
       timeout: 60000,
       onUploadProgress: (e) =>
-        onProgress &&
-        onProgress(Math.round((e.loaded * 100) / e.total)),
+        onProgress && onProgress(Math.round((e.loaded * 100) / e.total)),
     });
   },
   uploadImage: (file, onProgress) => {
@@ -151,8 +152,7 @@ export const uploadAPI = {
       headers: { "Content-Type": "multipart/form-data" },
       timeout: 60000,
       onUploadProgress: (e) =>
-        onProgress &&
-        onProgress(Math.round((e.loaded * 100) / e.total)),
+        onProgress && onProgress(Math.round((e.loaded * 100) / e.total)),
     });
   },
   listing: (data) => listingsAPI.create(data),
@@ -165,7 +165,12 @@ export const analyticsAPI = {
   getUserAnalytics: () => api.get("/analytics/user"),
 
   // Fetch global platform-wide analytics (requires admin privileges)
-  getPlatformAnalytics: () => api.get("/analytics/platform"),
+  getPlatform: () => api.get("/analytics/platform"),
+};
+
+export const centersAPI = {
+  getById: (id) => api.get(`/donation-centers/${id}`),
+  getAll: () => api.get(`/donation-centers`),
 };
 
 
