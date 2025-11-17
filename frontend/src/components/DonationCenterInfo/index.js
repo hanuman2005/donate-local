@@ -1,8 +1,14 @@
+
+// ============================================
+// src/components/DonationCenterInfo/index.jsx - WITH MOTION
+// ============================================
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
-import { centersAPI } from "../../services/api"; // <-- using correct API layer
+import { motion } from "framer-motion";
+import { motionVariants } from "../../animations/motionVariants";
+import { centersAPI } from "../../services/api";
 
-const CenterCard = styled.div`
+const CenterCard = styled(motion.div)`
   background: white;
   border-radius: 16px;
   padding: 2rem;
@@ -10,7 +16,7 @@ const CenterCard = styled.div`
   margin-bottom: 2rem;
 `;
 
-const CenterHeader = styled.div`
+const CenterHeader = styled(motion.div)`
   display: flex;
   justify-content: space-between;
   align-items: start;
@@ -23,7 +29,7 @@ const CenterName = styled.h2`
   font-size: 1.5rem;
 `;
 
-const StatusBadge = styled.span`
+const StatusBadge = styled(motion.span)`
   padding: 0.5rem 1rem;
   border-radius: 20px;
   font-weight: 600;
@@ -32,20 +38,20 @@ const StatusBadge = styled.span`
   color: white;
 `;
 
-const InfoGrid = styled.div`
+const InfoGrid = styled(motion.div)`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 1.5rem;
   margin-bottom: 1.5rem;
 `;
 
-const InfoItem = styled.div`
+const InfoItem = styled(motion.div)`
   display: flex;
   align-items: start;
   gap: 0.75rem;
 `;
 
-const MapButton = styled.button`
+const MapButton = styled(motion.button)`
   width: 100%;
   padding: 1rem;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -54,20 +60,15 @@ const MapButton = styled.button`
   border-radius: 12px;
   font-weight: 600;
   cursor: pointer;
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-  }
 `;
 
-const HoursTable = styled.div`
+const HoursTable = styled(motion.div)`
   margin-top: 1.5rem;
   border-top: 2px solid #e2e8f0;
   padding-top: 1.5rem;
 `;
 
-const HourRow = styled.div`
+const HourRow = styled(motion.div)`
   display: flex;
   justify-content: space-between;
   padding: 0.5rem 0;
@@ -79,7 +80,7 @@ const DonationCenterInfo = ({ centerId }) => {
   const [center, setCenter] = useState(null);
 
   useEffect(() => {
-    if (!centerId) return; // Prevent unnecessary calls
+    if (!centerId) return;
 
     const fetchData = async () => {
       try {
@@ -121,27 +122,61 @@ const DonationCenterInfo = ({ centerId }) => {
   });
 
   return (
-    <CenterCard>
+    <CenterCard
+      variants={motionVariants.scaleIn}
+      initial="hidden"
+      animate="show"
+    >
       <CenterHeader>
         <CenterName>{center.name}</CenterName>
-        <StatusBadge $isOpen={isOpen()}>
+        <StatusBadge 
+          $isOpen={isOpen()}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
           {isOpen() ? "🟢 Open Now" : "🔴 Closed"}
         </StatusBadge>
       </CenterHeader>
 
-      <InfoGrid>
-        <InfoItem>📍 {center.address}</InfoItem>
-        <InfoItem>📞 {center.phone}</InfoItem>
-        <InfoItem>📦 {center.acceptedItems?.join(", ")}</InfoItem>
+      <InfoGrid
+        variants={motionVariants.staggerContainer}
+        initial="hidden"
+        animate="show"
+      >
+        <InfoItem variants={motionVariants.fadeSlideUp}>
+          📍 {center.address}
+        </InfoItem>
+        <InfoItem variants={motionVariants.fadeSlideUp}>
+          📞 {center.phone}
+        </InfoItem>
+        <InfoItem variants={motionVariants.fadeSlideUp}>
+          📦 {center.acceptedItems?.join(", ")}
+        </InfoItem>
       </InfoGrid>
 
-      <MapButton onClick={openMap}>🗺️ Get Directions</MapButton>
+      <MapButton
+        onClick={openMap}
+        whileHover={{ scale: 1.02, y: -2 }}
+        whileTap={{ scale: 0.98 }}
+      >
+        🗺️ Get Directions
+      </MapButton>
 
       {center.hours && (
-        <HoursTable>
+        <HoursTable
+          variants={motionVariants.fadeSlideUp}
+          initial="hidden"
+          animate="show"
+        >
           <h3>Operating Hours</h3>
-          {Object.entries(center.hours).map(([day, h]) => (
-            <HourRow key={day} $isToday={day === currentDay}>
+          {Object.entries(center.hours).map(([day, h], index) => (
+            <HourRow
+              key={day}
+              $isToday={day === currentDay}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.05 }}
+            >
               <span>{day}</span>
               <span>{h.closed ? "Closed" : `${h.open} - ${h.close}`}</span>
             </HourRow>

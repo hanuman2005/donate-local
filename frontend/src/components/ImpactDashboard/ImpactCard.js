@@ -1,22 +1,19 @@
-// src/components/ImpactDashboard/ImpactCard.jsx
+// ============================================
+// src/components/ImpactDashboard/ImpactCard.jsx - WITH MOTION
+// ============================================
 import React from 'react';
 import styled from 'styled-components';
+import { motion } from 'framer-motion';
 import AnimatedCounter from './AnimatedCounter';
 
-const Card = styled.div`
+const Card = styled(motion.div)`
   background: ${props => props.$gradient || 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'};
   border-radius: 20px;
   padding: 2rem;
   color: white;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
   position: relative;
   overflow: hidden;
-
-  &:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
-  }
 
   &::before {
     content: '';
@@ -31,14 +28,14 @@ const Card = styled.div`
   }
 `;
 
-const Icon = styled.div`
+const Icon = styled(motion.div)`
   font-size: 3rem;
   margin-bottom: 1rem;
   position: relative;
   z-index: 1;
 `;
 
-const Value = styled.div`
+const Value = styled(motion.div)`
   font-size: 2.5rem;
   font-weight: 800;
   margin-bottom: 0.5rem;
@@ -46,7 +43,7 @@ const Value = styled.div`
   z-index: 1;
 `;
 
-const Label = styled.div`
+const Label = styled(motion.div)`
   font-size: 1rem;
   opacity: 0.9;
   font-weight: 500;
@@ -54,7 +51,7 @@ const Label = styled.div`
   z-index: 1;
 `;
 
-const Subtitle = styled.div`
+const Subtitle = styled(motion.div)`
   font-size: 0.85rem;
   opacity: 0.7;
   margin-top: 0.5rem;
@@ -73,9 +70,33 @@ const ImpactCard = ({
   prefix = ''
 }) => {
   return (
-    <Card $gradient={gradient}>
-      <Icon>{icon}</Icon>
-      <Value>
+    <Card 
+      $gradient={gradient}
+      whileHover={{ 
+        y: -5, 
+        boxShadow: "0 15px 40px rgba(0, 0, 0, 0.3)",
+        scale: 1.02 
+      }}
+      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+    >
+      <Icon
+        animate={{ 
+          rotate: [0, 5, -5, 0],
+          scale: [1, 1.1, 1]
+        }}
+        transition={{ 
+          duration: 3, 
+          repeat: Infinity,
+          repeatDelay: 2
+        }}
+      >
+        {icon}
+      </Icon>
+      <Value
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+      >
         <AnimatedCounter 
           end={value} 
           decimals={decimals}
@@ -83,8 +104,22 @@ const ImpactCard = ({
           prefix={prefix}
         />
       </Value>
-      <Label>{label}</Label>
-      {subtitle && <Subtitle>{subtitle}</Subtitle>}
+      <Label
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 0.9, y: 0 }}
+        transition={{ delay: 0.3 }}
+      >
+        {label}
+      </Label>
+      {subtitle && (
+        <Subtitle
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 0.7, y: 0 }}
+          transition={{ delay: 0.4 }}
+        >
+          {subtitle}
+        </Subtitle>
+      )}
     </Card>
   );
 };

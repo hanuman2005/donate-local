@@ -11,7 +11,11 @@ import LoadingSpinner from "../../components/Common/LoadingSpinner";
 import DonationCenterInfo from "../../components/DonationCenterInfo";
 import LiveDonationFeed from "../../components/LiveDonationFeed";
 import LiveStats from "../../components/LiveStats";
-import { motionVariants, useScrollAnimation } from "../../animations/motionVariants";
+import CheckIn from "../../components/CheckIn";
+import {
+  motionVariants,
+  useScrollAnimation,
+} from "../../animations/motionVariants";
 import {
   DashboardContainer,
   DashboardHeader,
@@ -87,8 +91,10 @@ const Dashboard = () => {
         chatAPI.getUserChats(),
       ]);
 
-      const myItems = myListingsRes.data.listings || myListingsRes.data.data || [];
-      const allItems = allListingsRes.data.listings || allListingsRes.data.data || [];
+      const myItems =
+        myListingsRes.data.listings || myListingsRes.data.data || [];
+      const allItems =
+        allListingsRes.data.listings || allListingsRes.data.data || [];
       const myChats = chatsRes.data.chats || chatsRes.data.data || [];
 
       const uniqueChats = [];
@@ -227,14 +233,19 @@ const Dashboard = () => {
           >
             {showLiveFeed ? "📋 List View" : "⚡ Live Feed"}
           </ActionButton>
+          <ActionButton
+            as={motion.button}
+            variants={motionVariants.listItem}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => navigate("/verify-pickup")}>
+            📷 Verify Pickup
+          </ActionButton>
         </QuickActions>
       </DashboardHeader>
 
       {/* Live Stats Component */}
-      <motion.div
-        variants={motionVariants.fadeSlideUp}
-        {...scrollAnimation}
-      >
+      <motion.div variants={motionVariants.fadeSlideUp} {...scrollAnimation}>
         <LiveStats />
       </motion.div>
 
@@ -545,20 +556,22 @@ const Dashboard = () => {
                           initial="hidden"
                           animate="show"
                         >
-                          {availableListings.slice(0, 6).map((listing, index) => (
-                            <motion.div
-                              key={listing._id}
-                              variants={motionVariants.listItemSlideUp}
-                              custom={index}
-                            >
-                              <ListingCard
-                                listing={listing}
-                                showQuickClaim={true}
-                                showDistance={!!userLocation}
-                                userLocation={userLocation}
-                              />
-                            </motion.div>
-                          ))}
+                          {availableListings
+                            .slice(0, 6)
+                            .map((listing, index) => (
+                              <motion.div
+                                key={listing._id}
+                                variants={motionVariants.listItemSlideUp}
+                                custom={index}
+                              >
+                                <ListingCard
+                                  listing={listing}
+                                  showQuickClaim={true}
+                                  showDistance={!!userLocation}
+                                  userLocation={userLocation}
+                                />
+                              </motion.div>
+                            ))}
                         </ListingsGrid>
                       ) : (
                         <EmptyState
@@ -603,7 +616,9 @@ const Dashboard = () => {
                     variants={motionVariants.fadeSlideUp}
                   >
                     <SectionHeader>
-                      <GradientText $variant="pink">📝 My Requests</GradientText>
+                      <GradientText $variant="pink">
+                        📝 My Requests
+                      </GradientText>
                     </SectionHeader>
                     <ListingsGrid
                       as={motion.div}
@@ -639,10 +654,7 @@ const Dashboard = () => {
           animate="show"
         >
           {/* Donation Center Info */}
-          <motion.div
-            variants={motionVariants.scaleIn}
-            {...scrollAnimation}
-          >
+          <motion.div variants={motionVariants.scaleIn} {...scrollAnimation}>
             <DonationCenterInfo />
           </motion.div>
 

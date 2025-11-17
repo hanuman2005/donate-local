@@ -1,9 +1,14 @@
+// ============================================
+// src/components/ListingCard/index.jsx - WITH MOTION
+// ============================================
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import { useAuth } from "../../context/AuthContext";
 import { chatAPI, listingsAPI } from "../../services/api";
 import { toast } from "react-toastify";
 import { calculateDistance, formatDistance } from "../../utils/helpers";
+import { motionVariants } from "../../animations/motionVariants";
 import {
   CardContainer,
   ImageContainer,
@@ -43,11 +48,6 @@ const ListingCard = ({
   const [imageError, setImageError] = useState(false);
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    console.log("ListingCard mounted - User:", user);
-    console.log("Auth loading:", authLoading);
-  }, [user, authLoading]);
 
   const getCategoryEmoji = (category) => {
     const emojis = {
@@ -98,12 +98,7 @@ const ListingCard = ({
       e.stopPropagation();
     }
 
-    console.log("🔍 handleContact called");
-    console.log("👤 Current user:", user);
-    console.log("📦 Listing:", listing);
-
     if (!user || !user._id) {
-      console.error("❌ User not logged in");
       toast.info("Please login to contact the donor");
       navigate("/login");
       return;
@@ -118,48 +113,35 @@ const ListingCard = ({
       }
     }
 
-    console.log("🔍 Donor ID:", donorId);
-    console.log("🔍 User ID:", user._id);
-
     if (!donorId) {
-      console.error("❌ Donor ID missing");
       toast.error("Unable to contact donor. Listing information incomplete.");
       return;
     }
 
     if (donorId.toString() === user._id.toString()) {
-      console.warn("⚠️ Cannot contact own listing");
       toast.info("This is your own listing");
       return;
     }
 
     setIsLoading(true);
     try {
-      console.log("🔄 Creating/getting chat...");
-
       const response = await chatAPI.createOrGet({
         participantId: donorId,
         listingId: listing._id,
       });
 
-      console.log("✅ Chat response:", response.data);
-
       const chatData =
         response.data.chat || response.data.data?.chat || response.data;
       const chatId = chatData._id || chatData.id;
-
-      console.log("📨 Chat ID:", chatId);
 
       if (chatId) {
         toast.success("Opening chat...");
         navigate(`/chat/${chatId}`);
       } else {
-        console.error("❌ No chat ID in response");
         toast.error("Failed to create chat. Please try again.");
       }
     } catch (error) {
-      console.error("❌ Error creating chat:", error);
-      console.error("Error response:", error.response?.data);
+      console.error("Error creating chat:", error);
       toast.error(
         error.response?.data?.message ||
           "Failed to contact donor. Please try again."
@@ -236,8 +218,15 @@ const ListingCard = ({
   const hasImage = listing.images && listing.images.length > 0 && !imageError;
 
   return (
-    <CardContainer>
-      <ImageContainer>
+    <CardContainer
+      as={motion.div}
+      variants={motionVariants.scaleIn}
+      initial="hidden"
+      whileInView="show"
+      viewport={{ once: true, amount: 0.3 }}
+      whileHover={{ y: -5, boxShadow: "0 8px 30px rgba(0,0,0,0.12)" }}
+    >
+      <ImageContainer as={motion.div}>
         {hasImage ? (
           <CardImage
             src={listing.images[0]}
@@ -246,29 +235,52 @@ const ListingCard = ({
           />
         ) : (
           <ImagePlaceholder>
-            <span>{getCategoryEmoji(listing.category)}</span>
+            <motion.span
+              animate={{ scale: [1, 1.1, 1] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            >
+              {getCategoryEmoji(listing.category)}
+            </motion.span>
             <p>No Image</p>
           </ImagePlaceholder>
         )}
 
-        <StatusBadge color={getStatusColor(listing.status)}>
+        <StatusBadge
+          as={motion.div}
+          color={getStatusColor(listing.status)}
+          initial={{ scale: 0, x: 20 }}
+          animate={{ scale: 1, x: 0 }}
+          transition={{ delay: 0.2 }}
+        >
           {listing.status || "available"}
         </StatusBadge>
 
-        <CategoryBadge>
+        <CategoryBadge
+          as={motion.div}
+          initial={{ scale: 0, y: 20 }}
+          animate={{ scale: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+        >
           {getCategoryEmoji(listing.category)} {listing.category}
         </CategoryBadge>
       </ImageContainer>
 
-      <CardContent>
-        <CardTitle>{listing.title}</CardTitle>
-        <CardDescription>
+      <CardContent
+        as={motion.div}
+        variants={motionVariants.staggerContainerFast}
+        initial="hidden"
+        animate="show"
+      >
+        <CardTitle as={motion.h3} variants={motionVariants.fadeSlideUp}>
+          {listing.title}
+        </CardTitle>
+        <CardDescription as={motion.p} variants={motionVariants.fadeSlideUp}>
           {listing.description?.length > 100
             ? `${listing.description.substring(0, 100)}...`
             : listing.description || "No description provided"}
         </CardDescription>
 
-        <CardMeta>
+        <CardMeta as={motion.div} variants={motionVariants.fadeSlideUp}>
           <MetaItem>
             <MetaIcon>📦</MetaIcon>
             <MetaText>
@@ -301,23 +313,50 @@ const ListingCard = ({
         </CardMeta>
       </CardContent>
 
-      <CardFooter>
+      <CardFooter
+        as={motion.div}
+        variants={motionVariants.fadeSlideUp}
+        initial="hidden"
+        animate="show"
+      >
         {isOwner ? (
           <OwnerActions>
-            <EditButton onClick={handleEdit}>✏️ Edit</EditButton>
-            <DeleteButton onClick={handleDelete}>🗑️ Delete</DeleteButton>
+            <EditButton
+              as={motion.button}
+              onClick={handleEdit}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              ✏️ Edit
+            </EditButton>
+            <DeleteButton
+              as={motion.button}
+              onClick={handleDelete}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              🗑️ Delete
+            </DeleteButton>
           </OwnerActions>
         ) : (
           <>
-            {/* Always show View Details */}
-            <ViewButton onClick={handleViewDetails}>👁️ View Details</ViewButton>
+            <ViewButton
+              as={motion.button}
+              onClick={handleViewDetails}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              👁️ View Details
+            </ViewButton>
 
-            {/* Show Quick Claim button if enabled AND available */}
             {showQuickClaim && listing.status === "available" && (
               <QuickClaimButton
+                as={motion.button}
                 onClick={handleQuickClaim}
                 disabled={isClaiming || !user}
                 style={{ marginTop: "0.5rem" }}
+                whileHover={{ scale: 1.05, y: -2 }}
+                whileTap={{ scale: 0.95 }}
               >
                 {isClaiming ? (
                   <>
@@ -330,29 +369,63 @@ const ListingCard = ({
               </QuickClaimButton>
             )}
 
-            {/* Always show Contact button */}
             {authLoading ? (
               <ContactButton disabled>⏳ Loading...</ContactButton>
             ) : !user ? (
               <ContactButton
+                as={motion.button}
                 onClick={() => {
                   toast.info("Please login first");
                   navigate("/login");
                 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
               >
                 🔒 Login to Contact
               </ContactButton>
             ) : (
               <ContactButton
+                as={motion.button}
                 onClick={handleContact}
                 disabled={isLoading}
                 title="Contact donor"
+                whileHover={{ scale: 1.05, y: -2 }}
+                whileTap={{ scale: 0.95 }}
               >
                 {isLoading ? <LoadingSpinner /> : "💬 Contact"}
               </ContactButton>
             )}
           </>
         )}
+
+        {/* 📌 QR Scan button: only show when pickup is pending for this user */}
+        {listing.status === "pending" &&
+          (listing.assignedTo?._id === user?._id ||
+            listing.assignedTo === user?._id) && (
+            <motion.button
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate("/verify-pickup", {
+                  state: { listingId: listing._id },
+                });
+              }}
+              style={{
+                marginTop: "0.5rem",
+                padding: "0.75rem",
+                background: "linear-gradient(135deg, #48bb78 0%, #38a169 100%)",
+                color: "white",
+                border: "none",
+                borderRadius: "8px",
+                cursor: "pointer",
+                fontWeight: 600,
+                width: "100%",
+              }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              📷 Scan Pickup QR
+            </motion.button>
+          )}
       </CardFooter>
     </CardContainer>
   );
