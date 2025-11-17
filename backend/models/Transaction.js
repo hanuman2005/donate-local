@@ -1,143 +1,146 @@
 // backend/models/Transaction.js
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-const transactionSchema = new mongoose.Schema({
-  // QR Code data
-  qrCode: {
-    type: String,
-    required: true,
-    unique: true,
-    index: true
-  },
-  qrCodeHash: {
-    type: String,
-    required: true,
-    unique: true
-  },
-  
-  // Transaction parties
-  listing: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Listing',
-    required: true
-  },
-  donor: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
-  },
-  recipient: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
-  },
-
-  // Status tracking
-  status: {
-    type: String,
-    enum: ['pending', 'completed', 'expired', 'cancelled'],
-    default: 'pending'
-  },
-
-  // Timestamps
-  generatedAt: {
-    type: Date,
-    default: Date.now
-  },
-  expiresAt: {
-    type: Date,
-    required: true,
-    index: true
-  },
-  completedAt: {
-    type: Date
-  },
-  scannedAt: {
-    type: Date
-  },
-
-  // Verification details
-  verificationMethod: {
-    type: String,
-    enum: ['qr_scan', 'manual', 'auto'],
-    default: 'qr_scan'
-  },
-  verifiedBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
-  },
-
-  // Location data (for verification)
-  pickupLocation: {
-    type: {
+const transactionSchema = new mongoose.Schema(
+  {
+    // QR Code data
+    qrCode: {
       type: String,
-      enum: ['Point'],
-      default: 'Point'
+      required: true,
+      unique: true,
+      index: true,
     },
-    coordinates: [Number] // [longitude, latitude]
-  },
-  verificationLocation: {
-    type: {
+    qrCodeHash: {
       type: String,
-      enum: ['Point']
+      required: true,
+      unique: true,
     },
-    coordinates: [Number]
-  },
 
-  // Impact tracking
-  impact: {
-    wastePreventedKg: {
-      type: Number,
-      default: 0
+    // Transaction parties
+    listing: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Listing",
+      required: true,
     },
-    co2SavedKg: {
-      type: Number,
-      default: 0
+    donor: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
     },
-    mealsProvided: {
-      type: Number,
-      default: 0
-    }
-  },
+    recipient: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
 
-  // Notes
-  notes: {
-    type: String,
-    maxlength: 500
-  },
+    // Status tracking
+    status: {
+      type: String,
+      enum: ["pending", "completed", "expired", "cancelled"],
+      default: "pending",
+    },
 
-  // Metadata
-  metadata: {
-    deviceInfo: String,
-    scanDuration: Number, // milliseconds
-    attemptCount: {
-      type: Number,
-      default: 0
-    }
+    // Timestamps
+    generatedAt: {
+      type: Date,
+      default: Date.now,
+    },
+    expiresAt: {
+      type: Date,
+      required: true,
+    },
+    completedAt: {
+      type: Date,
+    },
+    scannedAt: {
+      type: Date,
+    },
+
+    // Verification details
+    verificationMethod: {
+      type: String,
+      enum: ["qr_scan", "manual", "auto"],
+      default: "qr_scan",
+    },
+    verifiedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+
+    // Location data (for verification)
+    pickupLocation: {
+      type: {
+        type: String,
+        enum: ["Point"],
+        default: "Point",
+      },
+      coordinates: [Number], // [longitude, latitude]
+    },
+    verificationLocation: {
+      type: {
+        type: String,
+        enum: ["Point"],
+      },
+      coordinates: [Number],
+    },
+
+    // Impact tracking
+    impact: {
+      wastePreventedKg: {
+        type: Number,
+        default: 0,
+      },
+      co2SavedKg: {
+        type: Number,
+        default: 0,
+      },
+      mealsProvided: {
+        type: Number,
+        default: 0,
+      },
+    },
+
+    // Notes
+    notes: {
+      type: String,
+      maxlength: 500,
+    },
+
+    // Metadata
+    metadata: {
+      deviceInfo: String,
+      scanDuration: Number, // milliseconds
+      attemptCount: {
+        type: Number,
+        default: 0,
+      },
+    },
+  },
+  {
+    timestamps: true,
   }
-
-}, {
-  timestamps: true
-});
+);
 
 // Indexes
 transactionSchema.index({ donor: 1, status: 1 });
 transactionSchema.index({ recipient: 1, status: 1 });
 transactionSchema.index({ listing: 1 });
-transactionSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
 // Virtual for checking if expired
-transactionSchema.virtual('isExpired').get(function() {
-  return this.status === 'pending' && new Date() > this.expiresAt;
+transactionSchema.virtual("isExpired").get(function () {
+  return this.status === "pending" && new Date() > this.expiresAt;
 });
 
 // Method to mark as completed
-transactionSchema.methods.complete = async function(verifiedBy, verificationLocation) {
-  this.status = 'completed';
+transactionSchema.methods.complete = async function (
+  verifiedBy,
+  verificationLocation
+) {
+  this.status = "completed";
   this.completedAt = new Date();
   this.scannedAt = new Date();
   this.verifiedBy = verifiedBy;
-  
+
   if (verificationLocation) {
     this.verificationLocation = verificationLocation;
   }
@@ -146,7 +149,7 @@ transactionSchema.methods.complete = async function(verifiedBy, verificationLoca
 };
 
 // Method to calculate impact
-transactionSchema.methods.calculateImpact = function(listingData) {
+transactionSchema.methods.calculateImpact = function (listingData) {
   // Basic calculations (you can enhance these)
   const quantity = listingData.quantity || 1;
   const estimatedWeight = listingData.estimatedWeight || 1; // kg
@@ -154,29 +157,29 @@ transactionSchema.methods.calculateImpact = function(listingData) {
   this.impact = {
     wastePreventedKg: quantity * estimatedWeight,
     co2SavedKg: quantity * estimatedWeight * 2.5, // Rough estimate
-    mealsProvided: Math.floor(quantity * estimatedWeight / 0.5) // 0.5kg per meal
+    mealsProvided: Math.floor((quantity * estimatedWeight) / 0.5), // 0.5kg per meal
   };
 
   return this.impact;
 };
 
 // Static method to cleanup expired QR codes
-transactionSchema.statics.cleanupExpired = async function() {
+transactionSchema.statics.cleanupExpired = async function () {
   const result = await this.updateMany(
     {
-      status: 'pending',
-      expiresAt: { $lt: new Date() }
+      status: "pending",
+      expiresAt: { $lt: new Date() },
     },
     {
-      $set: { status: 'expired' }
+      $set: { status: "expired" },
     }
   );
-  
+
   return result;
 };
 
 // Pre-save hook to set expiration
-transactionSchema.pre('save', function(next) {
+transactionSchema.pre("save", function (next) {
   if (this.isNew && !this.expiresAt) {
     // Default: QR expires in 24 hours
     this.expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
@@ -184,6 +187,6 @@ transactionSchema.pre('save', function(next) {
   next();
 });
 
-const Transaction = mongoose.model('Transaction', transactionSchema);
+const Transaction = mongoose.model("Transaction", transactionSchema);
 
 module.exports = Transaction;

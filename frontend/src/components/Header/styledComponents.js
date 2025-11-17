@@ -1,3 +1,4 @@
+// src/components/Header/styledComponents.js - FIXED MOBILE MENU
 import styled from "styled-components";
 
 export const HeaderContainer = styled.header`
@@ -20,6 +21,7 @@ export const HeaderContent = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
+  height: 100%; /* ✅ Ensure full height */
 
   @media (max-width: 768px) {
     padding: 1rem;
@@ -66,6 +68,7 @@ export const NavLink = styled.span`
   border-radius: 8px;
   transition: all 0.3s ease;
   position: relative;
+  white-space: nowrap; /* ✅ Prevent text wrapping */
 
   &:hover {
     color: #667eea;
@@ -118,6 +121,7 @@ export const UserAvatar = styled.div`
   font-weight: 600;
   font-size: 0.9rem;
   overflow: hidden;
+  flex-shrink: 0; /* ✅ Prevent shrinking */
 
   img {
     width: 100%;
@@ -175,6 +179,7 @@ export const DropdownItem = styled.button`
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  white-space: nowrap; /* ✅ Prevent text wrapping */
 
   &:hover {
     background: #f7fafc;
@@ -193,6 +198,7 @@ export const LoginButton = styled.span`
   padding: 0.5rem 1rem;
   border-radius: 8px;
   transition: all 0.3s ease;
+  white-space: nowrap; /* ✅ Prevent text wrapping */
 
   &:hover {
     background: rgba(102, 126, 234, 0.1);
@@ -208,6 +214,7 @@ export const RegisterButton = styled.span`
   border-radius: 25px;
   transition: all 0.3s ease;
   box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  white-space: nowrap; /* ✅ Prevent text wrapping */
 
   &:hover {
     transform: translateY(-2px);
@@ -223,6 +230,7 @@ export const MobileMenuButton = styled.button`
   cursor: pointer;
   padding: 0.5rem;
   gap: 4px;
+  z-index: 1001; /* ✅ Ensure it's above content */
 
   span {
     width: 25px;
@@ -237,20 +245,34 @@ export const MobileMenuButton = styled.button`
   }
 `;
 
+// ✅ FIXED: Mobile menu with proper vertical alignment
 export const MobileMenu = styled.div`
-  display: none;
+  position: fixed; /* ✅ Changed from relative */
+  top: 80px; /* ✅ Position below header */
+  left: 0;
+  right: 0;
   background: white;
   border-top: 1px solid #e2e8f0;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   padding: 1rem;
-  flex-direction: column;
+  max-height: calc(100vh - 80px); /* ✅ Prevent overflow */
+  overflow-y: auto; /* ✅ Enable scrolling if needed */
+  z-index: 999;
+
+  /* ✅ CRITICAL: Ensure vertical stacking */
+  display: flex !important;
+  flex-direction: column !important;
   gap: 0.5rem;
 
   @media (max-width: 768px) {
-    display: flex;
+    display: flex !important; /* ✅ Override any other styles */
   }
 `;
 
+// ✅ FIXED: Mobile nav link with proper display
 export const MobileNavLink = styled.span`
+  display: block; /* ✅ Ensure block-level element */
+  width: 100%; /* ✅ Full width */
   color: ${(props) => (props.$active ? "#667eea" : "#64748b")};
   font-weight: ${(props) => (props.$active ? "600" : "500")};
   text-decoration: none;
@@ -258,12 +280,16 @@ export const MobileNavLink = styled.span`
   border-radius: 8px;
   transition: all 0.3s ease;
   cursor: pointer;
+  text-align: left; /* ✅ Align text to left */
+  background: ${(props) =>
+    props.$active ? "rgba(102, 126, 234, 0.1)" : "transparent"};
 
   &:hover {
     color: #667eea;
     background: rgba(102, 126, 234, 0.1);
   }
 `;
+
 export const NotificationBell = styled.button`
   position: relative;
   background: transparent;

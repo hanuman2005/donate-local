@@ -1,4 +1,9 @@
+// ============================================
+// src/components/FiltersPanel/index.jsx - WITH MOTION
+// ============================================
 import React, { useState, useEffect, useRef } from "react";
+import { motion } from "framer-motion";
+import { motionVariants } from "../../animations/motionVariants";
 import {
   FiltersWrapper,
   FiltersContainer,
@@ -30,32 +35,27 @@ const FiltersPanel = ({ onResults, autoSearch = false }) => {
   const [isSearching, setIsSearching] = useState(false);
   const hasSearchedRef = useRef(false);
 
-  // Get user location once on mount
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
-          console.log("📍 Location acquired:", pos.coords.latitude, pos.coords.longitude);
           setLat(pos.coords.latitude);
           setLng(pos.coords.longitude);
           setLocationError(null);
         },
         (error) => {
-          console.error("❌ Location error:", error);
           setLocationError(error.message);
           if (autoSearch && !hasSearchedRef.current) {
-            console.log("🔍 Searching without location...");
             handleSearchWithoutLocation();
           }
         },
         {
           timeout: 10000,
           enableHighAccuracy: false,
-          maximumAge: 300000
+          maximumAge: 300000,
         }
       );
     } else {
-      console.warn("⚠️ Geolocation not supported");
       setLocationError("Geolocation not supported");
       if (autoSearch && !hasSearchedRef.current) {
         handleSearchWithoutLocation();
@@ -65,30 +65,26 @@ const FiltersPanel = ({ onResults, autoSearch = false }) => {
 
   useEffect(() => {
     if (autoSearch && !hasSearchedRef.current) {
-      console.log("🚀 Auto-search enabled, will search in 500ms");
       const timer = setTimeout(() => {
         if (!hasSearchedRef.current) {
-          console.log("🚀 Initial auto-search triggered");
           handleSearch();
         }
       }, 500);
 
       return () => clearTimeout(timer);
-    } else if (!autoSearch) {
-      console.log("⚠️ Auto-search is disabled");
     }
   }, [autoSearch]);
 
   const handleSearch = async () => {
     if (hasSearchedRef.current && isSearching) return;
-    
+
     hasSearchedRef.current = true;
     setIsSearching(true);
-    
+
     try {
       const params = {
         sortBy,
-        status: 'available',
+        status: "available",
       };
 
       if (category) params.category = category;
@@ -99,19 +95,12 @@ const FiltersPanel = ({ onResults, autoSearch = false }) => {
         params.lat = lat;
         params.lng = lng;
         params.maxDistance = maxDistance;
-        console.log("📍 Searching with location:", { lat, lng, maxDistance });
-      } else {
-        console.log("🔍 Searching without location");
       }
 
-      console.log("Search params:", params);
       const res = await listingsAPI.search(params);
-      console.log("✅ Search response:", res.data);
-      console.log("📤 Calling onResults with", res.data.listings?.length || 0, "listings");
-      
       onResults(res.data.listings || []);
     } catch (error) {
-      console.error("❌ Search failed:", error);
+      console.error("Search failed:", error);
       onResults([]);
     } finally {
       setIsSearching(false);
@@ -121,24 +110,21 @@ const FiltersPanel = ({ onResults, autoSearch = false }) => {
   const handleSearchWithoutLocation = async () => {
     hasSearchedRef.current = true;
     setIsSearching(true);
-    
+
     try {
       const params = {
         sortBy,
-        status: 'available',
+        status: "available",
       };
 
       if (category) params.category = category;
       if (urgency) params.urgency = urgency;
       if (expiryBefore) params.expiryBefore = expiryBefore;
 
-      console.log("🔍 Searching without location, params:", params);
       const res = await listingsAPI.search(params);
-      console.log("✅ Search response:", res.data);
-      
       onResults(res.data.listings || []);
     } catch (error) {
-      console.error("❌ Search failed:", error);
+      console.error("Search failed:", error);
       onResults([]);
     } finally {
       setIsSearching(false);
@@ -160,13 +146,24 @@ const FiltersPanel = ({ onResults, autoSearch = false }) => {
     handleSearch();
   };
 
-  // Count active filters
-  const activeFiltersCount = [category, urgency, expiryBefore].filter(Boolean).length;
+  const activeFiltersCount = [category, urgency, expiryBefore].filter(
+    Boolean
+  ).length;
 
   return (
-    <FiltersWrapper>
-      <FiltersContainer>
-        <div>
+    <FiltersWrapper
+      as={motion.div}
+      variants={motionVariants.fadeSlideRight}
+      initial="hidden"
+      animate="show"
+    >
+      <FiltersContainer
+        as={motion.div}
+        variants={motionVariants.staggerContainer}
+        initial="hidden"
+        animate="show"
+      >
+        <motion.div variants={motionVariants.fadeSlideUp}>
           <FiltersTitle>
             <FilterIcon>🔍</FilterIcon>
             Find Your Perfect Match
@@ -174,18 +171,26 @@ const FiltersPanel = ({ onResults, autoSearch = false }) => {
           <FiltersSubtitle>
             Filter and search for available food in your area
             {activeFiltersCount > 0 && (
-              <ActiveFiltersCount>
-                {activeFiltersCount} filter{activeFiltersCount > 1 ? 's' : ''} active
+              <ActiveFiltersCount
+                as={motion.span}
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+              >
+                {activeFiltersCount} filter{activeFiltersCount > 1 ? "s" : ""}{" "}
+                active
               </ActiveFiltersCount>
             )}
           </FiltersSubtitle>
-        </div>
+        </motion.div>
 
-        <FilterGroup>
+        <FilterGroup as={motion.div} variants={motionVariants.fadeSlideUp}>
           <Label>
             <span>🏷️</span> Category
           </Label>
-          <Select value={category} onChange={(e) => setCategory(e.target.value)}>
+          <Select
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+          >
             <option value="">All Categories</option>
             <option value="produce">🥕 Fresh Produce</option>
             <option value="canned-goods">🥫 Canned Goods</option>
@@ -197,7 +202,7 @@ const FiltersPanel = ({ onResults, autoSearch = false }) => {
           </Select>
         </FilterGroup>
 
-        <FilterGroup>
+        <FilterGroup as={motion.div} variants={motionVariants.fadeSlideUp}>
           <Label>
             <span>⚡</span> Urgency
           </Label>
@@ -209,7 +214,7 @@ const FiltersPanel = ({ onResults, autoSearch = false }) => {
           </Select>
         </FilterGroup>
 
-        <FilterGroup>
+        <FilterGroup as={motion.div} variants={motionVariants.fadeSlideUp}>
           <Label>
             <span>📅</span> Expiry Before
           </Label>
@@ -217,11 +222,11 @@ const FiltersPanel = ({ onResults, autoSearch = false }) => {
             type="date"
             value={expiryBefore}
             onChange={(e) => setExpiryBefore(e.target.value)}
-            min={new Date().toISOString().split('T')[0]}
+            min={new Date().toISOString().split("T")[0]}
           />
         </FilterGroup>
 
-        <FilterGroup>
+        <FilterGroup as={motion.div} variants={motionVariants.fadeSlideUp}>
           <Label>
             <span>🔄</span> Sort By
           </Label>
@@ -233,8 +238,8 @@ const FiltersPanel = ({ onResults, autoSearch = false }) => {
           </Select>
         </FilterGroup>
 
-        {(lat && lng) && (
-          <FilterGroup>
+        {lat && lng && (
+          <FilterGroup as={motion.div} variants={motionVariants.fadeSlideUp}>
             <Label>
               <span>📏</span> Max Distance (km)
             </Label>
@@ -247,7 +252,12 @@ const FiltersPanel = ({ onResults, autoSearch = false }) => {
               step="0.5"
               placeholder="5"
             />
-            <LocationInfo $success>
+            <LocationInfo
+              as={motion.div}
+              $success
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+            >
               <LocationIcon>✅</LocationIcon>
               <LocationText>Location detected</LocationText>
             </LocationInfo>
@@ -255,17 +265,35 @@ const FiltersPanel = ({ onResults, autoSearch = false }) => {
         )}
 
         {locationError && !lat && !lng && (
-          <LocationInfo $error>
+          <LocationInfo
+            as={motion.div}
+            $error
+            variants={motionVariants.fadeSlideUp}
+          >
             <LocationIcon>⚠️</LocationIcon>
             <LocationText>{locationError}</LocationText>
           </LocationInfo>
         )}
 
-        <ButtonGroup>
-          <Button $primary onClick={handleManualSearch} disabled={isSearching}>
-            {isSearching ? '⏳ Searching...' : '🔍 Search'}
+        <ButtonGroup as={motion.div} variants={motionVariants.fadeSlideUp}>
+          <Button
+            as={motion.button}
+            $primary
+            onClick={handleManualSearch}
+            disabled={isSearching}
+            whileHover={{ scale: 1.02, y: -2 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            {isSearching ? "⏳ Searching..." : "🔍 Search"}
           </Button>
-          <Button $secondary onClick={handleReset} disabled={isSearching}>
+          <Button
+            as={motion.button}
+            $secondary
+            onClick={handleReset}
+            disabled={isSearching}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
             🔄 Reset
           </Button>
         </ButtonGroup>

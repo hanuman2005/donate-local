@@ -243,7 +243,7 @@ const Header = () => {
                             label: "📷 Scan QR",
                             onClick: () => {
                               setIsDropdownOpen(false);
-                              navigate("/verify-pickup");
+                              navigate("/check-in");
                             },
                           },
                           {
@@ -386,7 +386,7 @@ const Header = () => {
                   ? [
                       { path: "/dashboard", label: "Dashboard" },
                       { path: "/impact/personal", label: "My Impact" },
-                      { path: "/verify-pickup", label: "📷 Scan QR Code" },
+                      { path: "/check-in", label: "📷 Scan QR Code" },
                       {
                         path: "/notifications",
                         label: `Notifications ${

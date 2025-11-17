@@ -26,7 +26,8 @@ import Chat from "./components/Chat";
 import ContactModal from "./components/ContactModal";
 
 // Impact Pages
-import VerifyPickup from "./pages/VerifyPickup";
+import CheckIn from "./components/CheckIn";
+
 import PersonalImpact from "./components/ImpactDashboard/PersonalImpact";
 import CommunityStats from "./components/ImpactDashboard/CommunityStats";
 
@@ -100,14 +101,8 @@ function App() {
             </ProtectedRoute>
           }
         />
-        <Route
-          path="/verify-pickup"
-          element={
-            <ProtectedRoute>
-              <VerifyPickup />
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/check-in" element={<CheckIn />} />
+
         <Route
           path="/impact/personal"
           element={

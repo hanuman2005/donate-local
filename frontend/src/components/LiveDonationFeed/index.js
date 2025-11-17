@@ -1,17 +1,22 @@
+// ============================================
+// src/components/LiveDonationFeed/index.jsx - WITH MOTION
+// ============================================
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useSocket } from '../../context/SocketContext';
 import { listingsAPI } from '../../services/api';
 import { toast } from 'react-toastify';
+import { motionVariants } from '../../animations/motionVariants';
 import ListingCard from '../ListingCard';
 
-const Container = styled.div`
+const Container = styled(motion.div)`
   max-width: 1200px;
   margin: 0 auto;
   padding: 1rem;
 `;
 
-const Header = styled.div`
+const Header = styled(motion.div)`
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -31,17 +36,11 @@ const Title = styled.h2`
   gap: 0.5rem;
 `;
 
-const LiveIndicator = styled.div`
+const LiveIndicator = styled(motion.div)`
   width: 12px;
   height: 12px;
   background: #48bb78;
   border-radius: 50%;
-  animation: pulse 2s infinite;
-  
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
-  }
 `;
 
 const FilterButtons = styled.div`
@@ -50,7 +49,7 @@ const FilterButtons = styled.div`
   flex-wrap: wrap;
 `;
 
-const FilterButton = styled.button`
+const FilterButton = styled(motion.button)`
   padding: 0.5rem 1rem;
   border: 2px solid ${props => props.$active ? '#667eea' : '#e2e8f0'};
   background: ${props => props.$active ? '#667eea' : 'white'};
@@ -65,13 +64,13 @@ const FilterButton = styled.button`
   }
 `;
 
-const FeedContainer = styled.div`
+const FeedContainer = styled(motion.div)`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 1.5rem;
 `;
 
-const NewItemBanner = styled.div`
+const NewItemBanner = styled(motion.div)`
   background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
   color: white;
   padding: 1rem;
@@ -80,18 +79,6 @@ const NewItemBanner = styled.div`
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  animation: slideDown 0.3s ease;
-  
-  @keyframes slideDown {
-    from {
-      transform: translateY(-20px);
-      opacity: 0;
-    }
-    to {
-      transform: translateY(0);
-      opacity: 1;
-    }
-  }
 `;
 
 const LiveDonationFeed = () => {
@@ -104,7 +91,6 @@ const LiveDonationFeed = () => {
   useEffect(() => {
     fetchListings();
     
-    // Listen for new listings
     if (socket) {
       socket.on('newListing', (listing) => {
         setListings(prev => [listing, ...prev]);
@@ -114,11 +100,6 @@ const LiveDonationFeed = () => {
           autoClose: 3000,
         });
         
-        // Play notification sound (optional)
-        // const audio = new Audio('/notification.mp3');
-        // audio.play();
-        
-        // Hide banner after 5 seconds
         setTimeout(() => setNewItem(null), 5000);
       });
     }
@@ -157,18 +138,34 @@ const LiveDonationFeed = () => {
     : listings.filter(listing => listing.category === filter);
 
   return (
-    <Container>
-      <Header>
+    <Container
+      variants={motionVariants.pageTransition}
+      initial="hidden"
+      animate="show"
+    >
+      <Header
+        variants={motionVariants.fadeSlideDown}
+        initial="hidden"
+        animate="show"
+      >
         <Title>
-          <LiveIndicator />
+          <LiveIndicator
+            animate={{ scale: [1, 1.3, 1], opacity: [1, 0.5, 1] }}
+            transition={{ duration: 2, repeat: Infinity }}
+          />
           Live Donation Feed
         </Title>
         <FilterButtons>
-          {categories.map(cat => (
+          {categories.map((cat, index) => (
             <FilterButton
               key={cat}
               $active={filter === cat}
               onClick={() => setFilter(cat)}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: index * 0.05 }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
               {cat.charAt(0).toUpperCase() + cat.slice(1)}
             </FilterButton>
@@ -176,32 +173,62 @@ const LiveDonationFeed = () => {
         </FilterButtons>
       </Header>
 
-      {newItem && (
-        <NewItemBanner>
-          🎉 New donation just added: {newItem.title}
-        </NewItemBanner>
-      )}
+      <AnimatePresence>
+        {newItem && (
+          <NewItemBanner
+            variants={motionVariants.fadeSlideDown}
+            initial="hidden"
+            animate="show"
+            exit="exit"
+          >
+            🎉 New donation just added: {newItem.title}
+          </NewItemBanner>
+        )}
+      </AnimatePresence>
 
       {loading ? (
-        <div style={{ textAlign: 'center', padding: '3rem' }}>
+        <motion.div 
+          style={{ textAlign: 'center', padding: '3rem' }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+        >
           Loading donations...
-        </div>
+        </motion.div>
       ) : (
-        <FeedContainer>
-          {filteredListings.map(listing => (
-            <ListingCard 
-              key={listing._id} 
-              listing={listing}
-              showQuickClaim={true}
-            />
-          ))}
+        <FeedContainer
+          variants={motionVariants.staggerContainer}
+          initial="hidden"
+          animate="show"
+        >
+          <AnimatePresence>
+            {filteredListings.map((listing, index) => (
+              <motion.div
+                key={listing._id}
+                layout
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                transition={{ delay: index * 0.05 }}
+              >
+                <ListingCard 
+                  listing={listing}
+                  showQuickClaim={true}
+                />
+              </motion.div>
+            ))}
+          </AnimatePresence>
         </FeedContainer>
       )}
 
       {filteredListings.length === 0 && !loading && (
-        <div style={{ textAlign: 'center', padding: '3rem', color: '#718096' }}>
+        <motion.div 
+          style={{ textAlign: 'center', padding: '3rem', color: '#718096' }}
+          variants={motionVariants.fadeSlideUp}
+          initial="hidden"
+          animate="show"
+        >
           No donations available in this category
-        </div>
+        </motion.div>
       )}
     </Container>
   );

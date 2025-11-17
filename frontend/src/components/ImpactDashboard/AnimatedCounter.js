@@ -1,15 +1,24 @@
-// src/components/ImpactDashboard/AnimatedCounter.jsx
-import React, { useState, useEffect, useRef } from 'react';
-import styled from 'styled-components';
+// ============================================
+// src/components/ImpactDashboard/AnimatedCounter.jsx - WITH MOTION
+// ============================================
+import React, { useState, useEffect, useRef } from "react";
+import styled from "styled-components";
+import { motion } from "framer-motion";
 
-const CounterWrapper = styled.div`
+const CounterWrapper = styled(motion.div)`
   display: inline-block;
   font-size: inherit;
   font-weight: inherit;
   color: inherit;
 `;
 
-const AnimatedCounter = ({ end, duration = 2000, decimals = 0, suffix = '', prefix = '' }) => {
+const AnimatedCounter = ({
+  end,
+  duration = 2000,
+  decimals = 0,
+  suffix = "",
+  prefix = "",
+}) => {
   const [count, setCount] = useState(0);
   const countRef = useRef(0);
   const startTimeRef = useRef(null);
@@ -26,7 +35,7 @@ const AnimatedCounter = ({ end, duration = 2000, decimals = 0, suffix = '', pref
 
       // Easing function (ease-out)
       const easeOut = 1 - Math.pow(1 - percentage, 3);
-      
+
       const currentCount = easeOut * end;
       countRef.current = currentCount;
       setCount(currentCount);
@@ -47,13 +56,18 @@ const AnimatedCounter = ({ end, duration = 2000, decimals = 0, suffix = '', pref
     };
   }, [end, duration]);
 
-  const formattedValue = decimals > 0
-    ? count.toFixed(decimals)
-    : Math.floor(count).toLocaleString();
+  const formattedValue =
+    decimals > 0 ? count.toFixed(decimals) : Math.floor(count).toLocaleString();
 
   return (
-    <CounterWrapper>
-      {prefix}{formattedValue}{suffix}
+    <CounterWrapper
+      initial={{ opacity: 0, scale: 0.5 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.5, type: "spring", stiffness: 200 }}
+    >
+      {prefix}
+      {formattedValue}
+      {suffix}
     </CounterWrapper>
   );
 };
