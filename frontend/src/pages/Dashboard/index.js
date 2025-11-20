@@ -1,4 +1,4 @@
-// src/pages/Dashboard/index.jsx - POLISHED WITH FRAMER MOTION
+// src/pages/Dashboard/index.jsx - FULLY OPTIMIZED & FIXED
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -11,7 +11,6 @@ import LoadingSpinner from "../../components/Common/LoadingSpinner";
 import DonationCenterInfo from "../../components/DonationCenterInfo";
 import LiveDonationFeed from "../../components/LiveDonationFeed";
 import LiveStats from "../../components/LiveStats";
-import CheckIn from "../../components/CheckIn";
 import {
   motionVariants,
   useScrollAnimation,
@@ -59,6 +58,7 @@ const Dashboard = () => {
   const [chats, setChats] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("available");
+  const [myListingsTab, setMyListingsTab] = useState("active"); // ✅ Separate tab for my listings
   const [userLocation, setUserLocation] = useState(null);
   const [selectedChat, setSelectedChat] = useState(null);
   const [showLiveFeed, setShowLiveFeed] = useState(false);
@@ -81,6 +81,18 @@ const Dashboard = () => {
     }
   };
 
+  // ✅ Deduplicate chats helper
+  const deduplicateChats = (chats) => {
+    const seen = new Set();
+    return chats.filter((chat) => {
+      if (seen.has(chat._id)) {
+        return false;
+      }
+      seen.add(chat._id);
+      return true;
+    });
+  };
+
   const fetchDashboardData = useCallback(async () => {
     try {
       setLoading(true);
@@ -97,25 +109,19 @@ const Dashboard = () => {
         allListingsRes.data.listings || allListingsRes.data.data || [];
       const myChats = chatsRes.data.chats || chatsRes.data.data || [];
 
-      const uniqueChats = [];
-      const seenParticipants = new Set();
-
-      myChats.forEach((chat) => {
-        const otherUser = chat.participants?.find((p) => p._id !== user?._id);
-        if (otherUser && !seenParticipants.has(otherUser._id)) {
-          seenParticipants.add(otherUser._id);
-          uniqueChats.push(chat);
-        }
-      });
+      // ✅ Deduplicate chats
+      const uniqueChats = deduplicateChats(myChats);
 
       setMyListings(myItems);
 
+      // ✅ Filter out own listings from available
       const othersListings = allItems.filter(
         (listing) =>
           listing.donor?._id !== user?._id && listing.donor !== user?._id
       );
       setAvailableListings(othersListings);
 
+      // ✅ Get listings assigned to current user
       const interested = allItems.filter(
         (listing) =>
           listing.assignedTo?._id === user?._id ||
@@ -147,15 +153,15 @@ const Dashboard = () => {
         initial="hidden"
         animate="show"
       >
-        <LoadingSpinner />
+        <LoadingSpinner size="large" />
         <LoadingText>Loading your dashboard...</LoadingText>
       </LoadingContainer>
     );
   }
 
   const isDonor = user?.userType === "donor" || user?.userType === "both";
-  const isRecipient = user?.userType === "recipient";
 
+  // ✅ Calculate stats
   const stats = {
     myActive: myListings.filter((l) => l.status === "available").length,
     myPending: myListings.filter((l) => l.status === "pending").length,
@@ -179,7 +185,7 @@ const Dashboard = () => {
       animate="show"
       exit="exit"
     >
-      {/* Header */}
+      {/* ========== HEADER ========== */}
       <DashboardHeader
         as={motion.header}
         variants={motionVariants.fadeSlideDown}
@@ -238,18 +244,23 @@ const Dashboard = () => {
             variants={motionVariants.listItem}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.98 }}
-            onClick={() => navigate("/verify-pickup")}>
+            onClick={() => navigate("/check-in")}
+          >
             📷 Verify Pickup
           </ActionButton>
         </QuickActions>
       </DashboardHeader>
 
-      {/* Live Stats Component */}
-      <motion.div variants={motionVariants.fadeSlideUp} {...scrollAnimation}>
+      {/* ========== LIVE STATS ========== */}
+      <motion.div
+        variants={motionVariants.fadeSlideUp}
+        initial="hidden"
+        animate="show"
+      >
         <LiveStats />
       </motion.div>
 
-      {/* Stats Cards */}
+      {/* ========== STATS CARDS ========== */}
       <StatsRow
         as={motion.div}
         variants={motionVariants.staggerContainer}
@@ -347,10 +358,12 @@ const Dashboard = () => {
         )}
       </StatsRow>
 
+      {/* ========== MAIN CONTENT ========== */}
       <DashboardContent>
         <MainSection>
           <AnimatePresence mode="wait">
             {showLiveFeed ? (
+              /* ========== LIVE FEED VIEW ========== */
               <Section
                 as={motion.section}
                 key="live-feed"
@@ -369,12 +382,13 @@ const Dashboard = () => {
                     whileTap={{ scale: 0.98 }}
                     onClick={() => setShowLiveFeed(false)}
                   >
-                    📋 Switch to List View
+                    📋 List View
                   </ActionButton>
                 </SectionHeader>
                 <LiveDonationFeed />
               </Section>
             ) : (
+              /* ========== LIST VIEW ========== */
               <motion.div
                 key="list-view"
                 variants={motionVariants.fadeSlide}
@@ -382,12 +396,14 @@ const Dashboard = () => {
                 animate="show"
                 exit="exit"
               >
-                {/* Donor's Listings Section */}
+                {/* ========== MY DONATIONS (Donors Only) ========== */}
                 {isDonor && (
                   <Section
                     as={motion.section}
-                    {...scrollAnimation}
                     variants={motionVariants.fadeSlideUp}
+                    initial="hidden"
+                    whileInView="show"
+                    viewport={{ once: true, amount: 0.2 }}
                   >
                     <SectionHeader>
                       <GradientText $variant="purple">
@@ -400,8 +416,8 @@ const Dashboard = () => {
                             as={motion.button}
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
-                            $active={activeTab === tab}
-                            onClick={() => setActiveTab(tab)}
+                            $active={myListingsTab === tab}
+                            onClick={() => setMyListingsTab(tab)}
                           >
                             {tab.charAt(0).toUpperCase() + tab.slice(1)} (
                             {tab === "active"
@@ -418,18 +434,18 @@ const Dashboard = () => {
                     <AnimatePresence mode="wait">
                       <TabContent
                         as={motion.div}
-                        key={activeTab}
+                        key={myListingsTab}
                         variants={motionVariants.tabContent}
                         initial="hidden"
                         animate="show"
                         exit="exit"
                       >
                         {myListings.filter((listing) => {
-                          if (activeTab === "active")
+                          if (myListingsTab === "active")
                             return listing.status === "available";
-                          if (activeTab === "pending")
+                          if (myListingsTab === "pending")
                             return listing.status === "pending";
-                          if (activeTab === "completed")
+                          if (myListingsTab === "completed")
                             return listing.status === "completed";
                           return true;
                         }).length > 0 ? (
@@ -441,11 +457,11 @@ const Dashboard = () => {
                           >
                             {myListings
                               .filter((listing) => {
-                                if (activeTab === "active")
+                                if (myListingsTab === "active")
                                   return listing.status === "available";
-                                if (activeTab === "pending")
+                                if (myListingsTab === "pending")
                                   return listing.status === "pending";
-                                if (activeTab === "completed")
+                                if (myListingsTab === "completed")
                                   return listing.status === "completed";
                                 return true;
                               })
@@ -472,23 +488,24 @@ const Dashboard = () => {
                           >
                             <EmptyStateIcon>📦</EmptyStateIcon>
                             <EmptyStateText $large>
-                              No {activeTab} donations yet
+                              No {myListingsTab} donations yet
                             </EmptyStateText>
                             <EmptyStateText>
-                              {activeTab === "active" &&
+                              {myListingsTab === "active" &&
                                 "Share items to help your community"}
-                              {activeTab === "pending" &&
+                              {myListingsTab === "pending" &&
                                 "No pending pickups at the moment"}
-                              {activeTab === "completed" &&
+                              {myListingsTab === "completed" &&
                                 "Complete donations will appear here"}
                             </EmptyStateText>
-                            {activeTab === "active" && (
+                            {myListingsTab === "active" && (
                               <ActionButton
                                 as={motion.button}
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
                                 $primary
                                 onClick={handleCreateListing}
+                                style={{ marginTop: "1rem" }}
                               >
                                 ➕ Share Your First Item
                               </ActionButton>
@@ -500,11 +517,13 @@ const Dashboard = () => {
                   </Section>
                 )}
 
-                {/* Available Items Section */}
+                {/* ========== AVAILABLE ITEMS ========== */}
                 <Section
                   as={motion.section}
-                  {...scrollAnimation}
                   variants={motionVariants.fadeSlideUp}
+                  initial="hidden"
+                  whileInView="show"
+                  viewport={{ once: true, amount: 0.2 }}
                 >
                   <SectionHeader>
                     <GradientText $variant="green">
@@ -590,11 +609,12 @@ const Dashboard = () => {
                     </TabContent>
                   </AnimatePresence>
 
-                  {availableListings.length > 6 && (
+                  {availableListings.length > 6 && activeTab === "available" && (
                     <motion.div
                       style={{ textAlign: "center", marginTop: "1.5rem" }}
                       variants={motionVariants.fadeSlideUp}
-                      {...scrollAnimation}
+                      initial="hidden"
+                      animate="show"
                     >
                       <ViewAllButton
                         as={motion.button}
@@ -608,12 +628,14 @@ const Dashboard = () => {
                   )}
                 </Section>
 
-                {/* My Requests Section */}
+                {/* ========== MY REQUESTS (Recipients) ========== */}
                 {interestedListings.length > 0 && (
                   <Section
                     as={motion.section}
-                    {...scrollAnimation}
                     variants={motionVariants.fadeSlideUp}
+                    initial="hidden"
+                    whileInView="show"
+                    viewport={{ once: true, amount: 0.2 }}
                   >
                     <SectionHeader>
                       <GradientText $variant="pink">
@@ -647,6 +669,7 @@ const Dashboard = () => {
           </AnimatePresence>
         </MainSection>
 
+        {/* ========== SIDEBAR ========== */}
         <Sidebar
           as={motion.aside}
           variants={motionVariants.fadeSlideLeft}
@@ -654,28 +677,37 @@ const Dashboard = () => {
           animate="show"
         >
           {/* Donation Center Info */}
-          <motion.div variants={motionVariants.scaleIn} {...scrollAnimation}>
+          <motion.div
+            variants={motionVariants.scaleIn}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true }}
+          >
             <DonationCenterInfo />
           </motion.div>
 
-          {/* Messages Section */}
+          {/* Messages */}
           <Section
             as={motion.section}
             variants={motionVariants.fadeSlideUp}
-            {...scrollAnimation}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true }}
           >
             <SectionHeader>
               <GradientText $variant="purple">
                 💬 Messages ({chats.length})
               </GradientText>
-              <ViewAllButton
-                as={motion.button}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => navigate("/chat")}
-              >
-                View All →
-              </ViewAllButton>
+              {chats.length > 0 && (
+                <ViewAllButton
+                  as={motion.button}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => navigate("/chat")}
+                >
+                  View All →
+                </ViewAllButton>
+              )}
             </SectionHeader>
 
             {chats.length > 0 ? (
@@ -691,7 +723,7 @@ const Dashboard = () => {
                 variants={motionVariants.scalePop}
                 $compact
               >
-                <EmptyStateIcon>💬</EmptyStateIcon>
+                <EmptyStateIcon $small>💬</EmptyStateIcon>
                 <EmptyStateText>No messages yet</EmptyStateText>
                 <EmptyStateText $small>
                   Start conversations with donors
@@ -704,7 +736,9 @@ const Dashboard = () => {
           <Section
             as={motion.section}
             variants={motionVariants.scaleIn}
-            {...scrollAnimation}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true }}
             $impact
           >
             <SectionTitle>🌟 Your Impact</SectionTitle>
