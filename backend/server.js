@@ -19,6 +19,8 @@ const notificationRoutes = require("./routes/notifications");
 const analyticsRoutes = require("./routes/analytics");
 const qrRoutes = require("./routes/qr");
 const impactRoutes = require("./routes/impact");
+const ratingRoutes = require('./routes/ratings');
+
 
 // Import socket handler
 const socketHandler = require("./socket/socketHandler");
@@ -113,6 +115,8 @@ app.use("/api/notifications", notificationRoutes);
 app.use("/api/analytics", analyticsRoutes);
 app.use("/api/qr", qrRoutes);
 app.use("/api/impact", impactRoutes);
+app.use('/api/ratings', ratingRoutes);
+
 
 // Error handling middleware
 app.use(errorHandler);

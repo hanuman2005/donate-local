@@ -1,12 +1,10 @@
-// backend/controllers/listingController.js - CLEANED VERSION
+// backend/controllers/listingController.js
 
 const { validationResult } = require("express-validator");
 const Listing = require("../models/Listing");
 const User = require("../models/User");
 const cloudinary = require("../config/cloudinary");
 const notificationHelper = require("../utils/notificationHelper");
-// ❌ REMOVED: const Notification = require("../models/Notification");
-// We don't need this here since notificationHelper handles it
 
 // ✅ Create listing with REAL-TIME NOTIFICATIONS
 const createListing = async (req, res) => {
@@ -183,9 +181,6 @@ const getListingById = async (req, res) => {
     });
   }
 };
-
-// backend/controllers/listingController.js
-// REPLACE YOUR DELETE, UPDATE, and ASSIGN FUNCTIONS WITH THESE:
 
 // ✅ Update listing - WITH NOTIFICATIONS
 const updateListing = async (req, res) => {
@@ -607,15 +602,65 @@ const getNearbyListings = async (req, res) => {
 // ✅ Search listings
 const searchListings = async (req, res) => {
   try {
-    const { category, urgency, expiryBefore, sortBy, lat, lng, maxDistance } =
-      req.query;
+    const {
+      search, // ← NEW: Keyword search
+      categories, // ← NEW: Multiple categories
+      category, // Keep for backward compatibility
+      urgency,
+      condition, // ← NEW: Item condition
+      expiryBefore,
+      minQuantity, // ← NEW: Quantity range
+      maxQuantity, // ← NEW: Quantity range
+      sortBy,
+      lat,
+      lng,
+      maxDistance,
+    } = req.query;
 
     const query = { status: "available" };
 
-    if (category) query.category = category;
-    if (urgency) query.urgency = { $gte: parseInt(urgency) };
-    if (expiryBefore) query.expiryDate = { $lte: new Date(expiryBefore) };
+    // ✅ Keyword Search (title, description, location)
+    if (search && search.trim()) {
+      query.$or = [
+        { title: { $regex: search.trim(), $options: "i" } },
+        { description: { $regex: search.trim(), $options: "i" } },
+        { pickupLocation: { $regex: search.trim(), $options: "i" } },
+        { additionalNotes: { $regex: search.trim(), $options: "i" } },
+      ];
+    }
 
+    // ✅ Multiple Categories Support
+    if (categories) {
+      const categoryArray = categories.split(",").map((c) => c.trim());
+      query.category = { $in: categoryArray };
+    } else if (category) {
+      // Backward compatibility
+      query.category = category;
+    }
+
+    // ✅ Condition Filter
+    if (condition) {
+      query.condition = condition;
+    }
+
+    // ✅ Urgency Filter
+    if (urgency) {
+      query.urgency = { $gte: parseInt(urgency) };
+    }
+
+    // ✅ Expiry Date Filter
+    if (expiryBefore) {
+      query.expiryDate = { $lte: new Date(expiryBefore) };
+    }
+
+    // ✅ Quantity Range Filter
+    if (minQuantity || maxQuantity) {
+      query.quantity = {};
+      if (minQuantity) query.quantity.$gte = parseInt(minQuantity);
+      if (maxQuantity) query.quantity.$lte = parseInt(maxQuantity);
+    }
+
+    // ✅ Location-based Filter
     if (lat && lng && maxDistance) {
       query.location = {
         $near: {
@@ -628,25 +673,59 @@ const searchListings = async (req, res) => {
       };
     }
 
+    // ✅ Enhanced Sorting
     let sort = {};
-    if (sortBy === "newest") sort.createdAt = -1;
-    else if (sortBy === "oldest") sort.createdAt = 1;
-    else if (sortBy === "popular") sort.views = -1;
+    switch (sortBy) {
+      case "newest":
+        sort.createdAt = -1;
+        break;
+      case "oldest":
+        sort.createdAt = 1;
+        break;
+      case "popular":
+        sort.views = -1;
+        break;
+      case "expiry":
+        sort.expiryDate = 1; // Soonest expiry first
+        break;
+      case "distance":
+        // Distance sorting is handled by $near
+        break;
+      default:
+        sort.createdAt = -1;
+    }
+
+    console.log("🔍 Search Query:", JSON.stringify(query, null, 2));
+    console.log("📊 Sort:", sort);
 
     const listings = await Listing.find(query)
       .sort(sort)
       .populate("donor", "firstName lastName avatar rating")
       .limit(100);
 
+    console.log(`✅ Found ${listings.length} listings`);
+
     res.status(200).json({
       success: true,
+      count: listings.length,
       listings,
+      filters: {
+        search,
+        categories,
+        condition,
+        urgency,
+        expiryBefore,
+        minQuantity,
+        maxQuantity,
+        sortBy,
+      },
     });
   } catch (error) {
-    console.error("Search error:", error);
+    console.error("❌ Search error:", error);
     res.status(500).json({
       success: false,
       message: "Server error during search",
+      error: error.message,
     });
   }
 };
@@ -659,19 +738,20 @@ const checkIn = async (req, res) => {
     if (!listing) {
       return res.status(404).json({
         success: false,
-        message: 'Listing not found'
+        message: "Listing not found",
       });
     }
 
     // Verify user is assigned or donor
     const isDonor = listing.donor.toString() === req.user._id.toString();
-    const isAssigned = listing.assignedTo && 
+    const isAssigned =
+      listing.assignedTo &&
       listing.assignedTo.toString() === req.user._id.toString();
 
     if (!isDonor && !isAssigned) {
       return res.status(403).json({
         success: false,
-        message: 'Not authorized to check in'
+        message: "Not authorized to check in",
       });
     }
 
@@ -680,7 +760,7 @@ const checkIn = async (req, res) => {
       user: req.user._id,
       timestamp: new Date(),
       location: req.body.location || null,
-      notes: req.body.notes || ''
+      notes: req.body.notes || "",
     };
 
     if (!listing.checkIns) {
@@ -691,29 +771,29 @@ const checkIn = async (req, res) => {
     await listing.save();
 
     // Emit real-time event
-    if (req.app.get('io')) {
-      req.app.get('io').emit('checkInRecorded', {
+    if (req.app.get("io")) {
+      req.app.get("io").emit("checkInRecorded", {
         listing: listing._id,
         user: req.user._id,
-        timestamp: checkIn.timestamp
+        timestamp: checkIn.timestamp,
       });
     }
 
     res.json({
       success: true,
-      message: 'Check-in recorded successfully',
+      message: "Check-in recorded successfully",
       listing: {
         _id: listing._id,
         title: listing.title,
-        status: listing.status
+        status: listing.status,
       },
-      checkIn
+      checkIn,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Check-in failed',
-      error: error.message
+      message: "Check-in failed",
+      error: error.message,
     });
   }
 };

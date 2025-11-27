@@ -116,6 +116,11 @@ const listingSchema = new mongoose.Schema(
       enum: [1, 2, 3],
       default: 1,
     },
+    condition: {
+      type: String,
+      enum: ["new", "like-new", "good", "fair"],
+      default: "good",
+    },
 
     // --------------------------------------------------
     // ✅ Queue System
@@ -149,7 +154,6 @@ const listingSchema = new mongoose.Schema(
       default: 10,
     },
 
-
     checkIns: [
       {
         user: {
@@ -173,7 +177,7 @@ const listingSchema = new mongoose.Schema(
         notes: String,
       },
     ],
-    
+
     qrCode: {
       data: String, // Encrypted QR data
       secret: String, // Secret key for lookup
