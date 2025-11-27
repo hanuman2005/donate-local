@@ -1,4 +1,4 @@
-// src/App.js - UPDATED WITH NEW COMPONENT ROUTES
+// src/App.js - WITH OPTIONAL ENHANCEMENTS
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import { ToastContainer } from "react-toastify";
@@ -27,7 +27,6 @@ import ContactModal from "./components/ContactModal";
 
 // Impact Pages
 import CheckIn from "./components/CheckIn";
-
 import PersonalImpact from "./components/ImpactDashboard/PersonalImpact";
 import CommunityStats from "./components/ImpactDashboard/CommunityStats";
 
@@ -43,16 +42,20 @@ function App() {
       <Header />
       <LiveNotificationBanner />
       <Routes>
-        {/* Public routes */}
+        {/* ========== PUBLIC ROUTES ========== */}
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/contact" element={<ContactModal />} />
+        
+        {/* Listings */}
         <Route path="/listings" element={<Listings />} />
         <Route path="/listings/:id" element={<ListingDetails />} />
+        
+        {/* Public Impact Stats */}
         <Route path="/impact/community" element={<CommunityStats />} />
 
-        {/* Protected routes */}
+        {/* ========== PROTECTED ROUTES ========== */}
         <Route
           path="/dashboard"
           element={
@@ -61,6 +64,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+        
         <Route
           path="/create-listing"
           element={
@@ -69,6 +73,10 @@ function App() {
             </ProtectedRoute>
           }
         />
+        
+        {/* Profile - ✅ Can view any user's profile (public) */}
+        {/* But own profile editing is protected */}
+        <Route path="/profile/:userId" element={<Profile />} />
         <Route
           path="/profile"
           element={
@@ -77,6 +85,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+        
         <Route
           path="/notifications"
           element={
@@ -85,6 +94,8 @@ function App() {
             </ProtectedRoute>
           }
         />
+        
+        {/* Chat Routes */}
         <Route
           path="/chat"
           element={
@@ -101,8 +112,18 @@ function App() {
             </ProtectedRoute>
           }
         />
-        <Route path="/check-in" element={<CheckIn />} />
-
+        
+        {/* Check-in (QR Verification) */}
+        <Route
+          path="/check-in"
+          element={
+            <ProtectedRoute>
+              <CheckIn />
+            </ProtectedRoute>
+          }
+        />
+        
+        {/* Personal Impact */}
         <Route
           path="/impact/personal"
           element={
@@ -112,10 +133,12 @@ function App() {
           }
         />
 
-        {/* Catch-all route */}
+        {/* ========== CATCH-ALL ROUTE ========== */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      
       <FloatingChatbot />
+      
       <ToastContainer
         position="top-right"
         autoClose={5000}

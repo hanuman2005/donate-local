@@ -1,3 +1,4 @@
+// src/components/FiltersPanel/styledComponents.js - ENHANCED
 import styled from "styled-components";
 
 export const FiltersWrapper = styled.div`
@@ -15,13 +16,11 @@ export const FiltersContainer = styled.div`
   border-radius: 24px;
   padding: 2.5rem;
   box-shadow: 0 10px 40px rgba(102, 126, 234, 0.25);
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  display: flex;
+  flex-direction: column;
   gap: 1.5rem;
-  align-items: end;
   position: relative;
   overflow: hidden;
-  animation: slideDown 0.5s ease;
 
   &::before {
     content: '';
@@ -35,26 +34,8 @@ export const FiltersContainer = styled.div`
     transform: translate(30%, -30%);
   }
 
-  @keyframes slideDown {
-    from {
-      opacity: 0;
-      transform: translateY(-20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  @media (max-width: 1024px) {
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    padding: 2rem;
-  }
-
   @media (max-width: 768px) {
-    grid-template-columns: 1fr;
     padding: 1.5rem;
-    gap: 1.25rem;
   }
 `;
 
@@ -94,12 +75,8 @@ export const FilterIcon = styled.span`
   animation: pulse 2s ease-in-out infinite;
 
   @keyframes pulse {
-    0%, 100% {
-      transform: scale(1);
-    }
-    50% {
-      transform: scale(1.1);
-    }
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
   }
 `;
 
@@ -112,6 +89,182 @@ export const ActiveFiltersCount = styled.span`
   font-weight: 600;
   color: white;
   border: 1px solid rgba(255, 255, 255, 0.3);
+`;
+
+// ✅ NEW: Search Bar
+export const SearchBar = styled.div`
+  position: relative;
+  z-index: 10;
+`;
+
+export const SearchInput = styled.input`
+  width: 100%;
+  padding: 1rem 3.5rem 1rem 1.5rem;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 16px;
+  font-size: 1.1rem;
+  font-family: inherit;
+  font-weight: 500;
+  background: white;
+  color: #2d3748;
+  transition: all 0.3s ease;
+
+  &:hover {
+    border-color: rgba(255, 255, 255, 0.5);
+  }
+
+  &:focus {
+    outline: none;
+    border-color: white;
+    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.2);
+  }
+
+  &::placeholder {
+    color: #a0aec0;
+  }
+`;
+
+export const SearchButton = styled.button`
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  border-radius: 12px;
+  width: 50px;
+  height: 50px;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-50%) scale(1.05);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+`;
+
+// ✅ NEW: Search History Dropdown
+export const SearchHistoryDropdown = styled.div`
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  left: 0;
+  right: 0;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 100;
+`;
+
+export const HistoryItem = styled.button`
+  width: 100%;
+  padding: 1rem;
+  border: none;
+  background: white;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background 0.2s;
+  border-bottom: 1px solid #f7fafc;
+
+  &:hover {
+    background: #f7fafc;
+  }
+
+  &:last-child {
+    border-bottom: none;
+  }
+`;
+
+export const ClearHistoryButton = styled.button`
+  background: none;
+  border: none;
+  color: #e53e3e;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  transition: background 0.2s;
+
+  &:hover {
+    background: #fed7d7;
+  }
+`;
+
+// ✅ NEW: Multi-Select Categories
+export const MultiSelectContainer = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  position: relative;
+  z-index: 1;
+`;
+
+export const CategoryTag = styled.button`
+  padding: 0.6rem 1rem;
+  border-radius: 10px;
+  border: 2px solid ${props => props.$selected ? 'white' : 'rgba(255, 255, 255, 0.3)'};
+  background: ${props => props.$selected ? 'white' : 'rgba(255, 255, 255, 0.15)'};
+  color: ${props => props.$selected ? '#667eea' : 'white'};
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+
+  &:hover {
+    background: ${props => props.$selected ? 'white' : 'rgba(255, 255, 255, 0.25)'};
+    border-color: white;
+    transform: translateY(-2px);
+  }
+`;
+
+// ✅ NEW: Advanced Toggle
+export const AdvancedToggle = styled.button`
+  padding: 0.75rem 1.5rem;
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  align-self: flex-start;
+  position: relative;
+  z-index: 1;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: white;
+  }
+`;
+
+export const SaveSearchButton = styled.button`
+  padding: 0.75rem 1.5rem;
+  background: rgba(72, 187, 120, 0.2);
+  border: 2px solid rgba(72, 187, 120, 0.4);
+  border-radius: 12px;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background: rgba(72, 187, 120, 0.3);
+    transform: translateY(-2px);
+  }
 `;
 
 export const FilterGroup = styled.div`
@@ -192,20 +345,18 @@ export const Input = styled.input`
     color: #a0aec0;
   }
 
-  &::-webkit-calendar-picker-indicator {
+  &[type="range"] {
+    padding: 0;
+    height: 8px;
     cursor: pointer;
-    filter: brightness(0) invert(0.5);
   }
 `;
 
 export const ButtonGroup = styled.div`
   display: flex;
   gap: 0.75rem;
-  grid-column: span 2;
-
-  @media (max-width: 1024px) {
-    grid-column: span 1;
-  }
+  position: relative;
+  z-index: 1;
 
   @media (max-width: 768px) {
     flex-direction: column;
@@ -233,10 +384,6 @@ export const Button = styled.button`
       transform: translateY(-2px);
       box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
     }
-
-    &:active:not(:disabled) {
-      transform: translateY(0);
-    }
   `
       : props.$secondary
       ? `
@@ -249,17 +396,12 @@ export const Button = styled.button`
       background: rgba(255, 255, 255, 0.3);
       border-color: white;
     }
-
-    &:active:not(:disabled) {
-      transform: scale(0.98);
-    }
   `
       : ""}
 
   &:disabled {
     opacity: 0.6;
     cursor: not-allowed;
-    transform: none !important;
   }
 
   @media (max-width: 768px) {
@@ -289,11 +431,6 @@ export const LocationInfo = styled.div`
     background: rgba(229, 62, 62, 0.2);
     border: 2px solid rgba(229, 62, 62, 0.4);
     color: white;
-    grid-column: span 2;
-    
-    @media (max-width: 1024px) {
-      grid-column: span 1;
-    }
   `
       : ""}
 `;

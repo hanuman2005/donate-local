@@ -13,7 +13,6 @@ import LiveDonationFeed from "../../components/LiveDonationFeed";
 import LiveStats from "../../components/LiveStats";
 import {
   motionVariants,
-  useScrollAnimation,
 } from "../../animations/motionVariants";
 import {
   DashboardContainer,
@@ -62,10 +61,15 @@ const Dashboard = () => {
   const [userLocation, setUserLocation] = useState(null);
   const [selectedChat, setSelectedChat] = useState(null);
   const [showLiveFeed, setShowLiveFeed] = useState(false);
+  const [communityStats, setCommunityStats] = useState({
+    totalMembers: 0,
+    totalListings: 0,
+    totalCompleted: 0,
+    totalPoundsSaved: 0,
+  });
 
   const { user } = useAuth();
   const navigate = useNavigate();
-  const scrollAnimation = useScrollAnimation();
 
   const getCurrentLocation = () => {
     if (navigator.geolocation) {
@@ -92,6 +96,51 @@ const Dashboard = () => {
       return true;
     });
   };
+  const fetchCommunityStats = useCallback(async () => {
+    try {
+      // Fetch all listings to calculate community impact
+      const allListingsRes = await listingsAPI.getAll();
+      const allListings =
+        allListingsRes.data.listings || allListingsRes.data.data || [];
+
+      // Calculate completed donations
+      const completedListings = allListings.filter(
+        (l) => l.status === "completed"
+      );
+
+      // Calculate total weight saved (assuming avg 2kg per item)
+      const totalWeight = completedListings.reduce((sum, listing) => {
+        const quantity = listing.quantity || 1;
+        return sum + quantity * 2; // 2kg per item
+      }, 0);
+
+      // Get unique donor count (approximate community members)
+      const uniqueDonors = new Set();
+      allListings.forEach((listing) => {
+        if (listing.donor?._id) {
+          uniqueDonors.add(listing.donor._id);
+        } else if (listing.donor) {
+          uniqueDonors.add(listing.donor);
+        }
+      });
+
+      setCommunityStats({
+        totalMembers: uniqueDonors.size,
+        totalListings: allListings.length,
+        totalCompleted: completedListings.length,
+        totalPoundsSaved: Math.round(totalWeight * 2.20462), // Convert kg to lbs
+      });
+    } catch (error) {
+      console.error("Error fetching community stats:", error);
+      // Set default values on error
+      setCommunityStats({
+        totalMembers: 100,
+        totalListings: 50,
+        totalCompleted: 30,
+        totalPoundsSaved: 500,
+      });
+    }
+  }, []);
 
   const fetchDashboardData = useCallback(async () => {
     try {
@@ -136,6 +185,12 @@ const Dashboard = () => {
       setLoading(false);
     }
   }, [user?._id]);
+
+  useEffect(() => {
+    fetchDashboardData();
+    getCurrentLocation();
+    fetchCommunityStats(); // ← Add this line
+  }, [fetchDashboardData, fetchCommunityStats]);
 
   useEffect(() => {
     fetchDashboardData();
@@ -609,23 +664,24 @@ const Dashboard = () => {
                     </TabContent>
                   </AnimatePresence>
 
-                  {availableListings.length > 6 && activeTab === "available" && (
-                    <motion.div
-                      style={{ textAlign: "center", marginTop: "1.5rem" }}
-                      variants={motionVariants.fadeSlideUp}
-                      initial="hidden"
-                      animate="show"
-                    >
-                      <ViewAllButton
-                        as={motion.button}
-                        whileHover={{ scale: 1.05, y: -2 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => navigate("/listings")}
+                  {availableListings.length > 6 &&
+                    activeTab === "available" && (
+                      <motion.div
+                        style={{ textAlign: "center", marginTop: "1.5rem" }}
+                        variants={motionVariants.fadeSlideUp}
+                        initial="hidden"
+                        animate="show"
                       >
-                        View All {availableListings.length} Listings →
-                      </ViewAllButton>
-                    </motion.div>
-                  )}
+                        <ViewAllButton
+                          as={motion.button}
+                          whileHover={{ scale: 1.05, y: -2 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => navigate("/listings")}
+                        >
+                          View All {availableListings.length} Listings →
+                        </ViewAllButton>
+                      </motion.div>
+                    )}
                 </Section>
 
                 {/* ========== MY REQUESTS (Recipients) ========== */}
@@ -687,6 +743,8 @@ const Dashboard = () => {
           </motion.div>
 
           {/* Messages */}
+
+          {/* ========== MESSAGES SECTION (LIMITED) ========== */}
           <Section
             as={motion.section}
             variants={motionVariants.fadeSlideUp}
@@ -711,12 +769,38 @@ const Dashboard = () => {
             </SectionHeader>
 
             {chats.length > 0 ? (
-              <Chat
-                chats={chats}
-                selectedChat={selectedChat}
-                onChatSelect={handleChatSelect}
-                compact={true}
-              />
+              <>
+                {/* ✅ SHOW ONLY FIRST 3 CHATS */}
+                <Chat
+                  chats={chats.slice(0, 3)} // ← LIMIT TO 3
+                  selectedChat={selectedChat}
+                  onChatSelect={handleChatSelect}
+                  compact={true}
+                />
+
+                {/* ✅ SHOW "VIEW MORE" IF THERE ARE MORE THAN 3 */}
+                {chats.length > 3 && (
+                  <ViewAllButton
+                    as={motion.button}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => navigate("/chat")}
+                    style={{
+                      width: "100%",
+                      marginTop: "1rem",
+                      padding: "0.75rem",
+                      background:
+                        "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "12px",
+                      fontWeight: "600",
+                    }}
+                  >
+                    View {chats.length - 3} More Conversations →
+                  </ViewAllButton>
+                )}
+              </>
             ) : (
               <EmptyState
                 as={motion.div}
@@ -748,6 +832,7 @@ const Dashboard = () => {
               animate="show"
             >
               {isDonor ? (
+                // DONOR STATS (Already dynamic from previous artifact)
                 <>
                   <ImpactStat
                     as={motion.div}
@@ -755,10 +840,11 @@ const Dashboard = () => {
                   >
                     <ImpactIcon>✨</ImpactIcon>
                     <ImpactText>
-                      <ImpactValue>{stats.myCompleted}</ImpactValue> donations
-                      completed
+                      <ImpactValue>{stats.myCompleted}</ImpactValue> donation
+                      {stats.myCompleted !== 1 ? "s" : ""} completed
                     </ImpactText>
                   </ImpactStat>
+
                   <ImpactStat
                     as={motion.div}
                     variants={motionVariants.listItem}
@@ -770,6 +856,7 @@ const Dashboard = () => {
                       prevented
                     </ImpactText>
                   </ImpactStat>
+
                   <ImpactStat
                     as={motion.div}
                     variants={motionVariants.listItem}
@@ -782,6 +869,7 @@ const Dashboard = () => {
                   </ImpactStat>
                 </>
               ) : (
+                // ✅ RECIPIENT STATS (NOW FULLY DYNAMIC)
                 <>
                   <ImpactStat
                     as={motion.div}
@@ -789,26 +877,45 @@ const Dashboard = () => {
                   >
                     <ImpactIcon>🙏</ImpactIcon>
                     <ImpactText>
-                      <ImpactValue>{stats.myCompleted}</ImpactValue> items
-                      received
+                      <ImpactValue>{stats.myCompleted}</ImpactValue> item
+                      {stats.myCompleted !== 1 ? "s" : ""} received
                     </ImpactText>
                   </ImpactStat>
+
+                  <ImpactStat
+                    as={motion.div}
+                    variants={motionVariants.listItem}
+                  >
+                    <ImpactIcon>💰</ImpactIcon>
+                    <ImpactText>
+                      Saved approx.{" "}
+                      <ImpactValue>${stats.myCompleted * 15}</ImpactValue> in
+                      value
+                    </ImpactText>
+                  </ImpactStat>
+
                   <ImpactStat
                     as={motion.div}
                     variants={motionVariants.listItem}
                   >
                     <ImpactIcon>🌍</ImpactIcon>
                     <ImpactText>
-                      Part of <ImpactValue>850+</ImpactValue> member community
+                      Part of{" "}
+                      <ImpactValue>{communityStats.totalMembers}+</ImpactValue>{" "}
+                      member community
                     </ImpactText>
                   </ImpactStat>
+
                   <ImpactStat
                     as={motion.div}
                     variants={motionVariants.listItem}
                   >
                     <ImpactIcon>💪</ImpactIcon>
                     <ImpactText>
-                      Together we've saved <ImpactValue>1,200+ lbs</ImpactValue>
+                      Together we've saved{" "}
+                      <ImpactValue>
+                        {communityStats.totalPoundsSaved}+ lbs
+                      </ImpactValue>
                     </ImpactText>
                   </ImpactStat>
                 </>

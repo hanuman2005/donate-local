@@ -173,5 +173,12 @@ export const centersAPI = {
   getAll: () => api.get(`/donation-centers`),
 };
 
+export const ratingsAPI = {
+  rateUser: (userId, data) => api.post(`/ratings/${userId}`, data),
+  getUserReviews: (userId, params) => api.get(`/ratings/${userId}`, { params }),
+  reportReview: (userId, reviewId, reason) => 
+    api.post(`/ratings/${userId}/reviews/${reviewId}/report`, { reason }),
+};
+
 
 export default api;
