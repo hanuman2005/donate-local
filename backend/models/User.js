@@ -1,5 +1,5 @@
 // ============================================
-// 1. models/User.js - FIXED (No Duplicate Indexes)
+// models/User.js - FINAL IMPROVED VERSION
 // ============================================
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
@@ -8,51 +8,49 @@ const userSchema = new mongoose.Schema(
   {
     firstName: {
       type: String,
-      required: [true, "First name is required"],
+      required: true,
       trim: true,
-      maxlength: [50, "First name cannot exceed 50 characters"],
+      maxlength: 50,
     },
     lastName: {
       type: String,
-      required: [true, "Last name is required"],
+      required: true,
       trim: true,
-      maxlength: [50, "Last name cannot exceed 50 characters"],
+      maxlength: 50,
     },
     email: {
       type: String,
-      required: [true, "Email is required"],
-      unique: true, // ✅ This creates the index - DON'T add schema.index() below
+      required: true,
+      unique: true,
       lowercase: true,
       match: [
         /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
-        "Please enter a valid email",
+        "Invalid email",
       ],
     },
     password: {
       type: String,
-      required: [true, "Password is required"],
-      minlength: [6, "Password must be at least 6 characters"],
+      required: true,
+      minlength: 6,
     },
+
     userType: {
       type: String,
       enum: ["donor", "recipient", "both", "admin"],
       default: "both",
     },
-    phone: {
-      type: String,
-      required: false,
-    },
-    phoneNumber: { // ✅ ADDED: Backend expects this
-      type: String,
-      required: false,
-    },
+
+    phone: String,
+    phoneNumber: String, // for backward compatibility
+
     address: {
       street: String,
       city: String,
       state: String,
       zipCode: String,
-      country: { type: String, default: "USA" },
+      country: { type: String, default: "India" },
     },
+
     location: {
       type: {
         type: String,
@@ -62,89 +60,114 @@ const userSchema = new mongoose.Schema(
       coordinates: {
         type: [Number],
         default: [0, 0],
-        validate: {
-          validator: function(v) {
-            return v.length === 2 && 
-                   v[0] >= -180 && v[0] <= 180 &&
-                   v[1] >= -90 && v[1] <= 90;
-          },
-          message: 'Invalid coordinates'
-        }
       },
     },
-    avatar: {
-      type: String,
-      default: "",
-    },
+
+    avatar: String,
     bio: {
       type: String,
-      maxlength: [500, "Bio cannot exceed 500 characters"],
-      default: "",
+      maxlength: 500,
     },
+
+    // ⭐ Clean Rating Object
     rating: {
-      average: { type: Number, default: 0, min: 0, max: 5 },
-      count: { type: Number, default: 0, min: 0 },
+      average: { type: Number, default: 0 },
+      count: { type: Number, default: 0 },
     },
-    listingsCount: {
-      type: Number,
-      default: 0,
-      min: 0,
-    },
-    isVerified: {
-      type: Boolean,
-      default: false,
-    },
-    isActive: {
-      type: Boolean,
-      default: true,
-    },
+
+    reviews: [
+      {
+        reviewer: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+        rating: { type: Number, required: true, min: 1, max: 5 },
+        review: { type: String, maxlength: 500 },
+        listing: { type: mongoose.Schema.Types.ObjectId, ref: "Listing" },
+        createdAt: { type: Date, default: Date.now },
+      },
+    ],
+
+    badges: [String],
+    listingsCount: { type: Number, default: 0 },
+
+    isVerified: { type: Boolean, default: false },
+    isActive: { type: Boolean, default: true },
   },
   {
     timestamps: true,
     toJSON: { virtuals: true },
-    toObject: { virtuals: true }
+    toObject: { virtuals: true },
   }
 );
 
-// ✅ ONLY geospatial index - email already has unique index from schema
+// Indexes
 userSchema.index({ location: "2dsphere" });
+userSchema.index({ "rating.average": -1 });
+userSchema.index({ "rating.count": -1 });
 
-// ✅ Remove this line if it exists - it creates duplicate index
-// userSchema.index({ email: 1 }); // ❌ DELETE THIS
+// Update rating (safe calculation)
+userSchema.methods.updateRating = function () {
+  if (this.rating.count === 0) {
+    this.rating.average = 0;
+  } else {
+    const total = this.reviews.reduce((sum, r) => sum + r.rating, 0);
+    this.rating.average = Math.round((total / this.rating.count) * 10) / 10;
+  }
+};
 
-// Hash password before saving
+// Add review
+userSchema.methods.addReview = async function (
+  reviewerId,
+  rating,
+  reviewText,
+  listingId
+) {
+  if (
+    this.reviews.some((r) => r.reviewer.toString() === reviewerId.toString())
+  ) {
+    throw new Error("You already reviewed this user");
+  }
+
+  this.reviews.unshift({
+    reviewer: reviewerId,
+    rating,
+    review: reviewText,
+    listing: listingId,
+  });
+
+  this.rating.count += 1;
+  this.updateRating();
+
+  if (this.rating.count >= 1 && !this.badges.includes("verified")) {
+    this.badges.push("verified");
+  }
+  if (this.rating.average >= 4.5 && this.rating.count >= 5) {
+    this.badges.push("top-donor");
+  }
+
+  await this.save();
+  return this.reviews[0];
+};
+
+// Password hashing
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
-
-  try {
-    const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
-    next();
-  } catch (error) {
-    next(error);
-  }
+  this.password = await bcrypt.hash(this.password, 10);
+  next();
 });
 
-// Compare password method
-userSchema.methods.comparePassword = async function (candidatePassword) {
-  return await bcrypt.compare(candidatePassword, this.password);
+// Password compare
+userSchema.methods.comparePassword = function (password) {
+  return bcrypt.compare(password, this.password);
 };
 
-// Remove password from JSON output
+// Hide password
 userSchema.methods.toJSON = function () {
-  const user = this.toObject();
-  delete user.password;
-  return user;
+  const obj = this.toObject();
+  delete obj.password;
+  return obj;
 };
 
-// Virtual for full name
-userSchema.virtual('name').get(function() {
+userSchema.virtual("name").get(function () {
   return `${this.firstName} ${this.lastName}`;
 });
-
-userSchema.methods.incrementListingsCount = async function () {
-  this.listingsCount += 1;
-  await this.save();
-};
 
 module.exports = mongoose.model("User", userSchema);

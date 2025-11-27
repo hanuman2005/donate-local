@@ -1,8 +1,9 @@
 // ============================================
-// controllers/chatController.js - FIXED
+// controllers/chatController.js - OPTION 1
+// One chat per user pair (like WhatsApp/Messenger)
 // ============================================
 const Chat = require("../models/Chat");
-const Message = require("../models/Message"); // ✅ Use separate Message model
+const Message = require("../models/Message");
 const Listing = require("../models/Listing");
 const User = require("../models/User");
 
@@ -11,15 +12,6 @@ const createOrGetChat = async (req, res) => {
   try {
     const { listingId, participantId } = req.body;
     const currentUserId = req.user._id;
-
-    // Verify listing exists
-    const listing = await Listing.findById(listingId);
-    if (!listing) {
-      return res.status(404).json({
-        success: false,
-        message: "Listing not found",
-      });
-    }
 
     // Verify participant exists
     const participant = await User.findById(participantId);
@@ -30,25 +22,37 @@ const createOrGetChat = async (req, res) => {
       });
     }
 
-    // Check if chat already exists
+    // Optional: Verify listing exists (for context)
+    if (listingId) {
+      const listing = await Listing.findById(listingId);
+      if (!listing) {
+        return res.status(404).json({
+          success: false,
+          message: "Listing not found",
+        });
+      }
+    }
+
+    // ✅ FIXED: Find chat between these two users ONLY (ignore listing)
     let chat = await Chat.findOne({
-      listing: listingId,
       participants: { $all: [currentUserId, participantId] },
     })
       .populate("participants", "firstName lastName avatar")
       .populate("listing", "title images status");
 
     if (!chat) {
-      // Create new chat
+      // Create new chat (store initial listing for reference)
       chat = new Chat({
         participants: [currentUserId, participantId],
-        listing: listingId,
+        listing: listingId, // Just for reference/context
         isActive: true,
       });
 
       await chat.save();
       await chat.populate("participants", "firstName lastName avatar");
-      await chat.populate("listing", "title images status");
+      if (listingId) {
+        await chat.populate("listing", "title images status");
+      }
     }
 
     res.json({
@@ -91,7 +95,6 @@ const getUserChats = async (req, res) => {
   }
 };
 
-// ✅ FIXED: Get chat messages from separate Message collection
 const getChatMessages = async (req, res) => {
   try {
     const { chatId } = req.params;
@@ -139,7 +142,7 @@ const getChatMessages = async (req, res) => {
         listing: chat.listing,
         lastMessage: chat.lastMessage,
       },
-      messages: messages.reverse(), // Oldest first
+      messages: messages.reverse(),
       pagination: {
         page: parseInt(page),
         limit: parseInt(limit),
@@ -156,7 +159,6 @@ const getChatMessages = async (req, res) => {
   }
 };
 
-// ✅ FIXED: Send message to separate Message collection
 const sendMessage = async (req, res) => {
   try {
     const { chatId } = req.params;
@@ -219,7 +221,6 @@ const sendMessage = async (req, res) => {
   }
 };
 
-// ✅ FIXED: Mark messages as read in separate collection
 const markMessagesAsRead = async (req, res) => {
   try {
     const { chatId } = req.params;
