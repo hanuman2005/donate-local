@@ -1,17 +1,15 @@
-// src/pages/Home/index.jsx - POLISHED WITH FRAMER MOTION
+// src/pages/Home/index.jsx - SIMPLIFIED LANDING PAGE
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { useAuth } from "../../context/AuthContext";
-import Map from "../../components/Map";
+import { listingsAPI } from "../../services/api";
 import ListingCard from "../../components/ListingCard";
-import FiltersPanel from "../../components/FilterPanel";
 import Footer from "../../components/Footer";
 import LoadingSpinner from "../../components/Common/LoadingSpinner";
 import LiveStats from "../../components/LiveStats";
 import DonationCenterInfo from "../../components/DonationCenterInfo";
-import LiveDonationFeed from "../../components/LiveDonationFeed";
-import { motionVariants, useScrollAnimation } from "../../animations/motionVariants";
+import { motionVariants } from "../../animations/motionVariants";
 import {
   HomeContainer,
   HeroSection,
@@ -19,11 +17,6 @@ import {
   HeroTitle,
   HeroSubtitle,
   CTAButton,
-  ContentSection,
-  MapSection,
-  ListingsSection,
-  SectionTitle,
-  ListingsGrid,
   StatsSection,
   StatCard,
   StatNumber,
@@ -36,100 +29,58 @@ import {
   FeatureIcon,
   FeatureTitle,
   FeatureDescription,
+  PreviewSection,
+  SectionTitle,
+  ListingsGrid,
 } from "./styledComponents";
 
 const Home = () => {
-  const [filteredListings, setFilteredListings] = useState([]);
+  const [recentListings, setRecentListings] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [userLocation, setUserLocation] = useState(null);
-  const [showLiveFeed, setShowLiveFeed] = useState(false);
+  const [stats, setStats] = useState({
+    activeListings: 0,
+    totalShared: 2500,
+    members: 850,
+    poundsSaved: 1200,
+  });
+
   const { user } = useAuth();
   const navigate = useNavigate();
-  const scrollAnimation = useScrollAnimation();
 
   useEffect(() => {
-    getCurrentLocation();
+    fetchRecentListings();
   }, []);
 
-  const getCurrentLocation = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const location = {
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
-          };
-          console.log("📍 User location acquired:", location);
-          setUserLocation(location);
-        },
-        (error) => {
-          console.warn("⚠️ Location error:", error.message);
-          setUserLocation({
-            lat: 16.541936584240865,
-            lng: 81.49773371296007,
-          });
-        }
-      );
-    } else {
-      setUserLocation({
-        lat: 16.541936584240865,
-        lng: 81.49773371296007,
+  const fetchRecentListings = async () => {
+    try {
+      setLoading(false); // Start showing content immediately
+
+      const response = await listingsAPI.getAll({
+        limit: 6,
+        status: "available",
+        sort: "-createdAt",
       });
+
+      const listings = response.data.listings || response.data.data || [];
+      setRecentListings(listings);
+
+      // Update stats with real data
+      setStats((prev) => ({
+        ...prev,
+        activeListings: listings.length,
+      }));
+    } catch (error) {
+      console.error("Error fetching recent listings:", error);
     }
   };
 
   const handleGetStarted = () => {
-    navigate(user ? "/dashboard" : "/register");
+    if (user) {
+      navigate("/dashboard");
+    } else {
+      navigate("/register");
+    }
   };
-
-  const handleFilterResults = (results, isError = false) => {
-    console.log("📥 Received listings:", results?.length || 0);
-    setFilteredListings(results || []);
-    setLoading(false);
-    setError(isError ? "Failed to load listings. Please try again." : null);
-  };
-
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      if (loading) {
-        console.warn("⚠️ Loading timeout - forcing display");
-        setLoading(false);
-      }
-    }, 5000);
-
-    return () => clearTimeout(timeout);
-  }, [loading]);
-
-  if (loading) {
-    return (
-      <HomeContainer
-        as={motion.div}
-        variants={motionVariants.fadeSlide}
-        initial="hidden"
-        animate="show"
-      >
-        <div
-          style={{
-            minHeight: "60vh",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            flexDirection: "column",
-            gap: "1rem",
-          }}
-        >
-          <LoadingSpinner />
-          <motion.p
-            variants={motionVariants.fadeSlideUp}
-            style={{ color: "#718096", fontSize: "1.1rem" }}
-          >
-            Loading listings...
-          </motion.p>
-        </div>
-      </HomeContainer>
-    );
-  }
 
   return (
     <HomeContainer
@@ -139,7 +90,7 @@ const Home = () => {
       animate="show"
       exit="exit"
     >
-      {/* Hero Section */}
+      {/* ========== HERO SECTION ========== */}
       <HeroSection
         as={motion.section}
         variants={motionVariants.fadeSlideDown}
@@ -154,8 +105,9 @@ const Home = () => {
             animate="show"
             transition={{ delay: 0.2 }}
           >
-            Give what you don't want and take what you want
+            Give what you can. Take what you need.
           </HeroTitle>
+
           <HeroSubtitle
             as={motion.p}
             variants={motionVariants.fadeSlideUp}
@@ -163,9 +115,11 @@ const Home = () => {
             animate="show"
             transition={{ delay: 0.3 }}
           >
-            A real-time platform connecting local communities to share items —
-            reducing waste and helping those in need through technology.
+            Join ShareTogether - A real-time platform connecting local
+            communities to share items, reduce waste, and help those in need
+            through technology.
           </HeroSubtitle>
+
           <motion.div
             style={{
               display: "flex",
@@ -183,33 +137,36 @@ const Home = () => {
               whileHover={{ scale: 1.05, y: -3 }}
               whileTap={{ scale: 0.98 }}
               onClick={handleGetStarted}
+              $primary
             >
-              {user ? "📊 Go to Dashboard" : "🚀 Get Started"}
+              {user ? "📊 Go to Dashboard" : "🚀 Get Started Free"}
             </CTAButton>
+
             <CTAButton
               as={motion.button}
               variants={motionVariants.scaleIn}
               whileHover={{ scale: 1.05, y: -3 }}
               whileTap={{ scale: 0.98 }}
-              onClick={() => setShowLiveFeed(!showLiveFeed)}
-              style={{
-                background: showLiveFeed ? "#48bb78" : "transparent",
-                border: "2px solid #48bb78",
-                color: showLiveFeed ? "white" : "#48bb78",
-              }}
+              onClick={() => navigate("/listings")}
+              $secondary
             >
-              {showLiveFeed ? "📋 List View" : "⚡ Live Feed"}
+              🔍 Browse All Items
             </CTAButton>
           </motion.div>
         </HeroContent>
       </HeroSection>
 
-      {/* Live Stats Component */}
-      <motion.div variants={motionVariants.fadeSlideUp} {...scrollAnimation}>
+      {/* ========== LIVE STATS COMPONENT ========== */}
+      <motion.div
+        variants={motionVariants.fadeSlideUp}
+        initial="hidden"
+        whileInView="show"
+        viewport={{ once: true }}
+      >
         <LiveStats />
       </motion.div>
 
-      {/* Stats Section */}
+      {/* ========== STATS SECTION ========== */}
       <StatsSection
         as={motion.section}
         variants={motionVariants.staggerContainer}
@@ -223,80 +180,149 @@ const Home = () => {
           whileHover={{ y: -8, scale: 1.05 }}
           whileTap={{ scale: 0.98 }}
         >
-          <StatNumber>{filteredListings.length}</StatNumber>
+          <StatNumber>{stats.activeListings}+</StatNumber>
           <StatLabel>Active Listings</StatLabel>
         </StatCard>
+
         <StatCard
           as={motion.div}
           variants={motionVariants.scaleIn}
           whileHover={{ y: -8, scale: 1.05 }}
           whileTap={{ scale: 0.98 }}
         >
-          <StatNumber>2,500+</StatNumber>
+          <StatNumber>{stats.totalShared}+</StatNumber>
           <StatLabel>Items Shared</StatLabel>
         </StatCard>
+
         <StatCard
           as={motion.div}
           variants={motionVariants.scaleIn}
           whileHover={{ y: -8, scale: 1.05 }}
           whileTap={{ scale: 0.98 }}
         >
-          <StatNumber>850+</StatNumber>
+          <StatNumber>{stats.members}+</StatNumber>
           <StatLabel>Community Members</StatLabel>
         </StatCard>
+
         <StatCard
           as={motion.div}
           variants={motionVariants.scaleIn}
           whileHover={{ y: -8, scale: 1.05 }}
           whileTap={{ scale: 0.98 }}
         >
-          <StatNumber>1,200+</StatNumber>
+          <StatNumber>{stats.poundsSaved}+</StatNumber>
           <StatLabel>Pounds Saved</StatLabel>
         </StatCard>
       </StatsSection>
 
-      {/* Donation Center Info */}
-      <motion.div
-        style={{ maxWidth: "1200px", margin: "2rem auto", padding: "0 2rem" }}
+      {/* ========== RECENT LISTINGS PREVIEW ========== */}
+      <PreviewSection
+        as={motion.section}
         variants={motionVariants.fadeSlideUp}
-        {...scrollAnimation}
+        initial="hidden"
+        whileInView="show"
+        viewport={{ once: true }}
+      >
+        <SectionTitle as={motion.h2} variants={motionVariants.fadeSlideUp}>
+          📦 Recently Shared Items
+        </SectionTitle>
+
+        {loading ? (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              padding: "3rem",
+            }}
+          >
+            <LoadingSpinner />
+          </div>
+        ) : recentListings.length > 0 ? (
+          <>
+            <ListingsGrid
+              as={motion.div}
+              variants={motionVariants.staggerContainer}
+              initial="hidden"
+              animate="show"
+            >
+              {recentListings.map((listing, index) => (
+                <motion.div
+                  key={listing._id}
+                  variants={motionVariants.listItemSlideUp}
+                  custom={index}
+                >
+                  <ListingCard listing={listing} showQuickClaim={!user} />
+                </motion.div>
+              ))}
+            </ListingsGrid>
+
+            <motion.div
+              style={{ textAlign: "center", marginTop: "2rem" }}
+              variants={motionVariants.fadeSlideUp}
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true }}
+            >
+              <CTAButton
+                as={motion.button}
+                whileHover={{ scale: 1.05, y: -2 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => navigate("/listings")}
+                $secondary
+              >
+                View All Listings →
+              </CTAButton>
+            </motion.div>
+          </>
+        ) : (
+          <motion.div
+            variants={motionVariants.scalePop}
+            style={{
+              textAlign: "center",
+              padding: "3rem",
+              background: "#f7fafc",
+              borderRadius: "15px",
+            }}
+          >
+            <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>📭</div>
+            <p style={{ color: "#718096" }}>No items available right now</p>
+          </motion.div>
+        )}
+      </PreviewSection>
+
+      {/* ========== DONATION CENTER INFO ========== */}
+      <motion.div
+        style={{ maxWidth: "1200px", margin: "3rem auto", padding: "0 2rem" }}
+        variants={motionVariants.fadeSlideUp}
+        initial="hidden"
+        whileInView="show"
+        viewport={{ once: true }}
       >
         <DonationCenterInfo />
       </motion.div>
 
-      {/* About/How It Works Section */}
+      {/* ========== HOW IT WORKS SECTION ========== */}
       <AboutSection
         as={motion.section}
         variants={motionVariants.fadeSlideUp}
-        {...scrollAnimation}
+        initial="hidden"
+        whileInView="show"
+        viewport={{ once: true }}
       >
-        <AboutTitle
-          as={motion.h2}
-          variants={motionVariants.fadeSlideUp}
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true }}
-        >
+        <AboutTitle as={motion.h2} variants={motionVariants.fadeSlideUp}>
           How ShareTogether Works
         </AboutTitle>
+
         <AboutSubtitle
           as={motion.p}
           variants={motionVariants.fadeSlideUp}
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true }}
           transition={{ delay: 0.1 }}
         >
           Join our mission to reduce waste and help those in need. It's simple,
           secure, and makes a real difference in your community.
         </AboutSubtitle>
-        <AboutGrid
-          as={motion.div}
-          variants={motionVariants.staggerContainer}
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true }}
-        >
+
+        <AboutGrid as={motion.div} variants={motionVariants.staggerContainer}>
           <FeatureCard
             as={motion.div}
             variants={motionVariants.scaleIn}
@@ -316,11 +342,10 @@ const Home = () => {
             >
               📱
             </FeatureIcon>
-            <FeatureTitle>Create Listing</FeatureTitle>
+            <FeatureTitle>1. Create Listing</FeatureTitle>
             <FeatureDescription>
               Have items you don't need? Create a free listing in seconds with
-              photos, description, and pickup details. Help reduce waste and
-              help your community today!
+              photos, description, and pickup details. Help reduce waste today!
             </FeatureDescription>
           </FeatureCard>
 
@@ -343,11 +368,10 @@ const Home = () => {
             >
               🔍
             </FeatureIcon>
-            <FeatureTitle>Browse & Connect</FeatureTitle>
+            <FeatureTitle>2. Browse & Connect</FeatureTitle>
             <FeatureDescription>
-              Search for available items near you, filter by category and
-              urgency, and connect directly with donors through our secure
-              messaging system.
+              Search for available items near you, filter by category, and
+              connect directly with donors through our secure messaging system.
             </FeatureDescription>
           </FeatureCard>
 
@@ -370,7 +394,7 @@ const Home = () => {
             >
               🤝
             </FeatureIcon>
-            <FeatureTitle>Pickup with QR</FeatureTitle>
+            <FeatureTitle>3. Pickup with QR</FeatureTitle>
             <FeatureDescription>
               Use our secure QR code system for contactless pickup verification.
               Safe, simple, and efficient - ensuring smooth transfers every
@@ -380,244 +404,12 @@ const Home = () => {
         </AboutGrid>
       </AboutSection>
 
-      {/* Error Display */}
-      <AnimatePresence>
-        {error && (
-          <motion.div
-            variants={motionVariants.dropDownSpring}
-            initial="hidden"
-            animate="show"
-            exit="exit"
-            style={{
-              background: "#fed7d7",
-              color: "#c53030",
-              padding: "1rem",
-              borderRadius: "10px",
-              margin: "2rem auto",
-              maxWidth: "600px",
-              textAlign: "center",
-            }}
-          >
-            ⚠️ {error}
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Live Feed or Regular View */}
-      <AnimatePresence mode="wait">
-        {showLiveFeed ? (
-          <motion.div
-            key="live-feed"
-            variants={motionVariants.fadeSlide}
-            initial="hidden"
-            animate="show"
-            exit="exit"
-            style={{ maxWidth: "1400px", margin: "2rem auto", padding: "0 2rem" }}
-          >
-            <LiveDonationFeed />
-          </motion.div>
-        ) : (
-          <motion.div
-            key="regular-view"
-            variants={motionVariants.fadeSlide}
-            initial="hidden"
-            animate="show"
-            exit="exit"
-          >
-            {/* Filters Panel */}
-            <motion.div
-              variants={motionVariants.fadeSlideUp}
-              {...scrollAnimation}
-            >
-              <FiltersPanel
-                autoSearch={true}
-                onResults={(results) => handleFilterResults(results, false)}
-                userLocation={userLocation}
-              />
-            </motion.div>
-
-            {/* Content Section */}
-            <ContentSection>
-              {/* Map Section */}
-              <MapSection
-                as={motion.div}
-                variants={motionVariants.fadeSlideUp}
-                {...scrollAnimation}
-              >
-                <SectionTitle>Find Resources Near You 📍</SectionTitle>
-                {filteredListings.length > 0 ? (
-                  <motion.div
-                    variants={motionVariants.scaleIn}
-                    initial="hidden"
-                    animate="show"
-                  >
-                    <Map
-                      listings={filteredListings}
-                      userLocation={userLocation}
-                      height="400px"
-                    />
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    variants={motionVariants.scalePop}
-                    initial="hidden"
-                    animate="show"
-                    style={{
-                      height: "400px",
-                      background: "#f7fafc",
-                      borderRadius: "15px",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      color: "#718096",
-                    }}
-                  >
-                    <div style={{ textAlign: "center" }}>
-                      <motion.div
-                        style={{ fontSize: "3rem", marginBottom: "1rem" }}
-                        animate={{
-                          rotate: [0, 10, -10, 0],
-                          transition: {
-                            duration: 2,
-                            repeat: Infinity,
-                            ease: "easeInOut",
-                          },
-                        }}
-                      >
-                        🗺️
-                      </motion.div>
-                      <p>No listings to display on map</p>
-                    </div>
-                  </motion.div>
-                )}
-              </MapSection>
-
-              {/* Listings Section */}
-              <ListingsSection
-                as={motion.section}
-                variants={motionVariants.fadeSlideUp}
-                {...scrollAnimation}
-              >
-                <SectionTitle>
-                  Recent Listings ({filteredListings.length})
-                </SectionTitle>
-
-                {filteredListings.length === 0 ? (
-                  <motion.div
-                    variants={motionVariants.scalePop}
-                    initial="hidden"
-                    animate="show"
-                    style={{
-                      textAlign: "center",
-                      padding: "4rem 2rem",
-                      background: "#f7fafc",
-                      borderRadius: "15px",
-                      margin: "2rem 0",
-                    }}
-                  >
-                    <motion.div
-                      style={{ fontSize: "4rem", marginBottom: "1rem" }}
-                      animate={{
-                        scale: [1, 1.1, 1],
-                        transition: {
-                          duration: 2,
-                          repeat: Infinity,
-                          ease: "easeInOut",
-                        },
-                      }}
-                    >
-                      📭
-                    </motion.div>
-                    <h3
-                      style={{
-                        fontSize: "1.5rem",
-                        color: "#2d3748",
-                        marginBottom: "0.5rem",
-                      }}
-                    >
-                      No listings found
-                    </h3>
-                    <p
-                      style={{
-                        fontSize: "1.1rem",
-                        color: "#718096",
-                        marginBottom: "1.5rem",
-                      }}
-                    >
-                      Try adjusting your filters or be the first to share!
-                    </p>
-                    {user?.userType === "donor" && (
-                      <CTAButton
-                        as={motion.button}
-                        whileHover={{ scale: 1.05, y: -2 }}
-                        whileTap={{ scale: 0.98 }}
-                        onClick={() => navigate("/create-listing")}
-                        style={{ margin: "0 auto" }}
-                      >
-                        ➕ Create First Listing
-                      </CTAButton>
-                    )}
-                  </motion.div>
-                ) : (
-                  <ListingsGrid
-                    as={motion.div}
-                    variants={motionVariants.staggerContainer}
-                    initial="hidden"
-                    animate="show"
-                  >
-                    {filteredListings.slice(0, 6).map((listing, index) => (
-                      <motion.div
-                        key={listing._id}
-                        variants={motionVariants.listItemSlideUp}
-                        custom={index}
-                      >
-                        <ListingCard
-                          listing={listing}
-                          showQuickClaim={true}
-                          showDistance={!!userLocation}
-                          userLocation={userLocation}
-                        />
-                      </motion.div>
-                    ))}
-                  </ListingsGrid>
-                )}
-
-                {filteredListings.length > 6 && (
-                  <motion.div
-                    style={{
-                      textAlign: "center",
-                      marginTop: "2rem",
-                    }}
-                    variants={motionVariants.fadeSlideUp}
-                    initial="hidden"
-                    whileInView="show"
-                    viewport={{ once: true }}
-                  >
-                    <CTAButton
-                      as={motion.button}
-                      whileHover={{ scale: 1.05, y: -2 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => navigate("/listings")}
-                      style={{
-                        background: "transparent",
-                        color: "#667eea",
-                        border: "2px solid #667eea",
-                        margin: "0 auto",
-                      }}
-                    >
-                      View All {filteredListings.length} Listings →
-                    </CTAButton>
-                  </motion.div>
-                )}
-              </ListingsSection>
-            </ContentSection>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
+      {/* ========== FOOTER ========== */}
       <motion.div
         variants={motionVariants.fadeSlideUp}
-        {...scrollAnimation}
+        initial="hidden"
+        whileInView="show"
+        viewport={{ once: true }}
       >
         <Footer />
       </motion.div>
