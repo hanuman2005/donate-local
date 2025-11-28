@@ -1,4 +1,4 @@
-// src/components/QRScanner/index.js
+// src/components/QRScanner/index.js - FIXED
 import React, { useEffect, useRef, useState } from "react";
 import { readBarcodes, prepareZXingModule, barcodeFormats } from "zxing-wasm";
 import { qrAPI } from "../../services/api";
@@ -38,13 +38,11 @@ const QRScanner = ({ onScanComplete }) => {
       setMessage({ text: "Initializing camera...", type: "info" });
       setScanning(true);
 
-      // Ask for camera access
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "environment" },
       });
       videoRef.current.srcObject = stream;
 
-      // Wait for the video feed to be ready
       await new Promise((resolve) => {
         videoRef.current.onloadedmetadata = () => {
           videoRef.current.play();
@@ -52,10 +50,10 @@ const QRScanner = ({ onScanComplete }) => {
         };
       });
 
-      // Load ZXing WASM module
       const zxing = await prepareZXingModule();
       setMessage({ text: "Point your camera at a QR code...", type: "info" });
 
+      // ✅ FIX: Assign interval to ref
       const intervalId = setInterval(async () => {
         if (!videoRef.current) return;
 
@@ -63,7 +61,6 @@ const QRScanner = ({ onScanComplete }) => {
         const width = videoRef.current.videoWidth;
         const height = videoRef.current.videoHeight;
 
-        // Skip until camera frame dimensions exist
         if (!width || !height) return;
 
         canvas.width = width;
@@ -71,31 +68,33 @@ const QRScanner = ({ onScanComplete }) => {
         const ctx = canvas.getContext("2d");
         ctx.drawImage(videoRef.current, 0, 0, width, height);
 
-       let imageData;
-      try {
-        imageData = ctx.getImageData(0, 0, width, height);
-      } catch {
-        return; // skip frame if not ready
-      }
+        let imageData;
+        try {
+          imageData = ctx.getImageData(0, 0, width, height);
+        } catch {
+          return;
+        }
 
-      if (!imageData || !imageData.data) return;
+        if (!imageData || !imageData.data) return;
 
-      const results = await readBarcodes(imageData, {
-        tryHarder: true,
-        formats: [barcodeFormats.QR_CODE],
-      });
+        const results = await readBarcodes(imageData, {
+          tryHarder: true,
+          formats: [barcodeFormats.QR_CODE],
+        });
 
-      if (results.length > 0) {
-        clearInterval(intervalId);
-        handleScan(results[0].text);
-      }
+        if (results.length > 0) {
+          clearInterval(intervalId);
+          handleScan(results[0].text);
+        }
+      }, 600);
 
-      }, 600); // scan roughly twice a second
+      // ✅ FIX: Store interval reference
+      scanIntervalRef.current = intervalId;
+
     } catch (error) {
       console.error("Camera error:", error);
       setMessage({
-        text:
-          error.message || "Camera access denied. Please allow camera access.",
+        text: error.message || "Camera access denied. Please allow camera access.",
         type: "error",
       });
       setScanning(false);
@@ -105,6 +104,7 @@ const QRScanner = ({ onScanComplete }) => {
   const stopScanning = () => {
     if (scanIntervalRef.current) {
       clearInterval(scanIntervalRef.current);
+      scanIntervalRef.current = null;
     }
     if (videoRef.current?.srcObject) {
       const tracks = videoRef.current.srcObject.getTracks();
@@ -125,7 +125,6 @@ const QRScanner = ({ onScanComplete }) => {
         type: "info",
       });
 
-      // Send to backend for verification
       const response = await qrAPI.verifyQR(rawData);
 
       if (response.data.success) {
@@ -239,21 +238,13 @@ const QRScanner = ({ onScanComplete }) => {
 
           {scannedData.impact && (
             <>
-              <h4
-                style={{
-                  marginTop: "1.5rem",
-                  marginBottom: "0.75rem",
-                  color: "#2d3748",
-                }}
-              >
+              <h4 style={{ marginTop: "1.5rem", marginBottom: "0.75rem", color: "#2d3748" }}>
                 🌱 Environmental Impact
               </h4>
 
               <DetailRow>
                 <Label>♻️ Waste Prevented:</Label>
-                <Value>
-                  {scannedData.impact.wastePreventedKg.toFixed(2)} kg
-                </Value>
+                <Value>{scannedData.impact.wastePreventedKg.toFixed(2)} kg</Value>
               </DetailRow>
 
               <DetailRow>
@@ -268,11 +259,7 @@ const QRScanner = ({ onScanComplete }) => {
             </>
           )}
 
-          <Button
-            onClick={resetScanner}
-            $primary
-            style={{ marginTop: "1.5rem" }}
-          >
+          <Button onClick={resetScanner} $primary style={{ marginTop: "1.5rem" }}>
             ✨ Scan Another
           </Button>
         </VerificationCard>

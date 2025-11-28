@@ -1,35 +1,88 @@
+// src/components/Map/styledComponents.js - UPDATED FOR LEAFLET
 import styled from 'styled-components';
 
-export const MapContainer = styled.div`
+export const MapWrapper = styled.div`
   width: 100%;
-  height: ${props => props.height || '400px'};
+  height: ${props => props.height || '500px'};
   border-radius: 12px;
   overflow: hidden;
   position: relative;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-`;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 
-export const MapPlaceholder = styled.div`
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  /* Leaflet popup custom styling */
+  .leaflet-popup-content-wrapper {
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  }
 
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-image: 
-      radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.1) 0%, transparent 50%),
-      radial-gradient(circle at 80% 20%, rgba(120, 119, 198, 0.1) 0%, transparent 50%),
-      radial-gradient(circle at 40% 80%, rgba(120, 119, 198, 0.1) 0%, transparent 50%);
-    pointer-events: none;
+  .leaflet-popup-content {
+    margin: 12px;
+    font-family: inherit;
+  }
+
+  /* Custom marker animation */
+  .custom-marker {
+    animation: markerPop 0.3s ease-out;
+  }
+
+  @keyframes markerPop {
+    0% {
+      transform: scale(0);
+      opacity: 0;
+    }
+    50% {
+      transform: scale(1.2);
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  /* User marker pulse animation */
+  .user-marker {
+    animation: userPulse 2s infinite;
+  }
+
+  @keyframes userPulse {
+    0%, 100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+    50% {
+      transform: scale(1.3);
+      opacity: 0.6;
+    }
+  }
+
+  /* Zoom controls styling */
+  .leaflet-control-zoom {
+    border: none !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15) !important;
+    border-radius: 8px !important;
+    overflow: hidden;
+  }
+
+  .leaflet-control-zoom a {
+    border: none !important;
+    background: white !important;
+    color: #4a5568 !important;
+    font-size: 18px !important;
+    width: 36px !important;
+    height: 36px !important;
+    line-height: 36px !important;
+    
+    &:hover {
+      background: #f7fafc !important;
+    }
+  }
+
+  /* Attribution styling */
+  .leaflet-control-attribution {
+    background: rgba(255, 255, 255, 0.8) !important;
+    backdrop-filter: blur(10px);
+    border-radius: 8px 0 0 0 !important;
+    font-size: 10px !important;
   }
 `;
 
@@ -40,7 +93,8 @@ export const LoadingMessage = styled.div`
   justify-content: center;
   height: 100%;
   color: #64748b;
-  background: #f8fafc;
+  background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+  border-radius: 12px;
 
   div {
     font-size: 3rem;
@@ -49,13 +103,14 @@ export const LoadingMessage = styled.div`
   }
 
   @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.1); }
   }
 
   p {
     font-size: 1.1rem;
     font-weight: 500;
+    color: #475569;
   }
 `;
 
@@ -67,6 +122,7 @@ export const ErrorMessage = styled.div`
   height: 100%;
   color: #e53e3e;
   background: #fed7d7;
+  border-radius: 12px;
 
   div {
     font-size: 3rem;
@@ -88,7 +144,12 @@ export const MapControls = styled.div`
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  z-index: 100;
+  z-index: 1000;
+
+  @media (max-width: 768px) {
+    top: 10px;
+    right: 10px;
+  }
 `;
 
 export const ControlButton = styled.button`
@@ -107,11 +168,18 @@ export const ControlButton = styled.button`
 
   &:hover {
     background: #f7fafc;
-    transform: scale(1.05);
+    transform: scale(1.1);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
   }
 
   &:active {
     transform: scale(0.95);
+  }
+
+  @media (max-width: 768px) {
+    width: 36px;
+    height: 36px;
+    font-size: 1rem;
   }
 `;
 
@@ -126,12 +194,38 @@ export const Legend = styled.div`
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   font-size: 0.85rem;
   max-width: 200px;
-  z-index: 100;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-out;
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  h4 {
+    color: #2d3748;
+    font-weight: 600;
+    margin: 0 0 8px 0;
+    font-size: 14px;
+  }
 
   @media (max-width: 768px) {
-    position: static;
-    margin-top: 1rem;
-    max-width: none;
+    bottom: 60px;
+    right: 10px;
+    max-width: 150px;
+    padding: 0.75rem;
+    font-size: 0.75rem;
+
+    h4 {
+      font-size: 12px;
+      margin-bottom: 6px;
+    }
   }
 `;
 
@@ -139,26 +233,42 @@ export const LegendItem = styled.div`
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.5rem;
   color: #4a5568;
+  transition: all 0.2s ease;
 
   &:last-child {
     margin-bottom: 0;
   }
 
+  &:hover {
+    transform: translateX(3px);
+    color: #2d3748;
+  }
+
   span {
     font-size: 0.8rem;
     font-weight: 500;
+    line-height: 1.2;
+  }
+
+  @media (max-width: 768px) {
+    gap: 0.4rem;
+    margin-bottom: 0.4rem;
+
+    span {
+      font-size: 0.7rem;
+    }
   }
 `;
 
 export const MarkerInfo = styled.div`
   background: white;
   border-radius: 12px;
-  padding: 1rem;
+  padding: 1.25rem;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
-  max-width: 300px;
-  z-index: 200;
+  max-width: 320px;
+  z-index: 1000;
   animation: slideUp 0.3s ease-out;
 
   @keyframes slideUp {
@@ -171,6 +281,11 @@ export const MarkerInfo = styled.div`
       transform: translateY(0);
     }
   }
+
+  @media (max-width: 768px) {
+    max-width: calc(100% - 40px);
+    padding: 1rem;
+  }
 `;
 
 export const InfoTitle = styled.h3`
@@ -178,17 +293,66 @@ export const InfoTitle = styled.h3`
   font-weight: 600;
   margin-bottom: 0.5rem;
   color: #2d3748;
+  line-height: 1.3;
+
+  @media (max-width: 768px) {
+    font-size: 1rem;
+  }
 `;
 
 export const InfoCategory = styled.div`
   font-size: 0.9rem;
   color: #64748b;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.5rem;
   text-transform: capitalize;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+
+  @media (max-width: 768px) {
+    font-size: 0.85rem;
+  }
 `;
 
 export const InfoDistance = styled.div`
   font-size: 0.85rem;
   color: #4299e1;
+  font-weight: 600;
+  margin-top: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+
+  @media (max-width: 768px) {
+    font-size: 0.8rem;
+  }
+`;
+
+export const InfoButton = styled.button`
+  width: 100%;
+  margin-top: 12px;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
   font-weight: 500;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(66, 153, 225, 0.3);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(66, 153, 225, 0.4);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  @media (max-width: 768px) {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
 `;
