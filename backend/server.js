@@ -19,7 +19,9 @@ const notificationRoutes = require("./routes/notifications");
 const analyticsRoutes = require("./routes/analytics");
 const qrRoutes = require("./routes/qr");
 const impactRoutes = require("./routes/impact");
-const ratingRoutes = require('./routes/ratings');
+const ratingRoutes = require("./routes/ratings");
+const aiMatchingRoutes = require('./routes/aiMatching');
+const scheduleRoutes = require('./routes/schedules');
 
 
 // Import socket handler
@@ -27,6 +29,8 @@ const socketHandler = require("./socket/socketHandler");
 
 // Import error handler
 const errorHandler = require("./middleware/errorHandler");
+
+const { initScheduleCronJobs } = require('./utils/scheduleCron');
 
 const app = express();
 const server = http.createServer(app);
@@ -62,6 +66,8 @@ const io = socketIO(server, {
 
 // Initialize socket handlers
 socketHandler(io);
+// After io is initialized
+initScheduleCronJobs(io);
 
 // Make io accessible to routes
 app.use((req, res, next) => {
@@ -115,7 +121,9 @@ app.use("/api/notifications", notificationRoutes);
 app.use("/api/analytics", analyticsRoutes);
 app.use("/api/qr", qrRoutes);
 app.use("/api/impact", impactRoutes);
-app.use('/api/ratings', ratingRoutes);
+app.use("/api/ratings", ratingRoutes);
+app.use("/api", aiMatchingRoutes);
+app.use('/api', scheduleRoutes);
 
 
 // Error handling middleware

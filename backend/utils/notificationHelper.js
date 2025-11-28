@@ -469,7 +469,7 @@ const notificationHelper = {
       return null;
     }
   },
-   async notifyQueueJoined(listing, userId, position) {
+  async notifyQueueJoined(listing, userId, position) {
     try {
       const user = await User.findById(userId);
 
@@ -518,7 +518,312 @@ const notificationHelper = {
     } catch (error) {
       console.error("Error sending cancellation notification:", error);
     }
+  },
+};
+const onScheduleProposed = async (schedule, io) => {
+  try {
+    const notification = await Notification.create({
+      recipient: schedule.recipient._id,
+      sender: schedule.donor._id,
+      type: "pickup_scheduled",
+      title: "📅 Pickup Schedule Proposed",
+      message: `${
+        schedule.donor.firstName
+      } proposed a pickup on ${schedule.proposedDate.toLocaleDateString()} at ${
+        schedule.proposedTime
+      }`,
+      icon: "📅",
+      priority: "high",
+      relatedListing: schedule.listing._id,
+      actionUrl: `/schedules/${schedule._id}`,
+      metadata: {
+        scheduleId: schedule._id,
+        proposedDateTime: schedule.proposedDateTime,
+      },
+    });
+
+    await notification.populate([
+      { path: "sender", select: "firstName lastName avatar" },
+      { path: "relatedListing", select: "title images" },
+    ]);
+
+    // Send via Socket.IO
+    if (io) {
+      io.to(schedule.recipient._id.toString()).emit(
+        "newNotification",
+        notification
+      );
+      console.log(
+        `🔔 Schedule proposed notification sent to ${schedule.recipient.email}`
+      );
+    }
+
+    // Send email (optional)
+    // await sendEmail({
+    //   to: schedule.recipient.email,
+    //   subject: 'Pickup Schedule Proposed',
+    //   template: 'schedule-proposed',
+    //   data: { schedule },
+    // });
+
+    return notification;
+  } catch (error) {
+    console.error("onScheduleProposed error:", error);
+    throw error;
   }
 };
 
-module.exports = notificationHelper;
+/**
+ * Notify donor when schedule is confirmed
+ */
+const onScheduleConfirmed = async (schedule, io) => {
+  try {
+    const notification = await Notification.create({
+      recipient: schedule.donor._id,
+      sender: schedule.recipient._id,
+      type: "pickup_scheduled",
+      title: "✅ Pickup Schedule Confirmed",
+      message: `${
+        schedule.recipient.firstName
+      } confirmed the pickup on ${schedule.proposedDate.toLocaleDateString()} at ${
+        schedule.proposedTime
+      }`,
+      icon: "✅",
+      priority: "high",
+      relatedListing: schedule.listing._id,
+      actionUrl: `/schedules/${schedule._id}`,
+      metadata: {
+        scheduleId: schedule._id,
+        confirmedAt: schedule.confirmedAt,
+      },
+    });
+
+    await notification.populate([
+      { path: "sender", select: "firstName lastName avatar" },
+      { path: "relatedListing", select: "title images" },
+    ]);
+
+    if (io) {
+      io.to(schedule.donor._id.toString()).emit(
+        "newNotification",
+        notification
+      );
+      console.log(`🔔 Schedule confirmed notification sent to donor`);
+    }
+
+    return notification;
+  } catch (error) {
+    console.error("onScheduleConfirmed error:", error);
+    throw error;
+  }
+};
+
+/**
+ * Notify when schedule is cancelled
+ */
+const onScheduleCancelled = async (schedule, recipient, io) => {
+  try {
+    const cancelledBy =
+      schedule.cancelledBy.toString() === schedule.donor._id.toString()
+        ? schedule.donor
+        : schedule.recipient;
+
+    const notification = await Notification.create({
+      recipient: recipient._id,
+      sender: schedule.cancelledBy,
+      type: "pickup_scheduled",
+      title: "❌ Pickup Schedule Cancelled",
+      message: `${
+        cancelledBy.firstName
+      } cancelled the pickup scheduled for ${schedule.proposedDate.toLocaleDateString()}`,
+      icon: "❌",
+      priority: "high",
+      relatedListing: schedule.listing._id,
+      actionUrl: `/listings/${schedule.listing._id}`,
+      metadata: {
+        scheduleId: schedule._id,
+        cancelledAt: schedule.cancelledAt,
+        reason: schedule.cancellationReason,
+      },
+    });
+
+    await notification.populate([
+      { path: "sender", select: "firstName lastName avatar" },
+      { path: "relatedListing", select: "title images" },
+    ]);
+
+    if (io) {
+      io.to(recipient._id.toString()).emit("newNotification", notification);
+      console.log(`🔔 Schedule cancelled notification sent`);
+    }
+
+    return notification;
+  } catch (error) {
+    console.error("onScheduleCancelled error:", error);
+    throw error;
+  }
+};
+
+/**
+ * Notify when schedule is completed
+ */
+const onScheduleCompleted = async (schedule, io) => {
+  try {
+    const notification = await Notification.create({
+      recipient: schedule.recipient._id,
+      sender: schedule.donor._id,
+      type: "pickup_completed",
+      title: "🎉 Pickup Completed",
+      message: `Pickup completed successfully for ${schedule.listing.title}`,
+      icon: "🎉",
+      priority: "normal",
+      relatedListing: schedule.listing._id,
+      actionUrl: `/impact/personal`,
+      metadata: {
+        scheduleId: schedule._id,
+        completedAt: schedule.completedAt,
+      },
+    });
+
+    await notification.populate([
+      { path: "sender", select: "firstName lastName avatar" },
+      { path: "relatedListing", select: "title images" },
+    ]);
+
+    if (io) {
+      io.to(schedule.recipient._id.toString()).emit(
+        "newNotification",
+        notification
+      );
+      console.log(`🔔 Schedule completed notification sent`);
+    }
+
+    return notification;
+  } catch (error) {
+    console.error("onScheduleCompleted error:", error);
+    throw error;
+  }
+};
+
+/**
+ * Send pickup reminder (24 hours before)
+ */
+const sendScheduleReminder = async (schedule, io) => {
+  try {
+    // Notify both donor and recipient
+    const donorNotification = await Notification.create({
+      recipient: schedule.donor._id,
+      type: "pickup_scheduled",
+      title: "⏰ Pickup Reminder",
+      message: `Reminder: Pickup scheduled for ${schedule.proposedDate.toLocaleDateString()} at ${
+        schedule.proposedTime
+      }`,
+      icon: "⏰",
+      priority: "high",
+      relatedListing: schedule.listing._id,
+      actionUrl: `/schedules/${schedule._id}`,
+      metadata: {
+        scheduleId: schedule._id,
+        proposedDateTime: schedule.proposedDateTime,
+        reminderType: "upcoming",
+      },
+    });
+
+    const recipientNotification = await Notification.create({
+      recipient: schedule.recipient._id,
+      type: "pickup_scheduled",
+      title: "⏰ Pickup Reminder",
+      message: `Reminder: Pickup scheduled for ${schedule.proposedDate.toLocaleDateString()} at ${
+        schedule.proposedTime
+      }`,
+      icon: "⏰",
+      priority: "high",
+      relatedListing: schedule.listing._id,
+      actionUrl: `/schedules/${schedule._id}`,
+      metadata: {
+        scheduleId: schedule._id,
+        proposedDateTime: schedule.proposedDateTime,
+        reminderType: "upcoming",
+      },
+    });
+
+    if (io) {
+      io.to(schedule.donor._id.toString()).emit(
+        "newNotification",
+        donorNotification
+      );
+      io.to(schedule.recipient._id.toString()).emit(
+        "newNotification",
+        recipientNotification
+      );
+      console.log(`🔔 Schedule reminders sent`);
+    }
+
+    // Mark reminder as sent
+    await schedule.sendReminder();
+
+    return { donorNotification, recipientNotification };
+  } catch (error) {
+    console.error("sendScheduleReminder error:", error);
+    throw error;
+  }
+};
+
+const onScheduleExpired = async (schedule, io) => {
+  try {
+    // Notify donor
+    const donorNotification = await Notification.create({
+      recipient: schedule.donor._id,
+      type: 'listing_expired',
+      title: '⏰ Pickup Schedule Expired',
+      message: `The pickup schedule for ${schedule.listing.title} has expired. The listing is now available again.`,
+      icon: '⏰',
+      priority: 'normal',
+      relatedListing: schedule.listing._id,
+      actionUrl: `/listings/${schedule.listing._id}`,
+      metadata: {
+        scheduleId: schedule._id,
+        expiredAt: new Date(),
+      },
+    });
+
+    // Notify recipient
+    const recipientNotification = await Notification.create({
+      recipient: schedule.recipient._id,
+      type: 'listing_expired',
+      title: '⏰ Pickup Schedule Expired',
+      message: `The pickup schedule for ${schedule.listing.title} has expired without confirmation.`,
+      icon: '⏰',
+      priority: 'normal',
+      relatedListing: schedule.listing._id,
+      actionUrl: `/listings/${schedule.listing._id}`,
+      metadata: {
+        scheduleId: schedule._id,
+        expiredAt: new Date(),
+      },
+    });
+
+    if (io) {
+      io.to(schedule.donor._id.toString()).emit('newNotification', donorNotification);
+      io.to(schedule.recipient._id.toString()).emit('newNotification', recipientNotification);
+      console.log(`🔔 Schedule expired notifications sent`);
+    }
+
+    return { donorNotification, recipientNotification };
+  } catch (error) {
+    console.error('onScheduleExpired error:', error);
+    throw error;
+  }
+};
+
+
+module.exports = {
+  ...notificationHelper,
+  onScheduleProposed,
+  onScheduleConfirmed,
+  onScheduleCancelled,
+  onScheduleCompleted,
+  sendScheduleReminder,
+  onScheduleExpired,
+};
+
