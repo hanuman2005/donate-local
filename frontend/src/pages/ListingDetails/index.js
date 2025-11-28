@@ -8,6 +8,9 @@ import { useAuth } from "../../context/AuthContext";
 import LoadingSpinner from "../../components/Common/LoadingSpinner";
 import { toast } from "react-toastify";
 
+import AIMatchSuggestions from "../../components/AiMatchSuggestions";
+import ProposeScheduleModal from "../../components/ScheduleModal/ProposeScheduleModal";
+
 // =======================
 // Styled Components
 // =======================
@@ -219,6 +222,8 @@ const ListingDetails = () => {
   const [isContacting, setIsContacting] = useState(false);
   const [loadingQueue, setLoadingQueue] = useState(false);
   const [error, setError] = useState(null);
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
+  const [selectedRecipient, setSelectedRecipient] = useState(null);
 
   const isDonor =
     listing?.donor?._id === user?._id || listing?.donor === user?._id;
@@ -270,6 +275,16 @@ const ListingDetails = () => {
     } finally {
       setLoadingQueue(false);
     }
+  };
+
+  const handleAssignClick = (recipient) => {
+    setSelectedRecipient(recipient);
+    setShowScheduleModal(true);
+  };
+
+  const handleScheduleSuccess = (schedule) => {
+    toast.success("Listing assigned with pickup schedule!");
+    fetchListing();
   };
 
   const handleLeaveQueue = async () => {
@@ -359,7 +374,6 @@ const ListingDetails = () => {
       <BackButton onClick={() => navigate("/listings")}>
         ← Back to Listings
       </BackButton>
-
       <Card>
         <Title>{listing.title}</Title>
         <StatusBadge $status={listing.status}>
@@ -414,6 +428,51 @@ const ListingDetails = () => {
           </DetailSection>
         )}
 
+        {/* Interested Users Section */}
+        {isDonor && listing.interestedUsers?.length > 0 && (
+          <DetailSection>
+            <h3>Interested Recipients ({listing.interestedUsers.length})</h3>
+
+            {listing.interestedUsers.map((interest) => (
+              <div
+                key={interest.user._id}
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: "1rem",
+                  padding: "1rem",
+                  background: "#f7fafc",
+                  borderRadius: "10px",
+                }}
+              >
+                <div>
+                  <strong>
+                    {interest.user.firstName} {interest.user.lastName}
+                  </strong>
+                  {interest.message && (
+                    <p style={{ margin: 0 }}>💬 {interest.message}</p>
+                  )}
+                </div>
+
+                <button
+                  onClick={() => handleAssignClick(interest.user)}
+                  style={{
+                    background: "#4299e1",
+                    color: "white",
+                    border: "none",
+                    padding: "0.6rem 1rem",
+                    borderRadius: "10px",
+                    cursor: "pointer",
+                  }}
+                >
+                  📅 Assign & Schedule Pickup
+                </button>
+              </div>
+            ))}
+          </DetailSection>
+        )}
+
         {/* Actions */}
         <ActionButtons>
           {isDonor ? (
@@ -439,7 +498,9 @@ const ListingDetails = () => {
           )}
         </ActionButtons>
       </Card>
-
+      {isDonor && listing.status === "available" && (
+        <AIMatchSuggestions listingId={listing._id} onAssign={fetchListing} />
+      )}
       {/* QR for Donor */}
       {isDonor && listing.status === "pending" && (
         <QRSection>
@@ -447,7 +508,6 @@ const ListingDetails = () => {
           <QRCodeGenerator listing={listing} onPickupComplete={fetchListing} />
         </QRSection>
       )}
-
       {/* QR Scanner for Recipient */}
       {isRecipient && listing.status === "pending" && (
         <QRSection>
@@ -455,7 +515,6 @@ const ListingDetails = () => {
           <QRScanner onScanComplete={fetchListing} />
         </QRSection>
       )}
-
       {/* Queue Section */}
       {listing.status === "pending" && !isDonor && !isRecipient && (
         <QueueSection>
@@ -499,11 +558,37 @@ const ListingDetails = () => {
                     #{q.position} - {q.user.firstName} {q.user.lastName}
                   </div>
                   <PositionBadge>{q.status}</PositionBadge>
+                  <button
+                    onClick={() => handleAssignClick(q.user)}
+                    style={{
+                      background: "#fff",
+                      color: "#000",
+                      borderRadius: "8px",
+                      padding: "0.4rem 0.7rem",
+                      cursor: "pointer",
+                      fontSize: "0.8rem",
+                      border: "none",
+                    }}
+                  >
+                    📅 Assign
+                  </button>
                 </QueueItem>
               ))}
             </QueueList>
           )}
         </QueueSection>
+      )}
+      {/* Schedule Modal */}
+      {showScheduleModal && selectedRecipient && (
+        <ProposeScheduleModal
+          listing={listing}
+          recipient={selectedRecipient}
+          onClose={() => {
+            setShowScheduleModal(false);
+            setSelectedRecipient(null);
+          }}
+          onSuccess={handleScheduleSuccess}
+        />
       )}
     </DetailsContainer>
   );

@@ -11,9 +11,9 @@ import LoadingSpinner from "../../components/Common/LoadingSpinner";
 import DonationCenterInfo from "../../components/DonationCenterInfo";
 import LiveDonationFeed from "../../components/LiveDonationFeed";
 import LiveStats from "../../components/LiveStats";
-import {
-  motionVariants,
-} from "../../animations/motionVariants";
+import UpcomingSchedulesWidget from "../../components/UpcomingSchedulesWidget";
+
+import { motionVariants } from "../../animations/motionVariants";
 import {
   DashboardContainer,
   DashboardHeader,
@@ -412,7 +412,8 @@ const Dashboard = () => {
           </>
         )}
       </StatsRow>
-
+      {/* 🆕 NEW: Add Upcoming Schedules Widget */}
+      <UpcomingSchedulesWidget limit={3} />
       {/* ========== MAIN CONTENT ========== */}
       <DashboardContent>
         <MainSection>

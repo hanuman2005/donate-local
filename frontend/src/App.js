@@ -16,6 +16,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Listings from "./pages/Listings";
 import ListingDetails from "./pages/ListingDetails";
+import SchedulesPage from "./pages/Schedules";
 
 // Protected Pages
 import Dashboard from "./pages/Dashboard";
@@ -47,11 +48,11 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/contact" element={<ContactModal />} />
-        
+
         {/* Listings */}
         <Route path="/listings" element={<Listings />} />
         <Route path="/listings/:id" element={<ListingDetails />} />
-        
+
         {/* Public Impact Stats */}
         <Route path="/impact/community" element={<CommunityStats />} />
 
@@ -64,7 +65,7 @@ function App() {
             </ProtectedRoute>
           }
         />
-        
+
         <Route
           path="/create-listing"
           element={
@@ -73,7 +74,7 @@ function App() {
             </ProtectedRoute>
           }
         />
-        
+
         {/* Profile - ✅ Can view any user's profile (public) */}
         {/* But own profile editing is protected */}
         <Route path="/profile/:userId" element={<Profile />} />
@@ -85,7 +86,7 @@ function App() {
             </ProtectedRoute>
           }
         />
-        
+
         <Route
           path="/notifications"
           element={
@@ -94,7 +95,17 @@ function App() {
             </ProtectedRoute>
           }
         />
-        
+
+        {/* 🆕 NEW: Schedules Route */}
+        <Route
+          path="/schedules"
+          element={
+            <ProtectedRoute>
+              <SchedulesPage />
+            </ProtectedRoute>
+          }
+        />
+
         {/* Chat Routes */}
         <Route
           path="/chat"
@@ -112,7 +123,7 @@ function App() {
             </ProtectedRoute>
           }
         />
-        
+
         {/* Check-in (QR Verification) */}
         <Route
           path="/check-in"
@@ -122,7 +133,7 @@ function App() {
             </ProtectedRoute>
           }
         />
-        
+
         {/* Personal Impact */}
         <Route
           path="/impact/personal"
@@ -136,9 +147,9 @@ function App() {
         {/* ========== CATCH-ALL ROUTE ========== */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-      
+
       <FloatingChatbot />
-      
+
       <ToastContainer
         position="top-right"
         autoClose={5000}

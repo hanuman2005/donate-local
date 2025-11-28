@@ -75,6 +75,8 @@ export const listingsAPI = {
   getNearby: (lat, lng, radius) =>
     api.get("/listings/nearby", { params: { lat, lng, radius } }),
   search: (params) => api.get("/listings/search", { params }),
+  getMatchSuggestions: (id) => api.get(`/listings/${id}/match-suggestions`),
+  autoAssignTopMatch: (id) => api.post(`/listings/${id}/assign-top-match`),
 };
 
 export const chatAPI = {
@@ -179,6 +181,38 @@ export const ratingsAPI = {
   reportReview: (userId, reviewId, reason) => 
     api.post(`/ratings/${userId}/reviews/${reviewId}/report`, { reason }),
 };
+
+
+export const scheduleAPI = {
+  // Propose a new schedule
+  proposeSchedule: (listingId, data) =>
+    api.post(`/listings/${listingId}/schedule`, data),
+
+  // Get user's schedules
+  getMySchedules: (params) =>
+    api.get('/schedules/my-schedules', { params }),
+
+  // Get upcoming schedules
+  getUpcomingSchedules: () =>
+    api.get('/schedules/upcoming'),
+
+  // Get single schedule
+  getScheduleById: (id) =>
+    api.get(`/schedules/${id}`),
+
+  // Confirm a schedule
+  confirmSchedule: (id, data) =>
+    api.put(`/schedules/${id}/confirm`, data),
+
+  // Cancel a schedule
+  cancelSchedule: (id, data) =>
+    api.put(`/schedules/${id}/cancel`, data),
+
+  // Complete a schedule
+  completeSchedule: (id) =>
+    api.put(`/schedules/${id}/complete`),
+};
+
 
 
 export default api;
