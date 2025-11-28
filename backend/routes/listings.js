@@ -19,6 +19,7 @@ const {
   searchListings,
   checkIn,
 } = require("../controllers/listingController");
+const queueController = require("../controllers/queueController");
 
 const router = express.Router();
 
@@ -182,6 +183,11 @@ router.post("/:id/assign", auth, assignValidation, assignListing);
 router.put("/:id/complete", auth, completeListing);
 
 // Check-in listing
-router.post('/:id/check-in', auth, checkIn);
+router.post("/:id/check-in", auth, checkIn);
+
+router.post("/:id/queue/join", auth, queueController.joinQueue);
+router.delete("/:id/queue/leave", auth, queueController.leaveQueue);
+router.get("/:id/queue/status", auth, queueController.getQueueStatus);
+router.post("/:id/queue/cancel", auth, queueController.cancelAssignment);
 
 module.exports = router;

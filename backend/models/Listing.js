@@ -39,9 +39,10 @@ const listingSchema = new mongoose.Schema(
     },
     unit: {
       type: String,
-      enum: ["items", "kg", "lbs", "bags", "boxes", "servings"],
+      enum: ["items", "kg", "lbs", "bags", "boxes", "servings", "pieces"], // ← added
       default: "items",
     },
+
     images: [String],
     donor: {
       type: mongoose.Schema.Types.ObjectId,
@@ -83,9 +84,10 @@ const listingSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["available", "pending", "completed", "cancelled"],
+      enum: ["available", "assigned", "pending", "completed", "cancelled"], // ← added assigned
       default: "available",
     },
+
     expiryDate: Date,
     additionalNotes: {
       type: String,
@@ -105,6 +107,31 @@ const listingSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
     },
+
+    schedule: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Schedule",
+    },
+
+    // Schedule status (add after 'verificationStatus' field)
+    hasSchedule: {
+      type: Boolean,
+      default: false,
+    },
+
+    scheduleStatus: {
+      type: String,
+      enum: [
+        "none",
+        "proposed",
+        "confirmed",
+        "completed",
+        "cancelled",
+        "expired",
+      ],
+      default: "none",
+    },
+
     completedAt: Date,
     views: {
       type: Number,
@@ -212,9 +239,10 @@ listingSchema.index({ category: 1 });
 listingSchema.index({ status: 1 });
 listingSchema.index({ createdAt: -1 });
 listingSchema.index({ urgency: -1 });
-listingSchema.index({ donor: 1 });
 listingSchema.index({ assignedTo: 1 });
 listingSchema.index({ "qrCode.secret": 1 });
+listingSchema.index({ schedule: 1 });
+
 
 //
 // --------------------------------------------------
@@ -307,6 +335,26 @@ listingSchema.methods.verifyQRCode = async function (secret, scannedBy) {
   this.verificationStatus = "verified";
   await this.save();
   return true;
+};
+
+
+// Add this method (after existing methods)
+listingSchema.methods.linkSchedule = async function (scheduleId) {
+  this.schedule = scheduleId;
+  this.hasSchedule = true;
+  this.scheduleStatus = 'proposed';
+  await this.save();
+  return this;
+};
+
+listingSchema.methods.updateScheduleStatus = async function (status) {
+  this.scheduleStatus = status;
+  if (status === 'completed') {
+    this.status = 'completed';
+    this.completedAt = new Date();
+  }
+  await this.save();
+  return this;
 };
 
 module.exports = mongoose.model("Listing", listingSchema);

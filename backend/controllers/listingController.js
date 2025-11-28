@@ -410,14 +410,16 @@ const expressInterest = async (req, res) => {
 };
 
 // ✅ Assign listing - WITH NOTIFICATIONS FOR ALL INTERESTED USERS
+// backend/controllers/listingController.js
+
 const assignListing = async (req, res) => {
   try {
     const { recipientId } = req.body;
     const listingId = req.params.id;
 
     const listing = await Listing.findById(listingId).populate(
-      "interestedUsers.user",
-      "firstName lastName"
+      "queue.user",
+      "firstName lastName avatar rating"
     );
 
     if (!listing) {
@@ -434,36 +436,60 @@ const assignListing = async (req, res) => {
       });
     }
 
-    listing.assignedTo = recipientId;
-    listing.status = "assigned"; // Changed from "pending" to "assigned"
-    await listing.save();
+    // Validate recipient exists
+    const recipient = await User.findById(recipientId);
+    if (!recipient) {
+      return res.status(404).json({
+        success: false,
+        message: "Recipient not found",
+      });
+    }
 
-    await listing.populate(
-      "assignedTo",
-      "firstName lastName avatar email phone"
+    // ==========================================
+    // 🧠 HYBRID PRIORITY SYSTEM
+    // Queue priority + AI Manual Selection
+    // ==========================================
+    const inQueue = listing.queue.find(
+      (q) => q.user._id.toString() === recipientId
     );
 
-    // 🔔 NOTIFY THE CHOSEN RECIPIENT (Winner)
-    const recipient = await User.findById(recipientId);
-    if (recipient) {
-      await notificationHelper.onListingAssigned(listing, recipient, req.io);
+    if (inQueue) {
+      // Respect queue order
+      inQueue.status = "notified";
+      inQueue.notifiedAt = new Date();
+
+      listing.queue.forEach((q) => {
+        if (q.user._id.toString() !== recipientId) {
+          if (q.position > inQueue.position) q.status = "waiting";
+        }
+      });
+    } else {
+      // If manually selected or AI suggested outside queue → add as #1
+      listing.queue.unshift({
+        user: recipientId,
+        position: 1,
+        status: "notified",
+        joinedAt: new Date(),
+      });
     }
 
-    // 🔔 NOTIFY OTHER INTERESTED USERS (Sorry, someone else got it)
-    try {
-      await notificationHelper.onListingStatusChanged(
-        listing,
-        "assigned",
-        req.io
-      );
-    } catch (notifError) {
-      console.error(
-        "⚠️ Status change notification error (non-critical):",
-        notifError
-      );
-    }
+    // Re-calculate queue ordering
+    listing.queue.sort((a, b) => a.position - b.position);
+    listing.queue.forEach((q, i) => (q.position = i + 1));
 
-    res.json({
+    // ==========================================
+    // Update listing assignment
+    // ==========================================
+    listing.assignedTo = recipientId;
+    listing.status = "pending"; // 🔥 correct enum value
+    await listing.save();
+
+    await listing.populate("assignedTo", "firstName lastName avatar rating");
+
+    // 🔔 Notify the assigned recipient
+    await notificationHelper.onListingAssigned(listing, recipient, req.io);
+
+    return res.json({
       success: true,
       message: "Listing assigned successfully",
       listing,
@@ -472,7 +498,8 @@ const assignListing = async (req, res) => {
     console.error("Assign listing error:", error);
     res.status(500).json({
       success: false,
-      message: "Server error assigning listing",
+      message: "Assignment failed",
+      error: error.message,
     });
   }
 };
@@ -797,6 +824,7 @@ const checkIn = async (req, res) => {
     });
   }
 };
+
 // MAKE SURE TO EXPORT THEM:
 module.exports = {
   createListing,

@@ -111,8 +111,6 @@ const notificationSchema = new mongoose.Schema(
 );
 
 // Indexes for performance
-notificationSchema.index({ recipient: 1, read: 1 });
-notificationSchema.index({ recipient: 1, createdAt: -1 });
 notificationSchema.index({ type: 1, createdAt: -1 });
 
 // Auto-delete old read notifications after 30 days
