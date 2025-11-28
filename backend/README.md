@@ -21,58 +21,67 @@
 ```
 backend/
 ├── config/
-│   ├── db.js                    # MongoDB connection with retry logic
-│   ├── cloudinary.js            # Image upload configuration
-│   └── telegram.js              # Telegram bot setup
-│
+│   ├── cloudinary.js
+│   └── db.js
 ├── controllers/
-│   ├── authController.js        # Register, login, profile
-│   ├── listingController.js     # CRUD, search, nearby, assign
-│   ├── chatController.js        # Chat rooms & messaging
-│   ├── userController.js        # Profile, ratings, search
-│   ├── notificationController.js # Get, read, delete notifications
-│   ├── analyticsController.js   # User & platform analytics
-│   ├── qrController.js          # QR generation & verification
-│   ├── impactController.js      # Impact metrics & tracking
-│   └── ratingController.js      # User rating system
-│
+│   ├── aiMatchingController.js
+│   ├── analyticscontroller.js
+│   ├── authController.js
+│   ├── chatController.js
+│   ├── impactController.js
+│   ├── listingController.js
+│   ├── notificationController.js
+│   ├── qrController.js
+│   ├── queueController.js
+│   ├── ratingController.js
+│   ├── scheduleController.js
+│   └── userController.js
 ├── middleware/
-│   ├── auth.js                  # JWT verification
-│   ├── upload.js                # Multer + Cloudinary
-│   └── errorHandler.js          # Global error handling
-│
+│   ├── auth.js
+│   ├── errorHandler.js
+│   └── upload.js
 ├── models/
-│   ├── User.js                  # User schema with ratings
-│   ├── Listing.js               # Listing with QR & queue system
-│   ├── Chat.js                  # Chat room schema
-│   ├── Message.js               # Message schema
-│   ├── Notification.js          # Notification schema
-│   └── Transaction.js           # QR transaction schema
-│
+│   ├── Chat.js
+│   ├── DonationCenter.js
+│   ├── Listing.js
+│   ├── Message.js
+│   ├── Notification.js
+│   ├── Rating.js
+│   ├── Schedule.js
+│   ├── Transaction.js
+│   └── User.js
 ├── routes/
-│   ├── auth.js                  # Authentication routes
-│   ├── listings.js              # Listing management
-│   ├── chat.js                  # Chat routes
-│   ├── users.js                 # User routes
-│   ├── notifications.js         # Notification routes
-│   ├── analytics.js             # Analytics routes
-│   ├── qr.js                    # QR code routes
-│   ├── impact.js                # Impact tracking routes
-│   └── ratings.js               # Rating routes
-│
+│   ├── aiMatching.js
+│   ├── analytics.js
+│   ├── auth.js
+│   ├── chat.js
+│   ├── donationCenters.js
+│   ├── impact.js
+│   ├── listings.js
+│   ├── notifications.js
+│   ├── qr.js
+│   ├── queue.js
+│   ├── ratings.js
+│   ├── schedules.js
+│   └── users.js
+├── scripts/
+│   └── cleanupDuplicateChats.js
 ├── socket/
-│   └── socketHandler.js         # Socket.IO event handlers
-│
+│   └── socketHandler.js
 ├── utils/
-│   ├── helpers.js               # Utility functions
-│   ├── notificationHelper.js    # Auto-notification triggers
-│   ├── qrGenerator.js           # QR code generation
-│   ├── impactCalculations.js    # Impact metrics formulas
-│   └── telegramNotifier.js      # Telegram bot integration
-│
-├── server.js                    # Express app entry point
-├── .env                         # Environment variables
-└── package.json                 # Dependencies
+│   ├── aiMatching.js
+│   ├── helpers.js
+│   ├── impactCalculations.js
+│   ├── notificationHelper.js
+│   ├── qrGenerator.js
+│   ├── queueCronJob.js
+│   └── scheduleCron.js
+├── backend-structure.txt
+├── package-lock.json
+├── package.json
+├── README.md
+└── server.js
+
 ```
 
 **Total Backend Files**: 36 JavaScript files
