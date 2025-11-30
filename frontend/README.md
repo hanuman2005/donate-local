@@ -21,84 +21,171 @@
 
 ```
 frontend/
-├── public/
-│   ├── index.html
-│   └── assets/
+│   App.css
+│   App.js
+│   App.test.js
+│   globalStyles.js
+│   index.css
+│   index.js
+│   logo.svg
+│   reportWebVitals.js
+│   setupTests.js
 │
-├── src/
-│   ├── components/
-│   │   ├── Header/              # Navigation with notifications
-│   │   ├── Footer/              # Site footer
-│   │   ├── ListingCard/         # Listing display card
-│   │   ├── Chat/                # Real-time chat interface
-│   │   ├── Map/                 # Leaflet interactive map
-│   │   ├── FloatingChatbot/     # AI assistant widget
-│   │   ├── QRCode/              # QR code generation & display
-│   │   ├── QRScanner/           # Camera QR scanner (ZXing)
-│   │   ├── ImpactDashboard/     # Impact tracking
-│   │   │   ├── PersonalImpact.js
-│   │   │   ├── CommunityStats.js
-│   │   │   ├── ImpactCard.js
-│   │   │   └── AnimatedCounter.js
-│   │   ├── FilterPanel/         # Listing filters
-│   │   ├── LiveStats/           # Real-time statistics
-│   │   ├── LiveDonationFeed/    # Live donation stream
-│   │   ├── LiveNotificationBanner/ # Notification banner
-│   │   ├── DonationCenterInfo/  # Center info card
-│   │   ├── RatingModal/         # User rating interface
-│   │   ├── ThemeToggle/         # Dark/light mode
-│   │   ├── ProtectedRoute/      # Route guard
-│   │   ├── ContactModal/        # Contact form
-│   │   ├── CheckIn/             # Pickup check-in
-│   │   └── Common/
-│   │       ├── LoadingSpinner/
-│   │       └── Modal/
-│   │
-│   ├── pages/
-│   │   ├── Home/                # Landing page
-│   │   ├── Login/               # Login form
-│   │   ├── Register/            # Registration form
-│   │   ├── Dashboard/           # User dashboard
-│   │   ├── Listings/            # Browse listings
-│   │   ├── ListingDetails/      # Single listing view
-│   │   ├── CreateListing/       # Create form
-│   │   ├── Profile/             # User profile
-│   │   ├── Notifications/       # Notification center
-│   │   └── About/               # About page
-│   │
-│   ├── context/
-│   │   ├── AuthContext.js       # Auth state management
-│   │   ├── SocketContext.js     # Socket.IO connection
-│   │   ├── NotificationContext.js # Notification system
-│   │   ├── ThemeContext.js      # Theme management
-│   │   └── LanguageContext.js   # i18n support
-│   │
-│   ├── hooks/
-│   │   ├── useAuth.js           # Auth hook
-│   │   ├── useSocket.js         # Socket hook
-│   │   └── useGeolocation.js    # Geolocation hook
-│   │
-│   ├── services/
-│   │   └── api.js               # Axios instance & all API calls
-│   │
-│   ├── animations/
-│   │   └── motionVariants.js    # Framer Motion animations
-│   │
-│   ├── i18n/
-│   │   └── locales/
-│   │       ├── en.json
-│   │       ├── hi.json
-│   │       └── te.json
-│   │
-│   ├── utils/
-│   │   ├── helpers.js
-│   │   └── constants.js
-│   │
-│   ├── globalStyles.js          # Global CSS
-│   ├── App.js                   # Root component
-│   └── index.js                 # Entry point
+├── animations/
+│   motionVariants.js
 │
-└── package.json
+├── components/
+│   FloatingChatbot.js
+│   ProtectedRoute.js
+│
+│   ├── About/
+│   │   index.js
+│
+│   ├── AiMatchSuggestions/
+│   │   index.js
+│
+│   ├── Chat/
+│   │   index.js
+│   │   styledComponents.js
+│
+│   ├── CheckIn/
+│   │   index.js
+│
+│   ├── Common/
+│   │   ├── LoadingSpinner/
+│   │   │   index.js
+│   │   │   styledComponents.js
+│   │   └── Modal/
+│   │       index.js
+│   │       styledComponents.js
+│
+│   ├── ContactModal/
+│   │   index.js
+│
+│   ├── DonationCenterInfo/
+│   │   index.js
+│
+│   ├── FilterPanel/
+│   │   index.js
+│   │   styledComponents.js
+│
+│   ├── Footer/
+│   │   index.js
+│   │   styledComponents.js
+│
+│   ├── Header/
+│   │   index.js
+│   │   styledComponents.js
+│
+│   ├── ImpactDashboard/
+│   │   AnimatedCounter.js
+│   │   CommunityStats.js
+│   │   ImpactCard.js
+│   │   PersonalImpact.js
+│   │   styledComponents.js
+│
+│   ├── ListingCard/
+│   │   index.js
+│   │   styledComponents.js
+│
+│   ├── LiveDonationFeed/
+│   │   index.js
+│
+│   ├── LiveNotificationBanner/
+│   │   index.js
+│
+│   ├── LiveStats/
+│   │   index.js
+│
+│   ├── Map/
+│   │   index.js
+│   │   styledComponents.js
+│
+│   ├── QRCode/
+│   │   index.js
+│   │   styledComponents.js
+│
+│   ├── QRScanner/
+│   │   index.js
+│   │   styledComponents.js
+│
+│   ├── RatingModal/
+│   │   index.js
+│   │   styledComponents.js
+│
+│   ├── ScheduleModal/
+│   │   ProposeScheduleModal.js
+│
+│   ├── ThemeToggle/
+│   │   index.js
+│
+│   └── UpcomingSchedulesWidget/
+│       index.js
+│
+├── context/
+│   AuthContext.js
+│   LanguageContext.js
+│   NotificationContext.js
+│   SocketContext.js
+│   ThemeContext.js
+│
+├── hooks/
+│   useAuth.js
+│   useGeolocation.js
+│   useSocket.js
+│
+├── i18n/
+│   └── locales/
+│       en.json
+│       hi.json
+│       te.json
+│
+├── pages/
+│   ├── CreateListing/
+│   │   index.js
+│   │   styledComponents.js
+│
+│   ├── Dashboard/
+│   │   index.js
+│   │   styledComponents.js
+│
+│   ├── Home/
+│   │   index.js
+│   │   styledComponents.js
+│
+│   ├── ListingDetails/
+│   │   index.js
+│
+│   ├── Listings/
+│   │   index.js
+│   │   styledComponents.js
+│
+│   ├── Login/
+│   │   index.js
+│   │   styledComponents.js
+│
+│   ├── Notifications/
+│   │   index.js
+│   │   styledComponents.js
+│
+│   ├── Profile/
+│   │   index.js
+│   │   styledComponents.js
+│
+│   ├── Register/
+│   │   index.js
+│   │   styledComponents.js
+│
+│   └── Schedules/
+│       index.js
+│
+├── services/
+│   api.js
+│
+└── utils/
+    constants.js
+    helpers.js
+
 ```
 
 ---
