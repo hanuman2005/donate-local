@@ -178,41 +178,55 @@ export const centersAPI = {
 export const ratingsAPI = {
   rateUser: (userId, data) => api.post(`/ratings/${userId}`, data),
   getUserReviews: (userId, params) => api.get(`/ratings/${userId}`, { params }),
-  reportReview: (userId, reviewId, reason) => 
+  reportReview: (userId, reviewId, reason) =>
     api.post(`/ratings/${userId}/reviews/${reviewId}/report`, { reason }),
 };
 
-
 export const scheduleAPI = {
-  // Propose a new schedule
   proposeSchedule: (listingId, data) =>
     api.post(`/listings/${listingId}/schedule`, data),
 
-  // Get user's schedules
-  getMySchedules: (params) =>
-    api.get('/schedules/my-schedules', { params }),
+  getMySchedules: (params) => api.get("/schedules/my-schedules", { params }),
 
-  // Get upcoming schedules
-  getUpcomingSchedules: () =>
-    api.get('/schedules/upcoming'),
+  getUpcomingSchedules: () => api.get("/schedules/upcoming"),
 
-  // Get single schedule
-  getScheduleById: (id) =>
-    api.get(`/schedules/${id}`),
+  confirmSchedule: (id, data) => api.put(`/schedules/${id}/confirm`, data),
 
-  // Confirm a schedule
-  confirmSchedule: (id, data) =>
-    api.put(`/schedules/${id}/confirm`, data),
+  cancelSchedule: (id, data) => api.put(`/schedules/${id}/cancel`, data),
 
-  // Cancel a schedule
-  cancelSchedule: (id, data) =>
-    api.put(`/schedules/${id}/cancel`, data),
-
-  // Complete a schedule
-  completeSchedule: (id) =>
-    api.put(`/schedules/${id}/complete`),
+  completeSchedule: (id) => api.put(`/schedules/${id}/complete`),
 };
+// ✅ Waste Analysis API (for TensorFlow.js AI Waste Analyzer)
+export const wasteAPI = {
+  // Save analysis results to backend
+  saveAnalysis: (data) => api.post("/waste-analysis", data),
 
+  // Get user's analysis history with pagination
+  getMyHistory: (params = {}) =>
+    api.get("/waste-analysis/my-history", { params }),
 
+  // Get single analysis by ID
+  getById: (id) => api.get(`/waste-analysis/${id}`),
+
+  // Save/bookmark an analysis
+  toggleSave: (id) => api.put(`/waste-analysis/${id}/save`),
+
+  // Delete an analysis
+  delete: (id) => api.delete(`/waste-analysis/${id}`),
+
+  // Create donation listing from analysis
+  createListing: (id, data) =>
+    api.post(`/waste-analysis/${id}/create-listing`, data),
+
+  // Get personal impact statistics
+  getMyImpact: () => api.get("/waste-analysis/stats/my-impact"),
+
+  // Get community-wide statistics (public)
+  getCommunityStats: () => api.get("/waste-analysis/stats/community"),
+
+  // Get eco score leaderboard
+  getLeaderboard: (params = {}) =>
+    api.get("/waste-analysis/leaderboard", { params }),
+};
 
 export default api;

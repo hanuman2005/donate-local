@@ -6,6 +6,7 @@ import { usersAPI, uploadAPI } from "../../services/api";
 import api from "../../services/api";
 import { toast } from "react-toastify";
 import { motionVariants } from "../../animations/motionVariants";
+import TrustBadges from "../../components/TrustBadges";
 
 import {
   ProfileContainer,
@@ -218,7 +219,9 @@ Category: ${item.category}
 Status: ${item.status.toUpperCase()}
 
 Donor: ${item?.donor?.firstName || ""} ${item?.donor?.lastName || ""}
-Recipient: ${item?.assignedTo?.firstName || ""} ${item?.assignedTo?.lastName || ""}
+Recipient: ${item?.assignedTo?.firstName || ""} ${
+      item?.assignedTo?.lastName || ""
+    }
 
 Date: ${new Date(item.completedAt || item.createdAt).toLocaleDateString()}
 ──────────────────────
@@ -233,10 +236,13 @@ Thank you for supporting your community!
     URL.revokeObjectURL(url);
   };
 
-  const renderStars = (r) => "⭐".repeat(Math.floor(r)) + "☆".repeat(5 - Math.floor(r));
+  const renderStars = (r) =>
+    "⭐".repeat(Math.floor(r)) + "☆".repeat(5 - Math.floor(r));
 
   const averageRating =
-    ratings.length > 0 ? ratings.reduce((s, r) => s + r.rating, 0) / ratings.length : 0;
+    ratings.length > 0
+      ? ratings.reduce((s, r) => s + r.rating, 0) / ratings.length
+      : 0;
 
   return (
     <ProfileContainer
@@ -311,7 +317,11 @@ Thank you for supporting your community!
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
               >
-                <input type="file" accept="image/*" onChange={handleAvatarChange} />
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleAvatarChange}
+                />
                 📷
               </AvatarUpload>
             )}
@@ -324,7 +334,9 @@ Thank you for supporting your community!
             animate="show"
             transition={{ delay: 0.3 }}
           >
-            <ProfileName>{user.firstName} {user.lastName}</ProfileName>
+            <ProfileName>
+              {user.firstName} {user.lastName}
+            </ProfileName>
             <ProfileEmail>📧 {user.email}</ProfileEmail>
             {!isEditing && user.bio && <ProfileBio>{user.bio}</ProfileBio>}
 
@@ -444,6 +456,7 @@ Thank you for supporting your community!
             </Tab>
           ))}
         </ContentTabs>
+        <TrustBadges user={user} showScore={true} showVerification={true} />
 
         <AnimatePresence mode="wait">
           <TabContent
@@ -462,50 +475,56 @@ Thank you for supporting your community!
                 initial="hidden"
                 animate="show"
               >
-                {["firstName", "lastName", "email", "phone", "address", "userType", "bio"].map(
-                  (f) => (
-                    <FormGroup
-                      key={f}
-                      as={motion.div}
-                      variants={motionVariants.listItemSlideUp}
-                      style={f === "bio" ? { gridColumn: "1 / -1" } : {}}
-                    >
-                      <Label>{f.charAt(0).toUpperCase() + f.slice(1)}</Label>
-                      {f === "bio" ? (
-                        <TextArea
-                          as={motion.textarea}
-                          whileFocus={{ scale: 1.01 }}
-                          name={f}
-                          value={formData[f]}
-                          onChange={handleInputChange}
-                          disabled={!isEditing}
-                        />
-                      ) : f === "userType" ? (
-                        <Select
-                          as={motion.select}
-                          whileFocus={{ scale: 1.01 }}
-                          name="userType"
-                          value={formData.userType}
-                          onChange={handleInputChange}
-                          disabled={!isEditing}
-                        >
-                          <option value="individual">Individual</option>
-                          <option value="business">Business</option>
-                        </Select>
-                      ) : (
-                        <Input
-                          as={motion.input}
-                          whileFocus={{ scale: 1.01 }}
-                          type="text"
-                          name={f}
-                          value={formData[f]}
-                          onChange={handleInputChange}
-                          disabled={f === "email" || !isEditing}
-                        />
-                      )}
-                    </FormGroup>
-                  )
-                )}
+                {[
+                  "firstName",
+                  "lastName",
+                  "email",
+                  "phone",
+                  "address",
+                  "userType",
+                  "bio",
+                ].map((f) => (
+                  <FormGroup
+                    key={f}
+                    as={motion.div}
+                    variants={motionVariants.listItemSlideUp}
+                    style={f === "bio" ? { gridColumn: "1 / -1" } : {}}
+                  >
+                    <Label>{f.charAt(0).toUpperCase() + f.slice(1)}</Label>
+                    {f === "bio" ? (
+                      <TextArea
+                        as={motion.textarea}
+                        whileFocus={{ scale: 1.01 }}
+                        name={f}
+                        value={formData[f]}
+                        onChange={handleInputChange}
+                        disabled={!isEditing}
+                      />
+                    ) : f === "userType" ? (
+                      <Select
+                        as={motion.select}
+                        whileFocus={{ scale: 1.01 }}
+                        name="userType"
+                        value={formData.userType}
+                        onChange={handleInputChange}
+                        disabled={!isEditing}
+                      >
+                        <option value="individual">Individual</option>
+                        <option value="business">Business</option>
+                      </Select>
+                    ) : (
+                      <Input
+                        as={motion.input}
+                        whileFocus={{ scale: 1.01 }}
+                        type="text"
+                        name={f}
+                        value={formData[f]}
+                        onChange={handleInputChange}
+                        disabled={f === "email" || !isEditing}
+                      />
+                    )}
+                  </FormGroup>
+                ))}
               </FormGrid>
             )}
 
@@ -626,8 +645,12 @@ Thank you for supporting your community!
                     <ItemDetails>
                       <ItemTitle>{item.title}</ItemTitle>
                       <ItemMeta>
-                        <span>📅 {new Date(item.createdAt).toLocaleDateString()}</span>
-                        <span>📦 {item.quantity} {item.unit}</span>
+                        <span>
+                          📅 {new Date(item.createdAt).toLocaleDateString()}
+                        </span>
+                        <span>
+                          📦 {item.quantity} {item.unit}
+                        </span>
                         <span>📊 {item.status}</span>
                       </ItemMeta>
                     </ItemDetails>
@@ -672,7 +695,9 @@ Thank you for supporting your community!
               <ReceiptBody>
                 <ReceiptRow>
                   <span>Quantity:</span>
-                  <strong>{selectedReceipt.quantity} {selectedReceipt.unit}</strong>
+                  <strong>
+                    {selectedReceipt.quantity} {selectedReceipt.unit}
+                  </strong>
                 </ReceiptRow>
                 <ReceiptRow>
                   <span>Status:</span>
@@ -685,7 +710,9 @@ Thank you for supporting your community!
                   </strong>
                 </ReceiptRow>
               </ReceiptBody>
-              <div style={{ display: "flex", gap: "1rem", marginTop: "1.5rem" }}>
+              <div
+                style={{ display: "flex", gap: "1rem", marginTop: "1.5rem" }}
+              >
                 <ReceiptButton
                   as={motion.button}
                   whileHover={{ scale: 1.05 }}

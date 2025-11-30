@@ -9,6 +9,8 @@ import { chatAPI, listingsAPI } from "../../services/api";
 import { toast } from "react-toastify";
 import { calculateDistance, formatDistance } from "../../utils/helpers";
 import { motionVariants } from "../../animations/motionVariants";
+import TrustBadges from "../TrustBadges";
+
 import {
   CardContainer,
   ImageContainer,
@@ -311,6 +313,15 @@ const ListingCard = ({
             </MetaText>
           </MetaItem>
         </CardMeta>
+        {typeof listing.donor === "object" && listing.donor && (
+          <div style={{ marginTop: "0.75rem" }}>
+            <TrustBadges
+              user={listing.donor}
+              showScore={false}
+              showVerification={true}
+            />
+          </div>
+        )}
       </CardContent>
 
       <CardFooter

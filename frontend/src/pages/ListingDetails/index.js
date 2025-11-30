@@ -9,7 +9,9 @@ import LoadingSpinner from "../../components/Common/LoadingSpinner";
 import { toast } from "react-toastify";
 
 import AIMatchSuggestions from "../../components/AiMatchSuggestions";
-import ProposeScheduleModal from "../../components/ScheduleModal/ProposeScheduleModal";
+import ScheduleModal from "../../components/ScheduleModal";
+import ReportModal from "../../components/ReportModal";
+import TrustBadges from "../../components/TrustBadges";
 
 // =======================
 // Styled Components
@@ -224,6 +226,7 @@ const ListingDetails = () => {
   const [error, setError] = useState(null);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [selectedRecipient, setSelectedRecipient] = useState(null);
+  const [showReportModal, setShowReportModal] = useState(false);
 
   const isDonor =
     listing?.donor?._id === user?._id || listing?.donor === user?._id;
@@ -418,6 +421,12 @@ const ListingDetails = () => {
           <Value>
             {listing.donor?.firstName} {listing.donor?.lastName}
           </Value>
+          {/* ADD THIS: */}
+          <TrustBadges
+            user={listing.donor}
+            showScore={true}
+            showVerification={true}
+          />
         </DetailSection>
         {listing.assignedTo && (
           <DetailSection>
@@ -475,6 +484,35 @@ const ListingDetails = () => {
 
         {/* Actions */}
         <ActionButtons>
+          {/* Report Button - visible to everyone except owner */}
+          {!isDonor && (
+            <ActionButton
+              onClick={() => setShowReportModal(true)}
+              style={{
+                background: "#fee2e2",
+                color: "#991b1b",
+                border: "1px solid #fca5a5",
+                flex: "0 1 auto",
+              }}
+            >
+              🚨 Report
+            </ActionButton>
+          )}
+          {/* Schedule Pickup Button - Only for donors with pending listings */}
+          {isDonor && listing.status === "pending" && listing.assignedTo && (
+            <ActionButton
+              onClick={() => {
+                setSelectedRecipient(listing.assignedTo);
+                setShowScheduleModal(true);
+              }}
+              style={{
+                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                color: "white",
+              }}
+            >
+              📍 Schedule Pickup
+            </ActionButton>
+          )}
           {isDonor ? (
             <>
               <EditButton onClick={() => navigate(`/listings/${id}/edit`)}>
@@ -509,10 +547,15 @@ const ListingDetails = () => {
         </QRSection>
       )}
       {/* QR Scanner for Recipient */}
-      {isRecipient && listing.status === "pending" && (
+      {isDonor && listing.status === "pending" && listing.assignedTo && (
         <QRSection>
-          <h2>📷 Scan QR Code</h2>
-          <QRScanner onScanComplete={fetchListing} />
+          <h2>📱 QR Code for Pickup</h2>
+          <QRCodeGenerator
+            listingId={listing._id}
+            listingTitle={listing.title}
+            recipientId={listing.assignedTo._id}
+            recipientName={`${listing.assignedTo.firstName} ${listing.assignedTo.lastName}`}
+          />
         </QRSection>
       )}
       {/* Queue Section */}
@@ -580,7 +623,7 @@ const ListingDetails = () => {
       )}
       {/* Schedule Modal */}
       {showScheduleModal && selectedRecipient && (
-        <ProposeScheduleModal
+        <ScheduleModal
           listing={listing}
           recipient={selectedRecipient}
           onClose={() => {
@@ -588,6 +631,18 @@ const ListingDetails = () => {
             setSelectedRecipient(null);
           }}
           onSuccess={handleScheduleSuccess}
+        />
+      )}
+      {showReportModal && (
+        <ReportModal
+          type="listing"
+          targetId={listing._id}
+          targetTitle={listing.title}
+          onClose={() => setShowReportModal(false)}
+          onSuccess={() => {
+            toast.success("Report submitted successfully");
+            setShowReportModal(false);
+          }}
         />
       )}
     </DetailsContainer>

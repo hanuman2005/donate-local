@@ -1,5 +1,5 @@
 // ============================================
-// models/User.js - FINAL IMPROVED VERSION
+// backend/models/User.js - FINAL IMPROVED VERSION
 // ============================================
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
@@ -23,10 +23,7 @@ const userSchema = new mongoose.Schema(
       required: true,
       unique: true,
       lowercase: true,
-      match: [
-        /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
-        "Invalid email",
-      ],
+      match: [/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, "Invalid email"],
     },
     password: {
       type: String,
@@ -41,7 +38,7 @@ const userSchema = new mongoose.Schema(
     },
 
     phone: String,
-    phoneNumber: String, // for backward compatibility
+    phoneNumber: String, // backward compatibility
 
     address: {
       street: String,
@@ -69,7 +66,6 @@ const userSchema = new mongoose.Schema(
       maxlength: 500,
     },
 
-    // ⭐ Clean Rating Object
     rating: {
       average: { type: Number, default: 0 },
       count: { type: Number, default: 0 },
@@ -84,12 +80,70 @@ const userSchema = new mongoose.Schema(
         createdAt: { type: Date, default: Date.now },
       },
     ],
+    ecoScore: {
+      type: Number,
+      default: 0,
+    },
+
+    wasteAnalysisCount: {
+      type: Number,
+      default: 0,
+    },
 
     badges: [String],
     listingsCount: { type: Number, default: 0 },
 
     isVerified: { type: Boolean, default: false },
     isActive: { type: Boolean, default: true },
+
+    // 🔒 Trust & Verification Fields
+    trustScore: {
+      type: Number,
+      default: 50,
+      min: 0,
+      max: 100,
+    },
+
+    verificationStatus: {
+      phone: { type: Boolean, default: false },
+      email: { type: Boolean, default: false },
+      identity: { type: Boolean, default: false },
+      address: { type: Boolean, default: false },
+    },
+
+    trustBadges: [
+      {
+        badge: {
+          type: String,
+          enum: [
+            "verified_contributor",
+            "trusted_recipient",
+            "community_champion",
+            "early_adopter",
+            "power_donor",
+            "reliability_star",
+          ],
+        },
+        earnedAt: { type: Date, default: Date.now },
+        description: String,
+      },
+    ],
+
+    completedDonations: { type: Number, default: 0 },
+    completedPickups: { type: Number, default: 0 },
+    reportedCount: { type: Number, default: 0 },
+
+    isSuspended: { type: Boolean, default: false },
+    suspendedUntil: Date,
+    suspensionReason: String,
+
+    accountWarnings: [
+      {
+        type: String,
+        reason: String,
+        issuedAt: { type: Date, default: Date.now },
+      },
+    ],
   },
   {
     timestamps: true,
@@ -98,12 +152,21 @@ const userSchema = new mongoose.Schema(
   }
 );
 
+// =======================
 // Indexes
+// =======================
 userSchema.index({ location: "2dsphere" });
 userSchema.index({ "rating.average": -1 });
 userSchema.index({ "rating.count": -1 });
+userSchema.index({ trustScore: -1 });
+userSchema.index({ "verificationStatus.email": 1 });
+userSchema.index({ isSuspended: 1 });
 
-// Update rating (safe calculation)
+// =======================
+// Methods
+// =======================
+
+// Update rating
 userSchema.methods.updateRating = function () {
   if (this.rating.count === 0) {
     this.rating.average = 0;
@@ -166,8 +229,102 @@ userSchema.methods.toJSON = function () {
   return obj;
 };
 
+// Virtual full name
 userSchema.virtual("name").get(function () {
   return `${this.firstName} ${this.lastName}`;
 });
+
+// =======================
+// Trust & Badge Methods
+// =======================
+
+userSchema.methods.awardBadge = async function (badgeName, description) {
+  const badgeExists = this.trustBadges.some((b) => b.badge === badgeName);
+
+  if (!badgeExists) {
+    this.trustBadges.push({
+      badge: badgeName,
+      description,
+      earnedAt: new Date(),
+    });
+
+    this.trustScore = Math.min(this.trustScore + 5, 100);
+    await this.save();
+  }
+
+  return this;
+};
+
+userSchema.methods.checkAndAwardBadges = async function () {
+  if (this.completedDonations >= 5 && !this.hasBadge("verified_contributor")) {
+    await this.awardBadge("verified_contributor", "Completed 5+ donations");
+  }
+
+  if (this.completedPickups >= 5 && !this.hasBadge("trusted_recipient")) {
+    await this.awardBadge("trusted_recipient", "Completed 5+ pickups");
+  }
+
+  if (this.completedDonations >= 20 && !this.hasBadge("power_donor")) {
+    await this.awardBadge("power_donor", "Donated 20+ items");
+  }
+
+  if (
+    this.trustScore >= 80 &&
+    this.completedDonations + this.completedPickups >= 15 &&
+    !this.hasBadge("community_champion")
+  ) {
+    await this.awardBadge("community_champion", "Outstanding community member");
+  }
+
+  return this;
+};
+
+userSchema.methods.hasBadge = function (badgeName) {
+  return this.trustBadges.some((b) => b.badge === badgeName);
+};
+
+userSchema.methods.incrementCompletedDonations = async function () {
+  this.completedDonations += 1;
+  this.trustScore = Math.min(this.trustScore + 2, 100);
+  await this.checkAndAwardBadges();
+  await this.save();
+  return this;
+};
+
+userSchema.methods.incrementCompletedPickups = async function () {
+  this.completedPickups += 1;
+  this.trustScore = Math.min(this.trustScore + 2, 100);
+  await this.checkAndAwardBadges();
+  await this.save();
+  return this;
+};
+
+userSchema.methods.addWarning = async function (type, reason) {
+  this.accountWarnings.push({ type, reason });
+  this.trustScore = Math.max(this.trustScore - 10, 0);
+
+  if (this.accountWarnings.length >= 3) {
+    await this.suspend("Multiple violations", 30);
+  }
+
+  await this.save();
+  return this;
+};
+
+userSchema.methods.suspend = async function (reason, days = 30) {
+  this.isSuspended = true;
+  this.suspensionReason = reason;
+  this.suspendedUntil = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
+  await this.save();
+  return this;
+};
+
+userSchema.methods.unsuspend = async function () {
+  this.isSuspended = false;
+  this.suspensionReason = null;
+  this.suspendedUntil = null;
+  await this.save();
+  return this;
+};
 
 module.exports = mongoose.model("User", userSchema);

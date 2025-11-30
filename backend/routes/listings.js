@@ -20,6 +20,8 @@ const {
   checkIn,
 } = require("../controllers/listingController");
 const queueController = require("../controllers/queueController");
+const { proposeSchedule } = require("../controllers/scheduleController");
+
 
 const router = express.Router();
 
@@ -135,6 +137,36 @@ const assignValidation = [
     .withMessage("Invalid recipient ID"),
 ];
 
+// Validation middleware
+const proposeScheduleValidation = [
+  body("recipientId")
+    .notEmpty()
+    .withMessage("Recipient is required")
+    .isMongoId()
+    .withMessage("Invalid recipient ID"),
+  body("date")
+    .notEmpty()
+    .withMessage("Date is required")
+    .isISO8601()
+    .withMessage("Invalid date format"),
+  body("time")
+    .notEmpty()
+    .withMessage("Time is required")
+    .matches(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/)
+    .withMessage("Invalid time format (use HH:MM)"),
+  body("pickupLocation")
+    .optional()
+    .trim()
+    .isLength({ max: 200 })
+    .withMessage("Pickup location too long"),
+  body("donorNotes")
+    .optional()
+    .trim()
+    .isLength({ max: 500 })
+    .withMessage("Notes cannot exceed 500 characters"),
+];
+
+
 // ============================================
 // ROUTES - Proper ordering is important!
 // ============================================
@@ -189,5 +221,6 @@ router.post("/:id/queue/join", auth, queueController.joinQueue);
 router.delete("/:id/queue/leave", auth, queueController.leaveQueue);
 router.get("/:id/queue/status", auth, queueController.getQueueStatus);
 router.post("/:id/queue/cancel", auth, queueController.cancelAssignment);
+router.post("/:id/schedule", auth, proposeScheduleValidation, proposeSchedule);
 
 module.exports = router;

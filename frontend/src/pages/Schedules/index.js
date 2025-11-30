@@ -1,10 +1,10 @@
 // src/pages/Schedules/index.js
-import React, { useState, useEffect } from 'react';
-import styled from 'styled-components';
-import { motion } from 'framer-motion';
-import axios from 'axios';
-import { toast } from 'react-toastify';
-//import ScheduleCard from '../../components/ScheduleCard';
+import React, { useState, useEffect } from "react";
+import styled from "styled-components";
+import { motion } from "framer-motion";
+import { scheduleAPI } from "../../services/api";
+import { toast } from "react-toastify";
+import ScheduleCard from "../../components/ScheduleCard";
 
 const Container = styled.div`
   max-width: 1200px;
@@ -15,14 +15,14 @@ const Container = styled.div`
 
 const Header = styled.div`
   margin-bottom: 2rem;
-  
+
   h1 {
     font-size: 2rem;
     font-weight: 800;
     color: #2d3748;
     margin-bottom: 0.5rem;
   }
-  
+
   p {
     color: #718096;
     font-size: 1.1rem;
@@ -41,14 +41,16 @@ const Tab = styled(motion.button)`
   padding: 1rem 1.5rem;
   background: none;
   border: none;
-  color: ${props => props.$active ? '#4299e1' : '#718096'};
+  color: ${(props) => (props.$active ? "#4299e1" : "#718096")};
   font-weight: 600;
   font-size: 1rem;
   cursor: pointer;
   position: relative;
   white-space: nowrap;
-  
-  ${props => props.$active && `
+
+  ${(props) =>
+    props.$active &&
+    `
     &::after {
       content: '';
       position: absolute;
@@ -59,7 +61,7 @@ const Tab = styled(motion.button)`
       background: #4299e1;
     }
   `}
-  
+
   &:hover {
     color: #4299e1;
   }
@@ -75,14 +77,14 @@ const FilterGroup = styled.div`
 const FilterButton = styled(motion.button)`
   padding: 0.5rem 1rem;
   border-radius: 20px;
-  border: 2px solid ${props => props.$active ? '#4299e1' : '#e2e8f0'};
-  background: ${props => props.$active ? '#ebf8ff' : 'white'};
-  color: ${props => props.$active ? '#2c5282' : '#4a5568'};
+  border: 2px solid ${(props) => (props.$active ? "#4299e1" : "#e2e8f0")};
+  background: ${(props) => (props.$active ? "#ebf8ff" : "white")};
+  color: ${(props) => (props.$active ? "#2c5282" : "#4a5568")};
   font-weight: 600;
   font-size: 0.9rem;
   cursor: pointer;
   transition: all 0.3s ease;
-  
+
   &:hover {
     border-color: #4299e1;
     background: #ebf8ff;
@@ -93,7 +95,7 @@ const Grid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
   gap: 1.5rem;
-  
+
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
   }
@@ -105,19 +107,19 @@ const EmptyState = styled(motion.div)`
   background: white;
   border-radius: 16px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  
+
   div {
     font-size: 4rem;
     margin-bottom: 1rem;
   }
-  
+
   h3 {
     font-size: 1.5rem;
     font-weight: 700;
     color: #2d3748;
     margin-bottom: 0.5rem;
   }
-  
+
   p {
     color: #718096;
     font-size: 1rem;
@@ -135,8 +137,8 @@ const LoadingSpinner = styled(motion.div)`
 const SchedulesPage = () => {
   const [schedules, setSchedules] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('all'); // all, donor, recipient
-  const [statusFilter, setStatusFilter] = useState('all'); // all, proposed, confirmed, completed
+  const [activeTab, setActiveTab] = useState("all"); // all, donor, recipient
+  const [statusFilter, setStatusFilter] = useState("all"); // all, proposed, confirmed, completed
 
   useEffect(() => {
     fetchSchedules();
@@ -146,20 +148,20 @@ const SchedulesPage = () => {
     setLoading(true);
     try {
       const params = {};
-      
-      if (activeTab !== 'all') {
+
+      if (activeTab !== "all") {
         params.role = activeTab;
       }
-      
-      if (statusFilter !== 'all') {
+
+      if (statusFilter !== "all") {
         params.status = statusFilter;
       }
 
-      const response = await axios.get('/api/schedules/my-schedules', { params });
+      const response = await scheduleAPI.getMySchedules(params);
       setSchedules(response.data.schedules);
     } catch (error) {
-      console.error('Fetch schedules error:', error);
-      toast.error('Failed to load schedules');
+      console.error("Fetch schedules error:", error);
+      toast.error("Failed to load schedules");
     } finally {
       setLoading(false);
     }
@@ -170,8 +172,8 @@ const SchedulesPage = () => {
   };
 
   const getUserRole = (schedule) => {
-    const userId = localStorage.getItem('userId'); // Adjust based on your auth context
-    return schedule.donor._id === userId ? 'donor' : 'recipient';
+    const userId = localStorage.getItem("userId"); // Adjust based on your auth context
+    return schedule.donor._id === userId ? "donor" : "recipient";
   };
 
   const filteredSchedules = schedules;
@@ -190,24 +192,24 @@ const SchedulesPage = () => {
 
       <Tabs>
         <Tab
-          $active={activeTab === 'all'}
-          onClick={() => setActiveTab('all')}
+          $active={activeTab === "all"}
+          onClick={() => setActiveTab("all")}
           whileHover={{ y: -2 }}
           whileTap={{ y: 0 }}
         >
           All Schedules
         </Tab>
         <Tab
-          $active={activeTab === 'donor'}
-          onClick={() => setActiveTab('donor')}
+          $active={activeTab === "donor"}
+          onClick={() => setActiveTab("donor")}
           whileHover={{ y: -2 }}
           whileTap={{ y: 0 }}
         >
           As Donor
         </Tab>
         <Tab
-          $active={activeTab === 'recipient'}
-          onClick={() => setActiveTab('recipient')}
+          $active={activeTab === "recipient"}
+          onClick={() => setActiveTab("recipient")}
           whileHover={{ y: -2 }}
           whileTap={{ y: 0 }}
         >
@@ -217,32 +219,32 @@ const SchedulesPage = () => {
 
       <FilterGroup>
         <FilterButton
-          $active={statusFilter === 'all'}
-          onClick={() => setStatusFilter('all')}
+          $active={statusFilter === "all"}
+          onClick={() => setStatusFilter("all")}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
           All Status
         </FilterButton>
         <FilterButton
-          $active={statusFilter === 'proposed'}
-          onClick={() => setStatusFilter('proposed')}
+          $active={statusFilter === "proposed"}
+          onClick={() => setStatusFilter("proposed")}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
           ⏳ Pending
         </FilterButton>
         <FilterButton
-          $active={statusFilter === 'confirmed'}
-          onClick={() => setStatusFilter('confirmed')}
+          $active={statusFilter === "confirmed"}
+          onClick={() => setStatusFilter("confirmed")}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
           ✅ Confirmed
         </FilterButton>
         <FilterButton
-          $active={statusFilter === 'completed'}
-          onClick={() => setStatusFilter('completed')}
+          $active={statusFilter === "completed"}
+          onClick={() => setStatusFilter("completed")}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
@@ -253,7 +255,7 @@ const SchedulesPage = () => {
       {loading ? (
         <LoadingSpinner
           animate={{ rotate: 360 }}
-          transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+          transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
         >
           ⏳
         </LoadingSpinner>
@@ -265,13 +267,13 @@ const SchedulesPage = () => {
           <div>📅</div>
           <h3>No schedules found</h3>
           <p>
-            {statusFilter === 'all'
-              ? 'You don\'t have any pickup schedules yet'
+            {statusFilter === "all"
+              ? "You don't have any pickup schedules yet"
               : `No ${statusFilter} schedules found`}
           </p>
         </EmptyState>
       ) : (
-        /*<Grid>
+        <Grid>
           {filteredSchedules.map((schedule) => (
             <ScheduleCard
               key={schedule._id}
@@ -280,8 +282,7 @@ const SchedulesPage = () => {
               onUpdate={handleUpdate}
             />
           ))}
-        </Grid>*/
-        <div>Schedule cards would be displayed here.</div>
+        </Grid>
       )}
     </Container>
   );

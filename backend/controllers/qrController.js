@@ -1,8 +1,12 @@
 // backend/controllers/qrController.js
-const Transaction = require('../models/Transaction');
-const Listing = require('../models/Listing');
-const User = require('../models/User');
-const { generateQRCode, verifyQRCode, generateQRBuffer } = require('../utils/qrGenerator');
+const Transaction = require("../models/Transaction");
+const Listing = require("../models/Listing");
+const User = require("../models/User");
+const {
+  generateQRCode,
+  verifyQRCode,
+  generateQRBuffer,
+} = require("../utils/qrGenerator");
 
 /**
  * Generate QR code for a listing assignment
@@ -11,120 +15,115 @@ const { generateQRCode, verifyQRCode, generateQRBuffer } = require('../utils/qrG
 const generateQR = async (req, res) => {
   try {
     const { listingId, recipientId } = req.body;
-    const donorId = req.user.id; // From auth middleware
+    const donorId = req.user.id;
 
-    // Validate inputs
     if (!listingId || !recipientId) {
       return res.status(400).json({
         success: false,
-        message: 'Listing ID and Recipient ID are required'
+        message: "Listing ID and Recipient ID are required",
       });
     }
 
-    // Verify listing exists and belongs to donor
     const listing = await Listing.findById(listingId);
-    
+
     if (!listing) {
       return res.status(404).json({
         success: false,
-        message: 'Listing not found'
+        message: "Listing not found",
       });
     }
 
-    if (listing.userId.toString() !== donorId) {
+    if (listing.donor.toString() !== donorId) {
       return res.status(403).json({
         success: false,
-        message: 'You can only generate QR codes for your own listings'
+        message: "You can only generate QR codes for your own listings",
       });
     }
 
-    if (listing.status !== 'assigned' && listing.status !== 'available') {
+    if (listing.status !== "pending") {
       return res.status(400).json({
         success: false,
-        message: `Cannot generate QR for listing with status: ${listing.status}`
+        message: `QR only allowed when pickup is pending`,
       });
     }
 
-    // Verify recipient exists
     const recipient = await User.findById(recipientId);
     if (!recipient) {
       return res.status(404).json({
         success: false,
-        message: 'Recipient not found'
+        message: "Recipient not found",
       });
     }
 
-    // Check if active transaction already exists
-    const existingTransaction = await Transaction.findOne({
+    // Check if active transaction exists
+    let transaction = await Transaction.findOne({
       listing: listingId,
       recipient: recipientId,
-      status: 'pending'
+      status: "pending",
     });
 
-    if (existingTransaction) {
+    if (transaction) {
       return res.status(200).json({
         success: true,
-        message: 'QR code already exists',
-        qrCode: existingTransaction.qrCode,
-        qrCodeImage: existingTransaction.qrCodeImage || null,
-        transaction: existingTransaction
+        message: "QR already exists",
+        qrCode: transaction.qrCode,
+        qrCodeImage: transaction.qrCodeImage || null,
+        transaction,
       });
     }
 
-    // Create new transaction record
-    const transaction = new Transaction({
+    // Create new transaction
+    transaction = new Transaction({
       listing: listingId,
       donor: donorId,
       recipient: recipientId,
-      status: 'pending',
-      pickupLocation: listing.location
+      status: "pending",
+      pickupLocation:
+        listing.pickupLocation || listing.location || "Not specified",
+      // IMPORTANT: Fix validation error (required)
+      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // valid 24 hrs
     });
 
-    // Generate QR code
+    // Generate QR
     const qrResult = await generateQRCode(
       transaction._id,
       listingId,
       recipientId
     );
 
-    // Save QR data to transaction
     transaction.qrCode = qrResult.qrCode;
     transaction.qrCodeHash = qrResult.qrCodeHash;
     transaction.qrCodeImage = qrResult.qrCodeImage;
 
-    // Calculate impact
     transaction.calculateImpact({
       quantity: listing.quantity,
-      estimatedWeight: listing.estimatedWeight || 1
+      estimatedWeight: listing.estimatedWeight || 1,
     });
 
     await transaction.save();
 
-    // Update listing status to assigned
-    if (listing.status !== 'assigned') {
-      listing.status = 'assigned';
-      listing.assignedTo = recipientId;
-      await listing.save();
-    }
+    // Update listing assignment
+    listing.status = "assigned";
+    listing.assignedTo = recipientId;
+    await listing.save();
 
     res.status(201).json({
       success: true,
-      message: 'QR code generated successfully',
+      message: "QR code generated successfully",
       qrCode: qrResult.qrCode,
       qrCodeImage: qrResult.qrCodeImage,
       transaction: {
         id: transaction._id,
         expiresAt: transaction.expiresAt,
-        status: transaction.status
-      }
+        status: transaction.status,
+      },
     });
-
   } catch (error) {
-    console.error('Generate QR Error:', error);
+    console.error("Generate QR Error:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to generate QR code',
-      error: error.message
+      message: "Failed to generate QR code",
+      error: error.message,
     });
   }
 };
@@ -141,7 +140,7 @@ const verifyQR = async (req, res) => {
     if (!qrCode) {
       return res.status(400).json({
         success: false,
-        message: 'QR code data is required'
+        message: "QR code data is required",
       });
     }
 
@@ -151,40 +150,43 @@ const verifyQR = async (req, res) => {
     if (!verification.valid) {
       return res.status(400).json({
         success: false,
-        message: verification.error || 'Invalid QR code'
+        message: verification.error || "Invalid QR code",
       });
     }
 
     // Find transaction
     const transaction = await Transaction.findById(verification.transactionId)
-      .populate('listing', 'title quantity category imageUrl estimatedWeight')
-      .populate('donor', 'firstName lastName email profilePicture')
-      .populate('recipient', 'firstName lastName email profilePicture');
+      .populate("listing", "title quantity category imageUrl estimatedWeight")
+      .populate("donor", "firstName lastName email profilePicture")
+      .populate("recipient", "firstName lastName email profilePicture");
 
     if (!transaction) {
       return res.status(404).json({
         success: false,
-        message: 'Transaction not found'
+        message: "Transaction not found",
       });
     }
 
     // Check if already completed
-    if (transaction.status === 'completed') {
+    if (transaction.status === "completed") {
       return res.status(400).json({
         success: false,
-        message: 'This QR code has already been used',
-        transaction: transaction
+        message: "This QR code has already been used",
+        transaction: transaction,
       });
     }
 
     // Check if expired
-    if (transaction.status === 'expired' || new Date() > transaction.expiresAt) {
-      transaction.status = 'expired';
+    if (
+      transaction.status === "expired" ||
+      new Date() > transaction.expiresAt
+    ) {
+      transaction.status = "expired";
       await transaction.save();
-      
+
       return res.status(400).json({
         success: false,
-        message: 'QR code has expired'
+        message: "QR code has expired",
       });
     }
 
@@ -195,7 +197,7 @@ const verifyQR = async (req, res) => {
     if (!isDonor && !isRecipient) {
       return res.status(403).json({
         success: false,
-        message: 'You are not authorized to verify this transaction'
+        message: "You are not authorized to verify this transaction",
       });
     }
 
@@ -205,33 +207,32 @@ const verifyQR = async (req, res) => {
     // Update listing status
     const listing = await Listing.findById(transaction.listing._id);
     if (listing) {
-      listing.status = 'completed';
+      listing.status = "completed";
       listing.completedAt = new Date();
       await listing.save();
     }
 
     // Update user stats (you can expand this)
     await User.findByIdAndUpdate(transaction.donor._id, {
-      $inc: { 'stats.totalDonations': 1 }
+      $inc: { "stats.totalDonations": 1 },
     });
 
     await User.findByIdAndUpdate(transaction.recipient._id, {
-      $inc: { 'stats.totalReceived': 1 }
+      $inc: { "stats.totalReceived": 1 },
     });
 
     res.status(200).json({
       success: true,
-      message: 'Pickup verified successfully! 🎉',
+      message: "Pickup verified successfully! 🎉",
       transaction: transaction,
-      impact: transaction.impact
+      impact: transaction.impact,
     });
-
   } catch (error) {
-    console.error('Verify QR Error:', error);
+    console.error("Verify QR Error:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to verify QR code',
-      error: error.message
+      message: "Failed to verify QR code",
+      error: error.message,
     });
   }
 };
@@ -246,14 +247,14 @@ const getTransaction = async (req, res) => {
     const userId = req.user.id;
 
     const transaction = await Transaction.findById(id)
-      .populate('listing', 'title quantity category imageUrl')
-      .populate('donor', 'firstName lastName email')
-      .populate('recipient', 'firstName lastName email');
+      .populate("listing", "title quantity category imageUrl")
+      .populate("donor", "firstName lastName email")
+      .populate("recipient", "firstName lastName email");
 
     if (!transaction) {
       return res.status(404).json({
         success: false,
-        message: 'Transaction not found'
+        message: "Transaction not found",
       });
     }
 
@@ -264,21 +265,20 @@ const getTransaction = async (req, res) => {
     if (!isDonor && !isRecipient) {
       return res.status(403).json({
         success: false,
-        message: 'Unauthorized access'
+        message: "Unauthorized access",
       });
     }
 
     res.status(200).json({
       success: true,
-      transaction: transaction
+      transaction: transaction,
     });
-
   } catch (error) {
-    console.error('Get Transaction Error:', error);
+    console.error("Get Transaction Error:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch transaction',
-      error: error.message
+      message: "Failed to fetch transaction",
+      error: error.message,
     });
   }
 };
@@ -294,9 +294,9 @@ const getMyTransactions = async (req, res) => {
 
     let query = {};
 
-    if (role === 'donor') {
+    if (role === "donor") {
       query.donor = userId;
-    } else if (role === 'recipient') {
+    } else if (role === "recipient") {
       query.recipient = userId;
     } else {
       // Get both
@@ -308,23 +308,22 @@ const getMyTransactions = async (req, res) => {
     }
 
     const transactions = await Transaction.find(query)
-      .populate('listing', 'title quantity category imageUrl')
-      .populate('donor', 'firstName lastName')
-      .populate('recipient', 'firstName lastName')
+      .populate("listing", "title quantity category imageUrl")
+      .populate("donor", "firstName lastName")
+      .populate("recipient", "firstName lastName")
       .sort({ createdAt: -1 });
 
     res.status(200).json({
       success: true,
       count: transactions.length,
-      transactions: transactions
+      transactions: transactions,
     });
-
   } catch (error) {
-    console.error('Get Transactions Error:', error);
+    console.error("Get Transactions Error:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch transactions',
-      error: error.message
+      message: "Failed to fetch transactions",
+      error: error.message,
     });
   }
 };
@@ -343,7 +342,7 @@ const downloadQR = async (req, res) => {
     if (!transaction) {
       return res.status(404).json({
         success: false,
-        message: 'Transaction not found'
+        message: "Transaction not found",
       });
     }
 
@@ -351,23 +350,25 @@ const downloadQR = async (req, res) => {
     if (transaction.donor.toString() !== userId) {
       return res.status(403).json({
         success: false,
-        message: 'Unauthorized'
+        message: "Unauthorized",
       });
     }
 
     // Generate QR as buffer
     const qrBuffer = await generateQRBuffer(transaction.qrCode);
 
-    res.setHeader('Content-Type', 'image/png');
-    res.setHeader('Content-Disposition', `attachment; filename="qr-code-${transactionId}.png"`);
+    res.setHeader("Content-Type", "image/png");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="qr-code-${transactionId}.png"`
+    );
     res.send(qrBuffer);
-
   } catch (error) {
-    console.error('Download QR Error:', error);
+    console.error("Download QR Error:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to download QR code',
-      error: error.message
+      message: "Failed to download QR code",
+      error: error.message,
     });
   }
 };
@@ -377,5 +378,5 @@ module.exports = {
   verifyQR,
   getTransaction,
   getMyTransactions,
-  downloadQR
+  downloadQR,
 };

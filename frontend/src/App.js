@@ -23,6 +23,9 @@ import Dashboard from "./pages/Dashboard";
 import CreateListing from "./pages/CreateListing";
 import Profile from "./pages/Profile";
 import Notifications from "./pages/Notifications";
+import WasteAnalyzer from "./pages/WasteAnalyzer";
+import AnalysisHistory from "./pages/AnalysisHistory";
+
 import Chat from "./components/Chat";
 import ContactModal from "./components/ContactModal";
 
@@ -48,14 +51,11 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/contact" element={<ContactModal />} />
-
         {/* Listings */}
         <Route path="/listings" element={<Listings />} />
         <Route path="/listings/:id" element={<ListingDetails />} />
-
         {/* Public Impact Stats */}
         <Route path="/impact/community" element={<CommunityStats />} />
-
         {/* ========== PROTECTED ROUTES ========== */}
         <Route
           path="/dashboard"
@@ -65,7 +65,6 @@ function App() {
             </ProtectedRoute>
           }
         />
-
         <Route
           path="/create-listing"
           element={
@@ -74,7 +73,6 @@ function App() {
             </ProtectedRoute>
           }
         />
-
         {/* Profile - ✅ Can view any user's profile (public) */}
         {/* But own profile editing is protected */}
         <Route path="/profile/:userId" element={<Profile />} />
@@ -86,7 +84,6 @@ function App() {
             </ProtectedRoute>
           }
         />
-
         <Route
           path="/notifications"
           element={
@@ -95,7 +92,6 @@ function App() {
             </ProtectedRoute>
           }
         />
-
         {/* 🆕 NEW: Schedules Route */}
         <Route
           path="/schedules"
@@ -105,7 +101,22 @@ function App() {
             </ProtectedRoute>
           }
         />
-
+        <Route
+          path="/waste-analyzer"
+          element={
+            <ProtectedRoute>
+              <WasteAnalyzer />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/analysis-history"
+          element={
+            <ProtectedRoute>
+              <AnalysisHistory />
+            </ProtectedRoute>
+          }
+        />
         {/* Chat Routes */}
         <Route
           path="/chat"
@@ -123,7 +134,6 @@ function App() {
             </ProtectedRoute>
           }
         />
-
         {/* Check-in (QR Verification) */}
         <Route
           path="/check-in"
@@ -133,7 +143,6 @@ function App() {
             </ProtectedRoute>
           }
         />
-
         {/* Personal Impact */}
         <Route
           path="/impact/personal"
@@ -143,7 +152,6 @@ function App() {
             </ProtectedRoute>
           }
         />
-
         {/* ========== CATCH-ALL ROUTE ========== */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

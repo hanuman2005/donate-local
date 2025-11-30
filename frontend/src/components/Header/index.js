@@ -129,6 +129,9 @@ const Header = () => {
             ...(user
               ? [
                   { path: "/dashboard", label: "Dashboard" },
+                  { path: "/schedules", label: "📅 My Schedules" },
+                  { path: "/waste-analyzer", label: "🤖 AI Analyzer" },
+
                   ...(isDonor
                     ? [{ path: "/create-listing", label: "Create Listing" }]
                     : []),
@@ -385,6 +388,8 @@ const Header = () => {
                 ...(user
                   ? [
                       { path: "/dashboard", label: "Dashboard" },
+                      { path: "/schedules", label: "📅 My Schedules" },
+                      { path: "/waste-analyzer", label: "🤖 AI Analyzer" }, 
                       { path: "/impact/personal", label: "My Impact" },
                       { path: "/check-in", label: "📷 Scan QR Code" },
                       {
