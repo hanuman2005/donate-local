@@ -22,7 +22,6 @@ const {
 const queueController = require("../controllers/queueController");
 const { proposeSchedule } = require("../controllers/scheduleController");
 
-
 const router = express.Router();
 
 // ✅ FIXED: Validation rules matching what frontend actually sends
@@ -166,7 +165,6 @@ const proposeScheduleValidation = [
     .withMessage("Notes cannot exceed 500 characters"),
 ];
 
-
 // ============================================
 // ROUTES - Proper ordering is important!
 // ============================================
@@ -176,6 +174,35 @@ router.get("/search", searchValidation, searchListings);
 
 // Nearby route (must be before /:id)
 router.get("/nearby", nearbyValidation, getNearbyListings);
+
+
+router.get("/user/pending", auth, async (req, res) => {
+  try {
+    const Listing = require("../models/Listing"); // ← Add this import
+    
+    const listings = await Listing.find({
+      donor: req.user._id,
+      status: "pending",
+      assignedTo: { $exists: true, $ne: null },
+    })
+      .populate("assignedTo", "firstName lastName email avatar")
+      .populate("donor", "firstName lastName")
+      .sort("-updatedAt");
+
+    res.json({
+      success: true,
+      count: listings.length,
+      listings,
+    });
+  } catch (error) {
+    console.error("Error fetching pending listings:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch pending listings",
+      error: error.message
+    });
+  }
+});
 
 // User listings route (must be before /:id)
 router.get("/user", auth, getUserListings);

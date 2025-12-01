@@ -1,14 +1,16 @@
-// ============================================
-// src/components/CheckIn/index.jsx - WITH MOTION
-// ============================================
+// src/components/CheckIn/index.jsx - CLEANED UP
 import React, { useState } from "react";
-import { useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom'; // ← Removed unused useLocation
 import styled from "styled-components";
 import { motion, AnimatePresence } from "framer-motion";
 import QrScanner from "react-qr-scanner";
 import { motionVariants } from "../../animations/motionVariants";
 import api from "../../services/api";
 import { toast } from "react-toastify";
+
+// ============================================
+// STYLED COMPONENTS (Only Used Ones)
+// ============================================
 
 const CheckInContainer = styled(motion.div)`
   max-width: 500px;
@@ -27,52 +29,6 @@ const Title = styled.h2`
   text-align: center;
   color: #2d3748;
   margin-bottom: 1.5rem;
-`;
-
-const ModeToggle = styled(motion.div)`
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 2rem;
-`;
-
-const ModeButton = styled(motion.button)`
-  flex: 1;
-  padding: 1rem;
-  background: ${(props) =>
-    props.$active
-      ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
-      : "#f7fafc"};
-  color: ${(props) => (props.$active ? "white" : "#4a5568")};
-  border: 2px solid ${(props) => (props.$active ? "#667eea" : "#e2e8f0")};
-  border-radius: 12px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: all 0.3s;
-`;
-
-const InputGroup = styled(motion.div)`
-  margin-bottom: 1.5rem;
-`;
-
-const Label = styled.label`
-  display: block;
-  margin-bottom: 0.5rem;
-  color: #4a5568;
-  font-weight: 600;
-`;
-
-const Input = styled.input`
-  width: 100%;
-  padding: 0.75rem;
-  border: 2px solid #e2e8f0;
-  border-radius: 8px;
-  font-size: 1rem;
-  transition: border-color 0.3s;
-
-  &:focus {
-    outline: none;
-    border-color: #667eea;
-  }
 `;
 
 const Button = styled(motion.button)`
@@ -117,58 +73,39 @@ const HistoryItem = styled(motion.div)`
   margin-bottom: 0.5rem;
 `;
 
+// ============================================
+// COMPONENT
+// ============================================
+
 const CheckIn = () => {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(null);
   const [checkInHistory, setCheckInHistory] = useState([]);
-  const location = useLocation();
-  const [mode, setMode] = useState("manual");
-  const [listingId, setListingId] = useState(location.state?.listingId || "");
-  const handleManualCheckIn = async (e) => {
-    e.preventDefault();
-
-    if (!listingId.trim()) {
-      toast.error("Please enter a listing ID");
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const response = await api.post(`/listings/${listingId}/check-in`);
-
-      setSuccess({
-        title: response.data.listing.title,
-        time: new Date(),
-        id: listingId,
-      });
-
-      setCheckInHistory((prev) => [
-        { id: listingId, title: response.data.listing.title, time: new Date() },
-        ...prev.slice(0, 4),
-      ]);
-
-      toast.success("Check-in successful!");
-      setListingId("");
-
-      setTimeout(() => setSuccess(null), 5000);
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Check-in failed");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [scanning, setScanning] = useState(false);
+  const navigate = useNavigate();
 
   const handleQrScan = async (result, error) => {
-    if (result) {
+    if (result?.text) {
       try {
-        const data = JSON.parse(result?.text);
-        setListingId(data.listingId);
+        // Parse QR data safely
+        let data;
+        try {
+          data = JSON.parse(result.text);
+        } catch {
+          data = { listingId: result.text };
+        }
+
+        if (!data.listingId) {
+          toast.error("Invalid QR code format");
+          return;
+        }
+
+        setScanning(false);
+        setLoading(true);
 
         const response = await api.post(
           `/listings/${data.listingId}/check-in`,
-          {
-            qrData: data,
-          }
+          { qrData: data }
         );
 
         setSuccess({
@@ -186,19 +123,22 @@ const CheckIn = () => {
           ...prev.slice(0, 4),
         ]);
 
-        toast.success("QR Check-in successful!");
+        toast.success("✅ Check-in successful!");
 
         setTimeout(() => {
-          setMode("manual");
           setSuccess(null);
-        }, 3000);
+        }, 5000);
       } catch (err) {
-        toast.error("Invalid QR code or check-in failed");
+        console.error("QR Scan Error:", err);
+        toast.error(err.response?.data?.message || "Check-in failed");
+        setScanning(false);
+      } finally {
+        setLoading(false);
       }
     }
 
     if (error) {
-      console.error("QR scan error:", error);
+      console.error("QR camera error:", error);
     }
   };
 
@@ -210,60 +150,56 @@ const CheckIn = () => {
       exit="exit"
     >
       <Card variants={motionVariants.scaleIn}>
-        <Title>📍 Quick Check-In</Title>
+        <Title>📷 QR Code Check-In</Title>
 
-        <ModeToggle>
-          <ModeButton
-            $active={mode === "manual"}
-            onClick={() => setMode("manual")}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            ⌨️ Manual Entry
-          </ModeButton>
-          <ModeButton
-            $active={mode === "qr"}
-            onClick={() => setMode("qr")}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            📷 Scan QR Code
-          </ModeButton>
-        </ModeToggle>
+        {!scanning && !success && (
+          <>
+            <motion.div
+              style={{
+                textAlign: 'center',
+                marginBottom: '2rem',
+                padding: '1.5rem',
+                background: '#f7fafc',
+                borderRadius: '12px'
+              }}
+            >
+              <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📱</div>
+              <h3 style={{ color: '#2d3748', marginBottom: '0.5rem' }}>
+                Ready to Verify Pickup?
+              </h3>
+              <p style={{ color: '#718096', marginBottom: 0 }}>
+                Ask the donor to show their QR code, then tap the button below to scan.
+              </p>
+            </motion.div>
+
+            <Button
+              onClick={() => setScanning(true)}
+              whileHover={{ scale: 1.02, y: -2 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              📷 Start Camera
+            </Button>
+
+            <div
+              style={{
+                marginTop: '1.5rem',
+                padding: '1rem',
+                background: '#fef3c7',
+                borderRadius: '8px',
+                fontSize: '0.9rem',
+                color: '#92400e'
+              }}
+            >
+              <strong>💡 Tip:</strong> The donor will generate a QR code from their listing. 
+              Just scan it to complete the pickup instantly!
+            </div>
+          </>
+        )}
 
         <AnimatePresence mode="wait">
-          {mode === "manual" ? (
-            <motion.form
-              key="manual"
-              onSubmit={handleManualCheckIn}
-              variants={motionVariants.fadeSlide}
-              initial="hidden"
-              animate="show"
-              exit="hidden"
-            >
-              <InputGroup>
-                <Label>Listing ID</Label>
-                <Input
-                  type="text"
-                  placeholder="Enter listing ID or code"
-                  value={listingId}
-                  onChange={(e) => setListingId(e.target.value)}
-                  autoFocus
-                />
-              </InputGroup>
-
-              <Button
-                type="submit"
-                disabled={loading}
-                whileHover={{ scale: 1.02, y: -2 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                {loading ? "Checking In..." : "✅ Check In"}
-              </Button>
-            </motion.form>
-          ) : (
+          {scanning && !success && (
             <motion.div
-              key="qr"
+              key="scanner"
               variants={motionVariants.fadeSlide}
               initial="hidden"
               animate="show"
@@ -272,8 +208,15 @@ const CheckIn = () => {
               <QrScanner
                 delay={300}
                 onError={(err) => console.error("QR scan error:", err)}
-                onScan={(text) => text && handleQrScan(text)}
-                style={{ width: "100%", borderRadius: "12px" }}
+                onScan={handleQrScan}
+                style={{ 
+                  width: "100%", 
+                  borderRadius: "12px",
+                  maxHeight: '400px'
+                }}
+                constraints={{
+                  video: { facingMode: "environment" }
+                }}
               />
               <p
                 style={{
@@ -283,8 +226,19 @@ const CheckIn = () => {
                   fontSize: "0.9rem",
                 }}
               >
-                Point your camera at the QR code
+                {loading ? "⏳ Verifying..." : "📸 Point camera at QR code"}
               </p>
+
+              {!loading && (
+                <Button
+                  onClick={() => setScanning(false)}
+                  style={{ background: '#e53e3e', marginTop: '1rem' }}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  ❌ Cancel
+                </Button>
+              )}
             </motion.div>
           )}
         </AnimatePresence>
@@ -297,32 +251,59 @@ const CheckIn = () => {
               animate="show"
               exit="hidden"
             >
-              <div style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>✅</div>
-              <div style={{ fontSize: "1.2rem", fontWeight: "600" }}>
-                Check-in Successful!
+              <div style={{ fontSize: "3rem", marginBottom: "0.5rem" }}>✅</div>
+              <div style={{ fontSize: "1.3rem", fontWeight: "700" }}>
+                Pickup Verified!
               </div>
               <div
                 style={{
-                  fontSize: "0.9rem",
-                  opacity: 0.9,
-                  marginTop: "0.5rem",
+                  fontSize: "1rem",
+                  opacity: 0.95,
+                  marginTop: "0.75rem",
+                  fontWeight: '500'
                 }}
               >
                 {success.title}
               </div>
+              <div
+                style={{
+                  fontSize: "0.85rem",
+                  opacity: 0.8,
+                  marginTop: "1rem"
+                }}
+              >
+                Transaction completed successfully!
+              </div>
+
+              <Button
+                onClick={() => {
+                  setSuccess(null);
+                  navigate('/dashboard');
+                }}
+                style={{ 
+                  marginTop: '1.5rem',
+                  background: 'white',
+                  color: '#48bb78',
+                  border: '2px solid white'
+                }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                📊 Go to Dashboard
+              </Button>
             </SuccessMessage>
           )}
         </AnimatePresence>
       </Card>
 
-      {checkInHistory.length > 0 && (
+      {checkInHistory.length > 0 && !success && (
         <CheckInHistory
           variants={motionVariants.fadeSlideUp}
           initial="hidden"
           animate="show"
         >
           <h3 style={{ color: "#2d3748", marginBottom: "1rem" }}>
-            Recent Check-ins
+            ✅ Recent Check-ins
           </h3>
           <AnimatePresence>
             {checkInHistory.map((item, index) => (
@@ -342,8 +323,8 @@ const CheckIn = () => {
                     ID: {item.id.slice(-8)}
                   </div>
                 </div>
-                <div style={{ fontSize: "0.85rem", color: "#718096" }}>
-                  {Math.floor((new Date() - item.time) / 1000)}s ago
+                <div style={{ fontSize: "0.85rem", color: "#48bb78", fontWeight: '600' }}>
+                  ✓ Verified
                 </div>
               </HistoryItem>
             ))}

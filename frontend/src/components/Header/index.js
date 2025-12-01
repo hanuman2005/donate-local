@@ -1,4 +1,4 @@
-// src/components/Header/index.jsx - ANIMATED WITH FRAMER MOTION
+// Updated Header with minor improvements
 import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -73,6 +73,7 @@ const Header = () => {
   const handleLogout = () => {
     logout();
     setIsDropdownOpen(false);
+    setIsMobileMenuOpen(false);
     navigate("/");
   };
 
@@ -87,11 +88,14 @@ const Header = () => {
   };
 
   const handleNotificationsClick = () => {
+    setIsDropdownOpen(false);
+    setIsMobileMenuOpen(false);
     navigate("/notifications");
   };
 
   const closeMobileMenu = () => {
     setIsMobileMenuOpen(false);
+    setIsDropdownOpen(false);
   };
 
   const isActive = (path) => {
@@ -113,7 +117,10 @@ const Header = () => {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
-          <LogoText>ShareTogether</LogoText>
+          <LogoText>
+            <span style={{ fontSize: "1.3em", marginRight: "0.3rem" }}>♻️</span>
+            DonateLocal
+          </LogoText>
         </Logo>
 
         <Navigation
@@ -124,16 +131,16 @@ const Header = () => {
         >
           {[
             { path: "/", label: "Home" },
-            { path: "/listings", label: "Listings" },
-            { path: "/impact/community", label: "Community" },
+            { path: "/listings", label: "Browse" },
+            { path: "/impact/community", label: "Impact" },
             ...(user
               ? [
                   { path: "/dashboard", label: "Dashboard" },
-                  { path: "/schedules", label: "📅 My Schedules" },
-                  { path: "/waste-analyzer", label: "🤖 AI Analyzer" },
-
+                  { path: "/waste-analyzer", label: "🤖 AI Analysis" },
+                  { path: "/analysis-history", label: "📜 History" },
+                  { path: "/schedules", label: "📅 Schedules" },
                   ...(isDonor
-                    ? [{ path: "/create-listing", label: "Create Listing" }]
+                    ? [{ path: "/create-listing", label: "➕ Create" }]
                     : []),
                 ]
               : []),
@@ -162,6 +169,13 @@ const Header = () => {
                 onClick={handleNotificationsClick}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
+                title={
+                  unreadCount > 0
+                    ? `${unreadCount} unread notification${
+                        unreadCount !== 1 ? "s" : ""
+                      }`
+                    : "Notifications"
+                }
               >
                 🔔
                 <AnimatePresence>
@@ -190,19 +204,25 @@ const Header = () => {
                   }}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
+                  title="Account menu"
                 >
                   <UserAvatar as={motion.div} whileHover={{ scale: 1.05 }}>
                     {user.avatar ? (
                       <img
                         src={user.avatar}
                         alt={`${user.firstName} ${user.lastName}`}
+                        onError={(e) => {
+                          e.target.style.display = "none";
+                          e.target.nextSibling.style.display = "flex";
+                        }}
                       />
-                    ) : (
-                      <span>
-                        {user.firstName?.[0] || "?"}
-                        {user.lastName?.[0] || ""}
-                      </span>
-                    )}
+                    ) : null}
+                    <span
+                      style={{ display: user.avatar ? "none" : "flex" }}
+                    >
+                      {user.firstName?.[0]?.toUpperCase() || "?"}
+                      {user.lastName?.[0]?.toUpperCase() || ""}
+                    </span>
                   </UserAvatar>
                   <UserName>
                     {user.firstName} {user.lastName}
@@ -236,7 +256,7 @@ const Header = () => {
                           },
                           { label: "👤 Profile", onClick: handleProfileClick },
                           {
-                            label: "🌍 My Impact",
+                            label: "🌟 My Impact",
                             onClick: () => {
                               setIsDropdownOpen(false);
                               navigate("/impact/personal");
@@ -251,7 +271,7 @@ const Header = () => {
                           },
                           {
                             label: (
-                              <>
+                              <span style={{display: 'flex', alignItems: 'center', width: '100%'}}>
                                 🔔 Notifications
                                 {unreadCount > 0 && (
                                   <NotificationBadge
@@ -260,7 +280,7 @@ const Header = () => {
                                     {unreadCount}
                                   </NotificationBadge>
                                 )}
-                              </>
+                              </span>
                             ),
                             onClick: handleNotificationsClick,
                           },
@@ -381,32 +401,11 @@ const Header = () => {
               initial="hidden"
               animate="show"
             >
+              {/* Main Navigation */}
               {[
-                { path: "/", label: "Home" },
-                { path: "/listings", label: "Listings" },
-                { path: "/impact/community", label: "Community Impact" },
-                ...(user
-                  ? [
-                      { path: "/dashboard", label: "Dashboard" },
-                      { path: "/schedules", label: "📅 My Schedules" },
-                      { path: "/waste-analyzer", label: "🤖 AI Analyzer" }, 
-                      { path: "/impact/personal", label: "My Impact" },
-                      { path: "/check-in", label: "📷 Scan QR Code" },
-                      {
-                        path: "/notifications",
-                        label: `Notifications ${
-                          unreadCount > 0 ? `(${unreadCount})` : ""
-                        }`,
-                      },
-                      ...(isDonor
-                        ? [{ path: "/create-listing", label: "Create Listing" }]
-                        : []),
-                      { path: "/profile", label: "Profile" },
-                    ]
-                  : [
-                      { path: "/login", label: "Login" },
-                      { path: "/register", label: "Sign Up" },
-                    ]),
+                { path: "/", label: "🏠 Home" },
+                { path: "/listings", label: "📦 Browse Items" },
+                { path: "/impact/community", label: "🌍 Community Impact" },
               ].map((link, index) => (
                 <MobileNavLink
                   key={link.path}
@@ -423,20 +422,97 @@ const Header = () => {
                 </MobileNavLink>
               ))}
 
+              {/* User Navigation */}
               {user && (
-                <MobileNavLink
-                  as={motion.button}
-                  variants={motionVariants.listItem}
-                  whileHover={{ x: 5 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => {
-                    handleLogout();
-                    closeMobileMenu();
-                  }}
-                  style={{ color: "#e53e3e" }}
-                >
-                  Logout
-                </MobileNavLink>
+                <>
+                  <div
+                    style={{
+                      borderTop: "1px solid #e2e8f0",
+                      margin: "1rem 0",
+                    }}
+                  />
+
+                  {[
+                    { path: "/dashboard", label: "📊 Dashboard" },
+                    { path: "/waste-analyzer", label: "🤖 AI Analysis" },
+                    { path: "/analysis-history", label: "📜 Analysis History" },
+                    { path: "/schedules", label: "📅 My Schedules" },
+                    {
+                      path: "/notifications",
+                      label: `🔔 Notifications${
+                        unreadCount > 0 ? ` (${unreadCount})` : ""
+                      }`,
+                    },
+                    ...(isDonor
+                      ? [{ path: "/create-listing", label: "➕ Create Listing" }]
+                      : []),
+                    { path: "/check-in", label: "📷 Scan QR Code" },
+                    { path: "/impact/personal", label: "🌟 My Impact" },
+                    { path: "/profile", label: "👤 Profile" },
+                  ].map((link, index) => (
+                    <MobileNavLink
+                      key={link.path}
+                      as={motion(Link)}
+                      to={link.path}
+                      onClick={closeMobileMenu}
+                      $active={isActive(link.path)}
+                      variants={motionVariants.listItem}
+                      custom={index + 3}
+                      whileHover={{ x: 5 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      {link.label}
+                    </MobileNavLink>
+                  ))}
+
+                  <div
+                    style={{
+                      borderTop: "1px solid #e2e8f0",
+                      margin: "1rem 0",
+                    }}
+                  />
+
+                  <MobileNavLink
+                    as={motion.button}
+                    variants={motionVariants.listItem}
+                    whileHover={{ x: 5 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={handleLogout}
+                    style={{ color: "#e53e3e" }}
+                  >
+                    🚪 Logout
+                  </MobileNavLink>
+                </>
+              )}
+
+              {/* Auth Links for non-logged-in users */}
+              {!user && (
+                <>
+                  <div
+                    style={{
+                      borderTop: "1px solid #e2e8f0",
+                      margin: "1rem 0",
+                    }}
+                  />
+                  {[
+                    { path: "/login", label: "🔑 Login" },
+                    { path: "/register", label: "✨ Sign Up" },
+                  ].map((link, index) => (
+                    <MobileNavLink
+                      key={link.path}
+                      as={motion(Link)}
+                      to={link.path}
+                      onClick={closeMobileMenu}
+                      $active={isActive(link.path)}
+                      variants={motionVariants.listItem}
+                      custom={index + 3}
+                      whileHover={{ x: 5 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      {link.label}
+                    </MobileNavLink>
+                  ))}
+                </>
               )}
             </motion.div>
           </MobileMenu>

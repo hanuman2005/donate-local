@@ -90,11 +90,11 @@ const QRScanner = ({ onScanComplete }) => {
 
       // ✅ FIX: Store interval reference
       scanIntervalRef.current = intervalId;
-
     } catch (error) {
       console.error("Camera error:", error);
       setMessage({
-        text: error.message || "Camera access denied. Please allow camera access.",
+        text:
+          error.message || "Camera access denied. Please allow camera access.",
         type: "error",
       });
       setScanning(false);
@@ -238,13 +238,21 @@ const QRScanner = ({ onScanComplete }) => {
 
           {scannedData.impact && (
             <>
-              <h4 style={{ marginTop: "1.5rem", marginBottom: "0.75rem", color: "#2d3748" }}>
+              <h4
+                style={{
+                  marginTop: "1.5rem",
+                  marginBottom: "0.75rem",
+                  color: "#2d3748",
+                }}
+              >
                 🌱 Environmental Impact
               </h4>
 
               <DetailRow>
                 <Label>♻️ Waste Prevented:</Label>
-                <Value>{scannedData.impact.wastePreventedKg.toFixed(2)} kg</Value>
+                <Value>
+                  {scannedData.impact.wastePreventedKg.toFixed(2)} kg
+                </Value>
               </DetailRow>
 
               <DetailRow>
@@ -259,7 +267,11 @@ const QRScanner = ({ onScanComplete }) => {
             </>
           )}
 
-          <Button onClick={resetScanner} $primary style={{ marginTop: "1.5rem" }}>
+          <Button
+            onClick={resetScanner}
+            $primary
+            style={{ marginTop: "1.5rem" }}
+          >
             ✨ Scan Another
           </Button>
         </VerificationCard>

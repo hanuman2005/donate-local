@@ -24,6 +24,7 @@ const aiMatchingRoutes = require("./routes/aiMatching");
 const scheduleRoutes = require("./routes/schedules");
 const reportRoutes = require("./routes/reports");
 const wasteAnalysisRoutes = require('./routes/wasteAnalysis');
+const chatbotRoutes = require('./routes/chatbot');
 
 
 // Import socket handler
@@ -128,6 +129,8 @@ app.use("/api", aiMatchingRoutes);
 app.use("/api/schedules", scheduleRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/waste-analysis', wasteAnalysisRoutes);
+app.use('/api/chatbot', chatbotRoutes);
+
 
 // Error handling middleware
 app.use(errorHandler);

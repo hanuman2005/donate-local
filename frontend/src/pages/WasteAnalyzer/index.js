@@ -1,18 +1,19 @@
 // src/pages/WasteAnalyzer/index.js - STUNNING VERSION
-import React, { useState, useRef, useEffect } from 'react';
-import styled, { keyframes } from 'styled-components';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
-import * as mobilenet from '@tensorflow-models/mobilenet';
-import * as tf from '@tensorflow/tfjs';
-import { motionVariants } from '../../animations/motionVariants';
-import { 
-  classifyWasteItem, 
-  getWasteAdvice, 
+import React, { useState, useRef, useEffect } from "react";
+import styled, { keyframes } from "styled-components";
+import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import * as mobilenet from "@tensorflow-models/mobilenet";
+import * as tf from "@tensorflow/tfjs";
+import { motionVariants } from "../../animations/motionVariants";
+import {
+  classifyWasteItem,
+  getWasteAdvice,
   calculateEcoImpact,
-  getRandomMotivation 
-} from '../../utils/wasteClassifier';
+  getRandomMotivation,
+} from "../../utils/wasteClassifier";
+import NearbyCentersSection from "../../components/AIWasteAnalyzer";
 
 // =====================
 // Animations
@@ -55,15 +56,19 @@ const PageContainer = styled(motion.div)`
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   position: relative;
   overflow: hidden;
-  
+
   &:before {
-    content: '';
+    content: "";
     position: absolute;
     top: -50%;
     left: -50%;
     width: 200%;
     height: 200%;
-    background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+    background: radial-gradient(
+      circle,
+      rgba(255, 255, 255, 0.1) 1px,
+      transparent 1px
+    );
     background-size: 50px 50px;
     animation: ${float} 20s ease-in-out infinite;
   }
@@ -75,7 +80,7 @@ const ContentWrapper = styled.div`
   padding: 10rem 2rem 4rem;
   position: relative;
   z-index: 1;
-  
+
   @media (max-width: 768px) {
     padding: 6rem 1rem 2rem;
   }
@@ -96,8 +101,8 @@ const Title = styled(motion.h1)`
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  text-shadow: 0 4px 20px rgba(0,0,0,0.3);
-  
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+
   @media (max-width: 768px) {
     font-size: 2.5rem;
   }
@@ -108,8 +113,8 @@ const Subtitle = styled(motion.p)`
   opacity: 0.95;
   max-width: 700px;
   margin: 0 auto;
-  text-shadow: 0 2px 10px rgba(0,0,0,0.2);
-  
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+
   @media (max-width: 768px) {
     font-size: 1.1rem;
   }
@@ -124,9 +129,9 @@ const Card = styled(motion.div)`
   border: 1px solid rgba(255, 255, 255, 0.3);
   position: relative;
   overflow: hidden;
-  
+
   &:before {
-    content: '';
+    content: "";
     position: absolute;
     top: -2px;
     left: -2px;
@@ -137,7 +142,7 @@ const Card = styled(motion.div)`
     z-index: -1;
     animation: ${shimmer} 3s infinite;
   }
-  
+
   @media (max-width: 768px) {
     padding: 2rem 1.5rem;
     border-radius: 24px;
@@ -145,43 +150,44 @@ const Card = styled(motion.div)`
 `;
 
 const UploadZone = styled.div`
-  border: 4px dashed ${props => props.$isDragging ? '#667eea' : '#cbd5e0'};
+  border: 4px dashed ${(props) => (props.$isDragging ? "#667eea" : "#cbd5e0")};
   border-radius: 24px;
   padding: 4rem 2rem;
   text-align: center;
-  background: ${props => props.$isDragging 
-    ? 'linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1))'
-    : 'linear-gradient(135deg, #f7fafc, #edf2f7)'};
+  background: ${(props) =>
+    props.$isDragging
+      ? "linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1))"
+      : "linear-gradient(135deg, #f7fafc, #edf2f7)"};
   transition: all 0.3s ease;
   cursor: pointer;
   position: relative;
   overflow: hidden;
-  
+
   &:hover {
     border-color: #667eea;
     transform: scale(1.02);
     box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
   }
-  
+
   .icon {
     font-size: 5rem;
     margin-bottom: 1rem;
     animation: ${float} 3s ease-in-out infinite;
   }
-  
+
   h3 {
     font-size: 1.75rem;
     color: #2d3748;
     margin: 0 0 0.5rem 0;
     font-weight: 700;
   }
-  
+
   p {
     color: #718096;
     font-size: 1.1rem;
     margin: 0;
   }
-  
+
   @media (max-width: 768px) {
     padding: 3rem 1.5rem;
   }
@@ -193,7 +199,7 @@ const ImagePreview = styled.div`
   border-radius: 24px;
   overflow: hidden;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  
+
   img {
     width: 100%;
     max-height: 500px;
@@ -201,15 +207,19 @@ const ImagePreview = styled.div`
     display: block;
     background: #000;
   }
-  
+
   &:before {
-    content: '';
+    content: "";
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.3) 100%);
+    background: linear-gradient(
+      180deg,
+      transparent 0%,
+      rgba(0, 0, 0, 0.3) 100%
+    );
     pointer-events: none;
   }
 `;
@@ -238,7 +248,7 @@ const ButtonGroup = styled.div`
   display: flex;
   gap: 1.5rem;
   margin-top: 2rem;
-  
+
   @media (max-width: 768px) {
     flex-direction: column;
   }
@@ -255,8 +265,10 @@ const Button = styled(motion.button)`
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
-  
-  ${props => props.$primary ? `
+
+  ${(props) =>
+    props.$primary
+      ? `
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
@@ -271,7 +283,8 @@ const Button = styled(motion.button)`
       cursor: not-allowed;
       transform: none;
     }
-  ` : `
+  `
+      : `
     background: linear-gradient(135deg, #f7fafc, #edf2f7);
     color: #4a5568;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
@@ -284,7 +297,11 @@ const Button = styled(motion.button)`
 `;
 
 const ResultsCard = styled(Card)`
-  background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(247,250,252,0.95) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.95) 0%,
+    rgba(247, 250, 252, 0.95) 100%
+  );
   animation: ${slideInFromRight} 0.5s ease-out;
 `;
 
@@ -292,7 +309,7 @@ const ResultHeader = styled.div`
   text-align: center;
   margin-bottom: 3rem;
   position: relative;
-  
+
   .confetti-wrapper {
     position: absolute;
     top: -50px;
@@ -302,7 +319,7 @@ const ResultHeader = styled.div`
     pointer-events: none;
     overflow: hidden;
   }
-  
+
   .confetti {
     position: absolute;
     width: 10px;
@@ -335,7 +352,7 @@ const ItemName = styled(motion.h2)`
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  
+
   @media (max-width: 768px) {
     font-size: 2rem;
   }
@@ -356,7 +373,7 @@ const MaterialTag = styled.div`
 const ConfidenceBar = styled.div`
   margin: 1.5rem auto;
   max-width: 400px;
-  
+
   .label {
     display: flex;
     justify-content: space-between;
@@ -364,7 +381,7 @@ const ConfidenceBar = styled.div`
     color: #718096;
     font-weight: 600;
   }
-  
+
   .bar-container {
     height: 12px;
     background: #e2e8f0;
@@ -372,7 +389,7 @@ const ConfidenceBar = styled.div`
     overflow: hidden;
     position: relative;
   }
-  
+
   .bar-fill {
     height: 100%;
     background: linear-gradient(90deg, #48bb78 0%, #38a169 100%);
@@ -380,9 +397,9 @@ const ConfidenceBar = styled.div`
     transition: width 1s ease-out;
     position: relative;
     overflow: hidden;
-    
+
     &:after {
-      content: '';
+      content: "";
       position: absolute;
       top: 0;
       left: 0;
@@ -391,7 +408,7 @@ const ConfidenceBar = styled.div`
       background: linear-gradient(
         90deg,
         transparent 0%,
-        rgba(255,255,255,0.5) 50%,
+        rgba(255, 255, 255, 0.5) 50%,
         transparent 100%
       );
       animation: ${shimmer} 2s infinite;
@@ -413,19 +430,19 @@ const SectionCard = styled(motion.div)`
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
   border: 2px solid transparent;
   transition: all 0.3s ease;
-  
+
   &:hover {
     border-color: #667eea;
     transform: translateY(-5px);
     box-shadow: 0 20px 40px rgba(102, 126, 234, 0.2);
   }
-  
+
   .header {
     display: flex;
     align-items: center;
     gap: 1rem;
     margin-bottom: 1.5rem;
-    
+
     .icon {
       font-size: 3rem;
       width: 70px;
@@ -437,7 +454,7 @@ const SectionCard = styled(motion.div)`
       border-radius: 20px;
       box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
     }
-    
+
     h3 {
       font-size: 1.5rem;
       color: #2d3748;
@@ -445,12 +462,12 @@ const SectionCard = styled(motion.div)`
       font-weight: 700;
     }
   }
-  
+
   ul {
     list-style: none;
     padding: 0;
     margin: 0;
-    
+
     li {
       padding: 1rem;
       margin-bottom: 0.75rem;
@@ -463,14 +480,14 @@ const SectionCard = styled(motion.div)`
       border-radius: 12px;
       border-left: 4px solid #48bb78;
       transition: all 0.3s ease;
-      
+
       &:hover {
         background: linear-gradient(135deg, #edf2f7, #e2e8f0);
         transform: translateX(5px);
       }
-      
+
       &:before {
-        content: '✓';
+        content: "✓";
         color: #48bb78;
         font-weight: bold;
         font-size: 1.5rem;
@@ -478,7 +495,7 @@ const SectionCard = styled(motion.div)`
       }
     }
   }
-  
+
   .recycling-text {
     color: #4a5568;
     line-height: 1.8;
@@ -500,24 +517,28 @@ const ImpactSection = styled(motion.div)`
   box-shadow: 0 20px 60px rgba(102, 126, 234, 0.4);
   position: relative;
   overflow: hidden;
-  
+
   &:before {
-    content: '';
+    content: "";
     position: absolute;
     top: -50%;
     left: -50%;
     width: 200%;
     height: 200%;
-    background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+    background: radial-gradient(
+      circle,
+      rgba(255, 255, 255, 0.1) 1px,
+      transparent 1px
+    );
     background-size: 30px 30px;
     animation: ${float} 15s ease-in-out infinite;
   }
-  
+
   h3 {
     font-size: 2.5rem;
     margin: 0 0 2.5rem 0;
     font-weight: 900;
-    text-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    text-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     position: relative;
     z-index: 1;
   }
@@ -538,24 +559,24 @@ const ImpactCard = styled(motion.div)`
   padding: 2rem;
   border: 2px solid rgba(255, 255, 255, 0.2);
   transition: all 0.3s ease;
-  
+
   &:hover {
     background: rgba(255, 255, 255, 0.25);
     transform: scale(1.05);
     box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
   }
-  
+
   .value {
     font-size: 4rem;
     font-weight: 900;
     margin-bottom: 0.5rem;
-    text-shadow: 0 4px 10px rgba(0,0,0,0.3);
-    
+    text-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+
     @media (max-width: 768px) {
       font-size: 2.5rem;
     }
   }
-  
+
   .label {
     font-size: 1.1rem;
     opacity: 0.95;
@@ -598,7 +619,7 @@ const LoadingCard = styled(motion.div)`
   max-width: 500px;
   margin: 0 1rem;
   box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
-  
+
   .spinner {
     width: 80px;
     height: 80px;
@@ -608,18 +629,20 @@ const LoadingCard = styled(motion.div)`
     animation: spin 1s linear infinite;
     margin: 0 auto 1.5rem;
   }
-  
+
   @keyframes spin {
-    to { transform: rotate(360deg); }
+    to {
+      transform: rotate(360deg);
+    }
   }
-  
+
   h3 {
     font-size: 2rem;
     margin: 0 0 0.75rem;
     color: #2d3748;
     font-weight: 700;
   }
-  
+
   p {
     color: #718096;
     font-size: 1.1rem;
@@ -650,15 +673,15 @@ const WasteAnalyzer = () => {
   useEffect(() => {
     const loadModel = async () => {
       try {
-        console.log('🤖 Loading AI model...');
+        console.log("🤖 Loading AI model...");
         await tf.ready();
         const loadedModel = await mobilenet.load();
         setModel(loadedModel);
-        console.log('✅ Model loaded!');
-        toast.success('🤖 AI Ready to Analyze!');
+        console.log("✅ Model loaded!");
+        toast.success("🤖 AI Ready to Analyze!");
       } catch (error) {
-        console.error('Model error:', error);
-        toast.error('Failed to load AI model');
+        console.error("Model error:", error);
+        toast.error("Failed to load AI model");
       } finally {
         setLoading(false);
       }
@@ -668,7 +691,7 @@ const WasteAnalyzer = () => {
 
   // Create confetti effect
   const createConfetti = () => {
-    const colors = ['#667eea', '#764ba2', '#48bb78', '#ed8936', '#f093fb'];
+    const colors = ["#667eea", "#764ba2", "#48bb78", "#ed8936", "#f093fb"];
     const confettiElements = [];
     for (let i = 0; i < 50; i++) {
       confettiElements.push(
@@ -700,10 +723,10 @@ const WasteAnalyzer = () => {
     e.preventDefault();
     setIsDragging(false);
     const file = e.dataTransfer.files[0];
-    if (file && file.type.startsWith('image/')) {
+    if (file && file.type.startsWith("image/")) {
       handleImageFile(file);
     } else {
-      toast.error('Please upload an image file');
+      toast.error("Please upload an image file");
     }
   };
 
@@ -724,7 +747,7 @@ const WasteAnalyzer = () => {
 
   const handleAnalyze = async () => {
     if (!uploadedImage || !model) {
-      toast.error('Please upload an image first');
+      toast.error("Please upload an image first");
       return;
     }
 
@@ -733,12 +756,14 @@ const WasteAnalyzer = () => {
     try {
       const img = new Image();
       img.src = imagePreview;
-      
-      await new Promise((resolve) => { img.onload = resolve; });
+
+      await new Promise((resolve) => {
+        img.onload = resolve;
+      });
 
       const predictions = await model.classify(img);
       const topPrediction = predictions[0];
-      
+
       const wasteCategory = classifyWasteItem(topPrediction.className);
       const advice = getWasteAdvice(wasteCategory);
       const impact = calculateEcoImpact(wasteCategory);
@@ -754,8 +779,8 @@ const WasteAnalyzer = () => {
 
       // Save to backend
       try {
-        const { wasteAPI } = await import('../../services/api');
-        await wasteAPI.saveAnalysis({
+        const { wasteAPI } = await import("../../services/api");
+        const saveResponse = await wasteAPI.saveAnalysis({
           tfLabel: topPrediction.className,
           confidence: parseFloat(analysisResult.confidence),
           material: wasteCategory,
@@ -769,19 +794,26 @@ const WasteAnalyzer = () => {
             wasteDiverted: impact.wasteDiverted,
             ecoScore: impact.ecoScore,
           },
-          deviceType: /Mobile|Android|iPhone/i.test(navigator.userAgent) ? 'mobile' : 'desktop',
+          deviceType: /Mobile|Android|iPhone/i.test(navigator.userAgent)
+            ? "mobile"
+            : "desktop",
         });
+        if (saveResponse.data?.isDuplicate) {
+          toast.info(`♻️ Updated previous analysis!`, { autoClose: 3500 });
+        } else {
+          toast.success("🎉 New analysis added!");
+        }
       } catch (saveError) {
-        console.error('Backend save failed:', saveError);
+        console.error("Backend save failed:", saveError);
       }
 
       setResult(analysisResult);
       setShowConfetti(true);
       setTimeout(() => setShowConfetti(false), 3000);
-      toast.success('✅ Analysis Complete!');
+      toast.success("✅ Analysis Complete!");
     } catch (error) {
-      console.error('Analysis error:', error);
-      toast.error('Analysis failed. Try another photo.');
+      console.error("Analysis error:", error);
+      toast.error("Analysis failed. Try another photo.");
     } finally {
       setAnalyzing(false);
     }
@@ -791,7 +823,7 @@ const WasteAnalyzer = () => {
     setImagePreview(null);
     setUploadedImage(null);
     setResult(null);
-    if (fileInputRef.current) fileInputRef.current.value = '';
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const handleReset = () => {
@@ -800,16 +832,16 @@ const WasteAnalyzer = () => {
 
   const handleCreateListing = () => {
     if (!result) return;
-    navigate('/create-listing', {
+    navigate("/create-listing", {
       state: {
         fromAI: true,
         aiData: {
           title: result.label,
-          category: result.donationCategory || 'other',
+          category: result.donationCategory || "other",
           description: `${result.label} - ${result.material}`,
           image: imagePreview,
-        }
-      }
+        },
+      },
     });
   };
 
@@ -901,7 +933,7 @@ const WasteAnalyzer = () => {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
-                    {analyzing ? '🔄 Analyzing...' : '🤖 Analyze with AI'}
+                    {analyzing ? "🔄 Analyzing..." : "🤖 Analyze with AI"}
                   </Button>
                 </ButtonGroup>
               </>
@@ -914,21 +946,19 @@ const WasteAnalyzer = () => {
           >
             <ResultHeader>
               {showConfetti && (
-                <div className="confetti-wrapper">
-                  {createConfetti()}
-                </div>
+                <div className="confetti-wrapper">{createConfetti()}</div>
               )}
-              
+
               <SuccessBadge
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
-                transition={{ type: 'spring', stiffness: 200 }}
+                transition={{ type: "spring", stiffness: 200 }}
               >
                 <span>✨</span>
                 <span>Analysis Complete!</span>
                 <span>🎉</span>
               </SuccessBadge>
-              
+
               <ItemName
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
@@ -936,11 +966,9 @@ const WasteAnalyzer = () => {
               >
                 {result.label}
               </ItemName>
-              
-              <MaterialTag>
-                📦 Material: {result.material}
-              </MaterialTag>
-              
+
+              <MaterialTag>📦 Material: {result.material}</MaterialTag>
+
               <ConfidenceBar>
                 <div className="label">
                   <span>AI Confidence</span>
@@ -965,7 +993,7 @@ const WasteAnalyzer = () => {
               {result.motivation}
             </MotivationBanner>
 
-            <ImagePreview style={{ marginTop: '2rem' }}>
+            <ImagePreview style={{ marginTop: "2rem" }}>
               <img src={imagePreview} alt="Analyzed" />
             </ImagePreview>
 
@@ -1022,10 +1050,10 @@ const WasteAnalyzer = () => {
                 </SectionCard>
               )}
 
-              {/* Recycling Guidance */}
+              {/* Recycling Guidance Section */}
               <SectionCard
-                initial={{ x: -50, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 1.1 }}
                 whileHover={{ scale: 1.02 }}
               >
@@ -1033,10 +1061,11 @@ const WasteAnalyzer = () => {
                   <div className="icon">♻️</div>
                   <h3>Recycling Guide</h3>
                 </div>
-                <div className="recycling-text">
-                  {result.recyclingGuidance}
-                </div>
+                <div className="recycling-text">{result.recyclingGuidance}</div>
               </SectionCard>
+
+              {/* 🆕 ADD THIS: Nearby Recycling Centers */}
+              <NearbyCentersSection material={result.material} />
             </SectionGrid>
 
             {/* Impact Section */}
@@ -1050,7 +1079,7 @@ const WasteAnalyzer = () => {
                 <ImpactCard
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
-                  transition={{ delay: 1.3, type: 'spring' }}
+                  transition={{ delay: 1.3, type: "spring" }}
                   whileHover={{ scale: 1.1 }}
                 >
                   <motion.div
@@ -1067,7 +1096,7 @@ const WasteAnalyzer = () => {
                 <ImpactCard
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
-                  transition={{ delay: 1.4, type: 'spring' }}
+                  transition={{ delay: 1.4, type: "spring" }}
                   whileHover={{ scale: 1.1 }}
                 >
                   <motion.div
@@ -1084,7 +1113,7 @@ const WasteAnalyzer = () => {
                 <ImpactCard
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
-                  transition={{ delay: 1.5, type: 'spring' }}
+                  transition={{ delay: 1.5, type: "spring" }}
                   whileHover={{ scale: 1.1 }}
                 >
                   <motion.div
@@ -1102,7 +1131,7 @@ const WasteAnalyzer = () => {
 
             {/* Action Buttons */}
             <ButtonGroup>
-              <Button 
+              <Button
                 onClick={handleReset}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -1120,6 +1149,18 @@ const WasteAnalyzer = () => {
                 </Button>
               )}
             </ButtonGroup>
+            <div style={{ textAlign: "center", marginTop: "2rem" }}>
+              <Button
+                onClick={() => navigate("/analysis-history")}
+                style={{
+                  background: "transparent",
+                  border: "2px solid #667eea",
+                  color: "#667eea",
+                }}
+              >
+                📊 View All My Analyses
+              </Button>
+            </div>
           </ResultsCard>
         )}
       </ContentWrapper>

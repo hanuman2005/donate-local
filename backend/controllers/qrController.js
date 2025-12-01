@@ -132,25 +132,44 @@ const generateQR = async (req, res) => {
  * Verify QR code and complete transaction
  * POST /api/qr/verify
  */
+// backend/controllers/qrController.js
+
 const verifyQR = async (req, res) => {
   try {
     const { qrCode, location } = req.body;
-    const scannerId = req.user.id; // User who scanned the QR
+    const scannerId = req.user.id;
 
-    if (!qrCode) {
+    // ✅ FIX: Add safety check for qrCode
+    if (!qrCode || qrCode === "undefined" || qrCode === "null") {
       return res.status(400).json({
         success: false,
         message: "QR code data is required",
       });
     }
 
-    // Verify QR code authenticity
-    const verification = verifyQRCode(qrCode);
+    // ✅ FIX: Add try-catch for verification
+    let verification;
+    try {
+      verification = verifyQRCode(qrCode);
+    } catch (error) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid QR code format",
+      });
+    }
 
     if (!verification.valid) {
       return res.status(400).json({
         success: false,
         message: verification.error || "Invalid QR code",
+      });
+    }
+
+    // ✅ FIX: Add safety check for transactionId
+    if (!verification.transactionId) {
+      return res.status(400).json({
+        success: false,
+        message: "QR code doesn't contain valid transaction ID",
       });
     }
 
@@ -163,7 +182,7 @@ const verifyQR = async (req, res) => {
     if (!transaction) {
       return res.status(404).json({
         success: false,
-        message: "Transaction not found",
+        message: "Transaction not found or expired",
       });
     }
 
@@ -172,7 +191,10 @@ const verifyQR = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "This QR code has already been used",
-        transaction: transaction,
+        transaction: {
+          completedAt: transaction.completedAt,
+          listing: transaction.listing,
+        },
       });
     }
 
@@ -186,7 +208,7 @@ const verifyQR = async (req, res) => {
 
       return res.status(400).json({
         success: false,
-        message: "QR code has expired",
+        message: "QR code has expired. Please generate a new one.",
       });
     }
 
@@ -212,7 +234,7 @@ const verifyQR = async (req, res) => {
       await listing.save();
     }
 
-    // Update user stats (you can expand this)
+    // Update user stats
     await User.findByIdAndUpdate(transaction.donor._id, {
       $inc: { "stats.totalDonations": 1 },
     });
@@ -231,8 +253,8 @@ const verifyQR = async (req, res) => {
     console.error("Verify QR Error:", error);
     res.status(500).json({
       success: false,
-      message: "Failed to verify QR code",
-      error: error.message,
+      message: "Failed to verify QR code. Please try again.",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined,
     });
   }
 };
