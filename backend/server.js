@@ -25,6 +25,7 @@ const scheduleRoutes = require("./routes/schedules");
 const reportRoutes = require("./routes/reports");
 const wasteAnalysisRoutes = require('./routes/wasteAnalysis');
 const chatbotRoutes = require('./routes/chatbot');
+const routeOptimizationRoutes = require('./routes/routeOptimization');
 
 
 // Import socket handler
@@ -34,6 +35,8 @@ const socketHandler = require("./socket/socketHandler");
 const errorHandler = require("./middleware/errorHandler");
 
 const { initScheduleCronJobs } = require("./utils/scheduleCron");
+// ⏱️ Auto-start queue expiration scheduler
+require('./utils/queueCronJob');
 
 const app = express();
 const server = http.createServer(app);
@@ -130,7 +133,9 @@ app.use("/api/schedules", scheduleRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/waste-analysis', wasteAnalysisRoutes);
 app.use('/api/chatbot', chatbotRoutes);
-
+app.use('/api/routes', routeOptimizationRoutes);
+app.use('/api/health', require('./routes/health'));
+app.use('/api/ai', require('./routes/ai'));
 
 // Error handling middleware
 app.use(errorHandler);

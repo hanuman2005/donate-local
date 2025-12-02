@@ -19,7 +19,15 @@ exports.saveAnalysis = async (req, res) => {
       recyclingGuidance,
       donationPossible,
       donationCategory,
-      impact, // ⚠️ THIS WAS MISSING!
+      impact, 
+      // ✨ NEW: Material composition data
+      materialComposition,
+      recyclingComplexity,
+      environmentalImpact,
+      hazards,
+      recyclingRecommendations,
+      eWasteCategory,
+
       userDescription,
       location,
       deviceType,
@@ -46,7 +54,8 @@ exports.saveAnalysis = async (req, res) => {
       existingAnalysis.confidence = confidence;
 
       // Increment analysis count
-      existingAnalysis.analysisCount = (existingAnalysis.analysisCount || 1) + 1;
+      existingAnalysis.analysisCount =
+        (existingAnalysis.analysisCount || 1) + 1;
 
       // Update timestamp
       existingAnalysis.lastAnalyzedAt = new Date();
@@ -59,7 +68,8 @@ exports.saveAnalysis = async (req, res) => {
       // Update advice if provided (latest wins)
       if (reuseIdeas) existingAnalysis.reuseIdeas = reuseIdeas;
       if (upcycleIdeas) existingAnalysis.upcycleIdeas = upcycleIdeas;
-      if (recyclingGuidance) existingAnalysis.recyclingGuidance = recyclingGuidance;
+      if (recyclingGuidance)
+        existingAnalysis.recyclingGuidance = recyclingGuidance;
 
       await existingAnalysis.save();
 
@@ -70,7 +80,9 @@ exports.saveAnalysis = async (req, res) => {
         },
       });
 
-      console.log(`♻️ Duplicate detected: Updated analysis ${existingAnalysis._id}`);
+      console.log(
+        `♻️ Duplicate detected: Updated analysis ${existingAnalysis._id}`
+      );
 
       return res.status(200).json({
         success: true,
@@ -96,6 +108,14 @@ exports.saveAnalysis = async (req, res) => {
         wasteDiverted: impact?.wasteDiverted || 0,
         ecoScore: impact?.ecoScore || 0,
       },
+      // ✨ NEW: Save material composition data
+      materialComposition: materialComposition || [],
+      recyclingComplexity: recyclingComplexity || 'unknown',
+      environmentalImpact: environmentalImpact || {},
+      hazards: hazards || {},
+      recyclingRecommendations: recyclingRecommendations || [],
+      eWasteCategory: eWasteCategory || null,
+      
       userDescription: userDescription || "",
       location: location || undefined,
       deviceType: deviceType || "desktop",
@@ -170,9 +190,9 @@ exports.getMyHistory = async (req, res) => {
     });
   } catch (error) {
     console.error("Get history error:", error);
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
-      message: "Failed to fetch history" 
+      message: "Failed to fetch history",
     });
   }
 };

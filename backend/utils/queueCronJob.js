@@ -1,6 +1,6 @@
 const cron = require('node-cron');
 const Listing = require('../models/Listing');
-const NotificationService = require('../services/notificationService');
+const notificationHelper = require('./notificationHelper');
 
 // Run every hour
 const checkExpiredQueueAssignments = cron.schedule('0 * * * *', async () => {
@@ -28,7 +28,7 @@ const checkExpiredQueueAssignments = cron.schedule('0 * * * *', async () => {
         const nextUser = await listing.assignToNextInQueue();
 
         if (nextUser) {
-          await NotificationService.notifyAssignedFromQueue(listing, nextUser);
+          await notificationHelper.notifyAssignedFromQueue(listing, nextUser);
         } else {
           // No one left, make available
           listing.assignedTo = null;
@@ -37,7 +37,7 @@ const checkExpiredQueueAssignments = cron.schedule('0 * * * *', async () => {
         }
 
         // Notify expired user
-        await NotificationService.create({
+        await notificationHelper.create({
           recipient: expiredEntry.user,
           type: 'queue_expired',
           title: '⏰ Assignment Expired',

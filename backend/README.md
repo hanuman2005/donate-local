@@ -1,18 +1,18 @@
 # 🎉 ShareTogether - Backend Documentation (Updated January 2025)
 
-## ✅ BACKEND VERIFICATION - 100% COMPLETE
+## ✅ BACKEND VERIFICATION
 
 ### 📊 Final Status Report
 
-| Component | Status | Details |
-|-----------|--------|---------|
-| **Models** | ✅ Complete | User, Listing, Chat, Message, Notification, Transaction (7 total) |
-| **Controllers** | ✅ Complete | Auth, Listing, Chat, User, Notification, Analytics, QR, Impact, Rating (9 total) |
-| **Routes** | ✅ Complete | All routes with validation & authentication |
-| **Middleware** | ✅ Complete | Auth, Upload, Error Handler |
-| **Socket.IO** | ✅ Complete | Real-time chat & notifications |
-| **Utils** | ✅ Complete | Helpers, Notifications, QR Generator, Impact Calculations |
-| **Telegram Bot** | ✅ Complete | Instant alerts to college groups |
+| Component        | Status      | Details                                                                          |
+| ---------------- | ----------- | -------------------------------------------------------------------------------- |
+| **Models**       | ✅ Complete | User, Listing, Chat, Message, Notification, Transaction (7 total)                |
+| **Controllers**  | ✅ Complete | Auth, Listing, Chat, User, Notification, Analytics, QR, Impact, Rating (9 total) |
+| **Routes**       | ✅ Complete | All routes with validation & authentication                                      |
+| **Middleware**   | ✅ Complete | Auth, Upload, Error Handler                                                      |
+| **Socket.IO**    | ✅ Complete | Real-time chat & notifications                                                   |
+| **Utils**        | ✅ Complete | Helpers, Notifications, QR Generator, Impact Calculations                        |
+| **Telegram Bot** | ✅ Complete | Instant alerts to college groups                                                 |
 
 ---
 
@@ -84,7 +84,7 @@ backend/
 
 ```
 
-**Total Backend Files**: 36 JavaScript files
+**Total Backend Files**: ~62 JavaScript files (updated)
 
 ---
 
@@ -92,116 +92,117 @@ backend/
 
 ### 🔐 Authentication (`/api/auth`)
 
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| POST | `/register` | Register new user | ❌ |
-| POST | `/login` | User login | ❌ |
-| GET | `/me` | Get current user | ✅ |
-| PUT | `/profile` | Update profile | ✅ |
+| Method | Endpoint    | Description       | Auth |
+| ------ | ----------- | ----------------- | ---- |
+| POST   | `/register` | Register new user | ❌   |
+| POST   | `/login`    | User login        | ❌   |
+| GET    | `/me`       | Get current user  | ✅   |
+| PUT    | `/profile`  | Update profile    | ✅   |
 
 ---
 
 ### 📦 Listings (`/api/listings`)
 
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| GET | `/` | Get all listings (with filters) | ❌ |
-| GET | `/search` | Advanced search (category, condition, quantity, distance) | ❌ |
-| GET | `/nearby` | Geospatial search (lat, lng, radius) | ❌ |
-| GET | `/user` | Get user's listings (donated/received) | ✅ |
-| GET | `/:id` | Get single listing details | ❌ |
-| POST | `/` | Create new listing (with images) | ✅ |
-| PUT | `/:id` | Update listing | ✅ |
-| DELETE | `/:id` | Delete listing | ✅ |
-| POST | `/:id/interest` | Express interest | ✅ |
-| POST | `/:id/assign` | Assign to recipient | ✅ (Donor) |
-| PUT | `/:id/complete` | Mark as completed | ✅ (Donor) |
-| POST | `/:id/checkin` | Record pickup check-in | ✅ |
+| Method | Endpoint        | Description                                               | Auth       |
+| ------ | --------------- | --------------------------------------------------------- | ---------- |
+| GET    | `/`             | Get all listings (with filters)                           | ❌         |
+| GET    | `/search`       | Advanced search (category, condition, quantity, distance) | ❌         |
+| GET    | `/nearby`       | Geospatial search (lat, lng, radius)                      | ❌         |
+| GET    | `/user`         | Get user's listings (donated/received)                    | ✅         |
+| GET    | `/:id`          | Get single listing details                                | ❌         |
+| POST   | `/`             | Create new listing (with images)                          | ✅         |
+| PUT    | `/:id`          | Update listing                                            | ✅         |
+| DELETE | `/:id`          | Delete listing                                            | ✅         |
+| POST   | `/:id/interest` | Express interest                                          | ✅         |
+| POST   | `/:id/assign`   | Assign to recipient                                       | ✅ (Donor) |
+| PUT    | `/:id/complete` | Mark as completed                                         | ✅ (Donor) |
+| POST   | `/:id/checkin`  | Record pickup check-in                                    | ✅         |
 
 ---
 
 ### 💬 Chat (`/api/chat`)
 
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| GET | `/` | Get user's chat rooms | ✅ |
-| GET | `/:chatId` | Get chat details | ✅ |
-| GET | `/:chatId/messages` | Get chat messages | ✅ |
-| POST | `/create-or-get` | Create or get existing chat | ✅ |
-| POST | `/:chatId/messages` | Send message | ✅ |
-| PUT | `/:chatId/read` | Mark messages as read | ✅ |
+| Method | Endpoint            | Description                 | Auth |
+| ------ | ------------------- | --------------------------- | ---- |
+| GET    | `/`                 | Get user's chat rooms       | ✅   |
+| GET    | `/:chatId`          | Get chat details            | ✅   |
+| GET    | `/:chatId/messages` | Get chat messages           | ✅   |
+| POST   | `/create-or-get`    | Create or get existing chat | ✅   |
+| POST   | `/:chatId/messages` | Send message                | ✅   |
+| PUT    | `/:chatId/read`     | Mark messages as read       | ✅   |
 
 ---
 
 ### 👤 Users (`/api/users`)
 
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| GET | `/search` | Search users | ✅ |
-| GET | `/:id` | Get user profile | ✅ |
-| PUT | `/profile` | Update profile | ✅ |
-| PUT | `/profile-image` | Update profile image | ✅ |
+| Method | Endpoint         | Description          | Auth |
+| ------ | ---------------- | -------------------- | ---- |
+| GET    | `/search`        | Search users         | ✅   |
+| GET    | `/:id`           | Get user profile     | ✅   |
+| PUT    | `/profile`       | Update profile       | ✅   |
+| PUT    | `/profile-image` | Update profile image | ✅   |
 
 ---
 
 ### ⭐ Ratings (`/api/ratings`)
 
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| POST | `/:userId` | Rate a user | ✅ |
-| GET | `/:userId` | Get user reviews | ❌ |
-| POST | `/:userId/reviews/:reviewId/report` | Report a review | ✅ |
+| Method | Endpoint                            | Description      | Auth |
+| ------ | ----------------------------------- | ---------------- | ---- |
+| POST   | `/:userId`                          | Rate a user      | ✅   |
+| GET    | `/:userId`                          | Get user reviews | ❌   |
+| POST   | `/:userId/reviews/:reviewId/report` | Report a review  | ✅   |
 
 ---
 
 ### 🔔 Notifications (`/api/notifications`)
 
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| GET | `/` | Get all notifications | ✅ |
-| GET | `/unread-count` | Get unread count | ✅ |
-| PUT | `/:id/read` | Mark as read | ✅ |
-| PUT | `/read-all` | Mark all as read | ✅ |
-| DELETE | `/:id` | Delete notification | ✅ |
+| Method | Endpoint        | Description           | Auth |
+| ------ | --------------- | --------------------- | ---- |
+| GET    | `/`             | Get all notifications | ✅   |
+| GET    | `/unread-count` | Get unread count      | ✅   |
+| PUT    | `/:id/read`     | Mark as read          | ✅   |
+| PUT    | `/read-all`     | Mark all as read      | ✅   |
+| DELETE | `/:id`          | Delete notification   | ✅   |
 
 ---
 
 ### 📊 Analytics (`/api/analytics`)
 
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| GET | `/user` | Get user analytics | ✅ |
-| GET | `/platform` | Get platform analytics | ✅ (Admin) |
+| Method | Endpoint    | Description            | Auth       |
+| ------ | ----------- | ---------------------- | ---------- |
+| GET    | `/user`     | Get user analytics     | ✅         |
+| GET    | `/platform` | Get platform analytics | ✅ (Admin) |
 
 ---
 
 ### 📱 QR Codes (`/api/qr`)
 
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| POST | `/generate` | Generate QR for listing | ✅ (Donor) |
-| POST | `/verify` | Verify QR & complete pickup | ✅ |
-| GET | `/transaction/:id` | Get transaction details | ✅ |
-| GET | `/my-transactions` | Get user's transactions | ✅ |
-| GET | `/download/:transactionId` | Download QR as PNG | ✅ |
+| Method | Endpoint                   | Description                 | Auth       |
+| ------ | -------------------------- | --------------------------- | ---------- |
+| POST   | `/generate`                | Generate QR for listing     | ✅ (Donor) |
+| POST   | `/verify`                  | Verify QR & complete pickup | ✅         |
+| GET    | `/transaction/:id`         | Get transaction details     | ✅         |
+| GET    | `/my-transactions`         | Get user's transactions     | ✅         |
+| GET    | `/download/:transactionId` | Download QR as PNG          | ✅         |
 
 ---
 
 ### 🌍 Impact Tracking (`/api/impact`)
 
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| GET | `/personal` | Personal impact stats | ✅ |
-| GET | `/community` | Community-wide stats | ❌ |
-| GET | `/heatmap` | Geographic heatmap data | ❌ |
-| GET | `/timeline` | Historical timeline | ✅ |
-| GET | `/share-card` | Generate shareable card | ✅ |
+| Method | Endpoint      | Description             | Auth |
+| ------ | ------------- | ----------------------- | ---- |
+| GET    | `/personal`   | Personal impact stats   | ✅   |
+| GET    | `/community`  | Community-wide stats    | ❌   |
+| GET    | `/heatmap`    | Geographic heatmap data | ❌   |
+| GET    | `/timeline`   | Historical timeline     | ✅   |
+| GET    | `/share-card` | Generate shareable card | ✅   |
 
 ---
 
 ## 🚀 KEY FEATURES
 
 ### 1. ✅ Universal Item Donation System
+
 - **Any Item Type**: Food, clothing, furniture, electronics, books, toys, household items
 - **10+ Categories**: produce, dairy, bakery, canned-goods, household-items, clothing, books, toys, furniture, electronics, other
 - **Multi-image Upload**: Up to 5 images per listing (Cloudinary)
@@ -209,6 +210,7 @@ backend/
 - **Condition Tracking**: new, like-new, good, fair
 
 ### 2. 📍 Location-Aware Discovery
+
 - **Geospatial Indexing**: MongoDB 2dsphere indexes
 - **Nearby Search**: Find listings within radius (1-100 km)
 - **Distance Calculation**: Haversine formula for accuracy
@@ -216,6 +218,7 @@ backend/
 - **Coordinate Support**: [longitude, latitude] format
 
 ### 3. 💬 Real-Time Communication
+
 - **Socket.IO Chat**: Instant messaging between users
 - **Typing Indicators**: See when others are typing
 - **Read Receipts**: Track message read status
@@ -223,6 +226,7 @@ backend/
 - **Message History**: Persistent chat logs
 
 ### 4. 🔔 Smart Notifications
+
 - **Real-time Delivery**: WebSocket push notifications
 - **8+ Notification Types**:
   - New listing posted
@@ -237,6 +241,7 @@ backend/
 - **Email Support**: Ready for SendGrid integration
 
 ### 5. 📱 QR Code Verification System
+
 - **Secure Generation**: Hash-based QR codes
 - **Expiry Management**: 24-hour default expiry
 - **Scanner Integration**: ZXing WASM library
@@ -245,6 +250,7 @@ backend/
 - **Impact Calculation**: Auto-calculated on verification
 
 ### 6. 🌍 Impact Tracking Dashboard
+
 - **Personal Metrics**:
   - Waste prevented (kg)
   - CO2 saved (kg)
@@ -259,6 +265,7 @@ backend/
 - **Milestone Tracking**: Achievement badges
 
 ### 7. ⭐ Rating & Review System
+
 - **5-Star Ratings**: Rate users after transactions
 - **Written Reviews**: Detailed feedback
 - **Average Calculation**: Auto-updated user rating
@@ -266,6 +273,7 @@ backend/
 - **Review Moderation**: Report inappropriate reviews
 
 ### 8. 📊 Analytics Dashboard
+
 - **User Analytics**:
   - Total listings (active, completed)
   - Received items
@@ -281,6 +289,7 @@ backend/
   - User distribution by type
 
 ### 9. 🤖 Telegram Bot Integration
+
 - **Instant Alerts**: New listings sent to college groups
 - **Rich Formatting**: Emojis, formatting, clickable links
 - **Image Support**: Listing images in notifications
@@ -289,6 +298,7 @@ backend/
 - **Group Management**: BotFather setup guide
 
 ### 10. 🔐 Security Features
+
 - **JWT Authentication**: 30-day token expiry
 - **Bcrypt Hashing**: 10 salt rounds
 - **Input Validation**: Express-validator on all routes
@@ -304,6 +314,7 @@ backend/
 ## 📦 DATABASE MODELS
 
 ### User Model
+
 ```javascript
 {
   firstName, lastName, email, password,
@@ -319,6 +330,7 @@ backend/
 ```
 
 ### Listing Model
+
 ```javascript
 {
   title, description, category, quantity, unit,
@@ -332,14 +344,14 @@ backend/
   interestedUsers: [{ user, message, timestamp }],
   assignedTo: ObjectId,
   completedAt, views, urgency, condition,
-  
+
   // Queue System
   queue: [{ user, joinedAt, position, status, notifiedAt, expiresAt }],
   queueLimit: Number,
-  
+
   // Check-ins
   checkIns: [{ user, timestamp, location, notes }],
-  
+
   // QR Code
   qrCode: {
     data: String,
@@ -355,6 +367,7 @@ backend/
 ```
 
 ### Transaction Model
+
 ```javascript
 {
   qrCode: String,
@@ -378,6 +391,7 @@ backend/
 ```
 
 ### Chat, Message, Notification Models
+
 Standard schemas for real-time communication and notifications.
 
 ---
@@ -385,6 +399,7 @@ Standard schemas for real-time communication and notifications.
 ## 🔌 SOCKET.IO EVENTS
 
 ### Client → Server
+
 - `joinChat` - Join chat room
 - `leaveChat` - Leave chat room
 - `sendMessage` - Send message
@@ -393,6 +408,7 @@ Standard schemas for real-time communication and notifications.
 - `markAsRead` - Mark messages read
 
 ### Server → Client
+
 - `newMessage` - New message received
 - `userTyping` - User is typing
 - `userStopTyping` - User stopped typing
@@ -408,6 +424,7 @@ Standard schemas for real-time communication and notifications.
 ## 🛠️ INSTALLATION & SETUP
 
 ### Prerequisites
+
 ```bash
 Node.js >= 18.0.0
 npm >= 9.0.0
@@ -417,12 +434,14 @@ MongoDB >= 5.0.0
 ### Setup Steps
 
 1. **Install Dependencies**
+
 ```bash
 cd backend
 npm install
 ```
 
 2. **Environment Variables** (`.env`)
+
 ```env
 # Server
 PORT=5000
@@ -449,11 +468,13 @@ TELEGRAM_CHAT_ID=your_group_chat_id
 ```
 
 3. **Start Development**
+
 ```bash
 npm run dev
 ```
 
 4. **Start Production**
+
 ```bash
 npm start
 ```
@@ -463,6 +484,7 @@ npm start
 ## 📊 PROJECT STATISTICS
 
 ### Code Metrics
+
 - **Total Files**: 36 JavaScript files
 - **Models**: 7 schemas
 - **Controllers**: 9 controllers
@@ -473,6 +495,7 @@ npm start
 - **API Endpoints**: 60+ endpoints
 
 ### Technology Stack
+
 - **Runtime**: Node.js 18+
 - **Framework**: Express.js 4.21.2
 - **Database**: MongoDB 8.10.0 + Mongoose 8.9.3
@@ -488,6 +511,7 @@ npm start
 ## 🚀 DEPLOYMENT
 
 ### Deployment Platforms
+
 - Heroku
 - Railway
 - Render
@@ -495,6 +519,7 @@ npm start
 - AWS EC2
 
 ### Production Checklist
+
 ```env
 NODE_ENV=production
 MONGO_URI=mongodb+srv://production...
@@ -504,6 +529,7 @@ CLIENT_URL=https://your-production-domain.com
 ```
 
 ### Deploy Commands
+
 ```bash
 # Heroku
 git push heroku main
@@ -537,6 +563,7 @@ railway up
 ## 👨‍💻 AUTHOR
 
 **Hanumantha Madineni**
+
 - GitHub: [@hanuman2005](https://github.com/hanuman2005)
 - Email: madenenihanumanturao@gmail.com
 
@@ -550,15 +577,17 @@ MIT License - Free to use, modify, and distribute.
 
 ## 🎉 PROJECT STATUS
 
-✅ **Backend**: 100% Complete  
-✅ **All Models**: Implemented & Tested  
-✅ **All Controllers**: Complete with Error Handling  
-✅ **All Routes**: Protected & Validated  
-✅ **Real-time**: Socket.IO Working  
-✅ **QR System**: Fully Functional  
-✅ **Impact Tracking**: Complete  
-✅ **Telegram Bot**: Integrated  
-✅ **Security**: Production Ready  
+⚠️ **Notes & Status**: The backend is functionally complete and many features are implemented. However, some minor issues and TODOs were found during review and should be addressed before claiming full production readiness:
+
+- 🔍 **Queue Cron Service Reference**: `backend/utils/queueCronJob.js` currently requires `../services/notificationService`, but `backend/services/notificationService.js` is not present. The repo provides `backend/utils/notificationHelper.js` which provides identical helpers; we recommend updating `queueCronJob.js` to use `notificationHelper` or adding a small `services/notificationService.js` wrapper that re-exports the helper functions.
+
+- 🔁 **Queue Controller -> Notification function mismatch**: `backend/controllers/queueController.js` calls `notificationHelper.onQueueJoined`, `notificationHelper.onQueueAssigned`, and `notificationHelper.onQueueAssignmentCancelled`. `notificationHelper.js` defines `notifyQueueJoined`, `notifyAssignedFromQueue`, and `notifyAssignmentCancelled`. Either alias functions or align the names in one place.
+
+- ⏰ **Cron initialization**: `backend/utils/scheduleCron.js` is initialized in `server.js` with `initScheduleCronJobs(io)`. The `queueCronJob.js` file is present but is not required/imported anywhere, so its checks do not run by default; add initialization (for example, in `server.js`) if you want hourly queue cleanup to run.
+
+- 🧪 **Tests**: No unit/integration tests were found. Add tests (Jest + Supertest) for critical routes (Auth, Listings, QR flows, Schedules, Waste Analysis) before going to production.
+
+As long as those minor issues are addressed, the backend is in a strong position for production deployment.
 
 ---
 
@@ -568,4 +597,4 @@ MIT License - Free to use, modify, and distribute.
 
 ---
 
-*Made with ❤️ for ShareTogether - Connecting communities to share resources, reduce waste, and help those in need*
+_Made with ❤️ for ShareTogether - Connecting communities to share resources, reduce waste, and help those in need_

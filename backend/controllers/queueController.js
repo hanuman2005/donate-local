@@ -51,7 +51,7 @@ exports.joinQueue = async (req, res) => {
     const position = await listing.addToQueue(req.user._id);
 
     // Notify donor (use notificationHelper now)
-    await notificationHelper.onQueueJoined(listing, req.user, position, req.io);
+    await notificationHelper.notifyQueueJoined(listing, req.user, position, req.io);
 
     res.json({
       success: true,
@@ -155,7 +155,7 @@ exports.cancelAssignment = async (req, res) => {
 
     if (nextUser) {
       // Notify next person
-      await notificationHelper.onQueueAssigned(
+      await notificationHelper.notifyAssignedFromQueue(
         listing,
         { _id: nextUser },
         req.io
@@ -180,7 +180,7 @@ exports.cancelAssignment = async (req, res) => {
 
     // Notify previous assignee if any
     if (previousAssignee) {
-      await notificationHelper.onQueueAssignmentCancelled(
+      await notificationHelper.notifyAssignmentCancelled(
         listing,
         { _id: previousAssignee },
         req.io

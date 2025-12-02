@@ -48,6 +48,60 @@ const wasteAnalysisSchema = new mongoose.Schema(
         "Other",
       ],
     },
+    materialComposition: [
+      {
+        name: String,
+        percentage: Number,
+        hazard: {
+          type: String,
+          enum: ["low", "medium", "high", "unknown"],
+        },
+        recyclable: Boolean,
+      },
+    ],
+
+    recyclingComplexity: {
+      type: String,
+      enum: ["low", "medium", "high", "unknown"],
+    },
+
+    environmentalImpact: {
+      recyclablePercentage: Number,
+      co2SavedByRecycling: Number,
+      landfillDiversionPotential: String,
+      valueRecoveryPotential: String,
+      requiresSpecialHandling: Boolean,
+    },
+
+    hazards: {
+      hasHazardousMaterials: Boolean,
+      criticalHazards: [
+        {
+          material: String,
+          warning: String,
+          risk: String,
+        },
+      ],
+      mediumHazards: [
+        {
+          material: String,
+          warning: String,
+          risk: String,
+        },
+      ],
+      handlingInstructions: [String],
+    },
+
+    recyclingRecommendations: [
+      {
+        priority: String,
+        material: String,
+        action: String,
+        reason: String,
+      },
+    ],
+
+    eWasteCategory: String,
 
     // Advice data
     reuseIdeas: [
@@ -156,7 +210,6 @@ wasteAnalysisSchema.index({ material: 1 });
 wasteAnalysisSchema.index({ location: "2dsphere" });
 wasteAnalysisSchema.index({ convertedToListing: 1 });
 wasteAnalysisSchema.index({ user: 1, tfLabel: 1, material: 1, createdAt: -1 });
-
 
 // Virtual for age
 wasteAnalysisSchema.virtual("age").get(function () {

@@ -1,46 +1,68 @@
 // backend/controllers/impactController.js - FIXED
-const mongoose = require('mongoose');
-const Transaction = require('../models/Transaction');
-const User = require('../models/User');
+const mongoose = require("mongoose");
+const Transaction = require("../models/Transaction");
+const User = require("../models/User");
 
 // Helper: Aggregate user impact
 const aggregateUserImpact = (transactions) => {
-  return transactions.reduce((acc, t) => ({
-    totalWastePreventedKg: acc.totalWastePreventedKg + (t.impact?.wastePreventedKg || 0),
-    totalCO2SavedKg: acc.totalCO2SavedKg + (t.impact?.co2SavedKg || 0),
-    totalMealsProvided: acc.totalMealsProvided + (t.impact?.mealsProvided || 0),
-    totalWaterSavedLiters: acc.totalWaterSavedLiters + ((t.impact?.wastePreventedKg || 0) * 15),
-    treesEquivalent: acc.treesEquivalent + Math.floor((t.impact?.co2SavedKg || 0) / 20),
-    carsOffRoadDays: acc.carsOffRoadDays + Math.floor((t.impact?.co2SavedKg || 0) / 4.6),
-  }), {
-    totalWastePreventedKg: 0,
-    totalCO2SavedKg: 0,
-    totalMealsProvided: 0,
-    totalWaterSavedLiters: 0,
-    treesEquivalent: 0,
-    carsOffRoadDays: 0,
-  });
+  return transactions.reduce(
+    (acc, t) => ({
+      totalWastePreventedKg:
+        acc.totalWastePreventedKg + (t.impact?.wastePreventedKg || 0),
+      totalCO2SavedKg: acc.totalCO2SavedKg + (t.impact?.co2SavedKg || 0),
+      totalMealsProvided:
+        acc.totalMealsProvided + (t.impact?.mealsProvided || 0),
+      totalWaterSavedLiters:
+        acc.totalWaterSavedLiters + (t.impact?.wastePreventedKg || 0) * 15,
+      treesEquivalent:
+        acc.treesEquivalent + Math.floor((t.impact?.co2SavedKg || 0) / 20),
+      carsOffRoadDays:
+        acc.carsOffRoadDays + Math.floor((t.impact?.co2SavedKg || 0) / 4.6),
+    }),
+    {
+      totalWastePreventedKg: 0,
+      totalCO2SavedKg: 0,
+      totalMealsProvided: 0,
+      totalWaterSavedLiters: 0,
+      treesEquivalent: 0,
+      carsOffRoadDays: 0,
+    }
+  );
 };
 
 // Helper: Get milestones
 const getImpactMilestones = (totalCO2) => {
   const milestones = [
-    { threshold: 10, message: '🌱 First Steps', description: 'Started your journey' },
-    { threshold: 50, message: '🌿 Growing Impact', description: 'Making a difference' },
-    { threshold: 100, message: '🌳 Tree Planter', description: 'Equivalent to planting trees' },
-    { threshold: 500, message: '🏆 Champion', description: 'Community leader' },
-    { threshold: 1000, message: '⭐ Hero', description: 'Environmental hero' },
+    {
+      threshold: 10,
+      message: "🌱 First Steps",
+      description: "Started your journey",
+    },
+    {
+      threshold: 50,
+      message: "🌿 Growing Impact",
+      description: "Making a difference",
+    },
+    {
+      threshold: 100,
+      message: "🌳 Tree Planter",
+      description: "Equivalent to planting trees",
+    },
+    { threshold: 500, message: "🏆 Champion", description: "Community leader" },
+    { threshold: 1000, message: "⭐ Hero", description: "Environmental hero" },
   ];
 
-  const achieved = milestones.filter(m => totalCO2 >= m.threshold);
-  const next = milestones.find(m => totalCO2 < m.threshold);
+  const achieved = milestones.filter((m) => totalCO2 >= m.threshold);
+  const next = milestones.find((m) => totalCO2 < m.threshold);
 
   return {
-    achieved: achieved.map(m => m.message),
-    nextMilestone: next ? {
-      ...next,
-      progress: (totalCO2 / next.threshold) * 100
-    } : null
+    achieved: achieved.map((m) => m.message),
+    nextMilestone: next
+      ? {
+          ...next,
+          progress: (totalCO2 / next.threshold) * 100,
+        }
+      : null,
   };
 };
 
@@ -51,51 +73,61 @@ const getPersonalImpact = async (req, res) => {
 
     const donorTransactions = await Transaction.find({
       donor: userId,
-      status: 'completed'
-    }).populate('listing', 'title category quantity');
+      status: "completed",
+    }).populate("listing", "title category quantity");
 
     const recipientTransactions = await Transaction.find({
       recipient: userId,
-      status: 'completed'
-    }).populate('listing', 'title category quantity');
+      status: "completed",
+    }).populate("listing", "title category quantity");
 
     const donorImpact = aggregateUserImpact(donorTransactions);
     const recipientImpact = aggregateUserImpact(recipientTransactions);
 
     const combinedImpact = {
-      totalWastePreventedKg: donorImpact.totalWastePreventedKg + recipientImpact.totalWastePreventedKg,
-      totalCO2SavedKg: donorImpact.totalCO2SavedKg + recipientImpact.totalCO2SavedKg,
-      totalMealsProvided: donorImpact.totalMealsProvided + recipientImpact.totalMealsProvided,
-      totalWaterSavedLiters: donorImpact.totalWaterSavedLiters + recipientImpact.totalWaterSavedLiters,
+      totalWastePreventedKg:
+        donorImpact.totalWastePreventedKg +
+        recipientImpact.totalWastePreventedKg,
+      totalCO2SavedKg:
+        donorImpact.totalCO2SavedKg + recipientImpact.totalCO2SavedKg,
+      totalMealsProvided:
+        donorImpact.totalMealsProvided + recipientImpact.totalMealsProvided,
+      totalWaterSavedLiters:
+        donorImpact.totalWaterSavedLiters +
+        recipientImpact.totalWaterSavedLiters,
       totalDonations: donorTransactions.length,
       totalReceived: recipientTransactions.length,
-      totalTransactions: donorTransactions.length + recipientTransactions.length,
-      treesEquivalent: donorImpact.treesEquivalent + recipientImpact.treesEquivalent,
-      carsOffRoadDays: donorImpact.carsOffRoadDays + recipientImpact.carsOffRoadDays
+      totalTransactions:
+        donorTransactions.length + recipientTransactions.length,
+      treesEquivalent:
+        donorImpact.treesEquivalent + recipientImpact.treesEquivalent,
+      carsOffRoadDays:
+        donorImpact.carsOffRoadDays + recipientImpact.carsOffRoadDays,
     };
 
     const milestones = getImpactMilestones(combinedImpact.totalCO2SavedKg);
 
     const allUsers = await Transaction.aggregate([
-      { $match: { status: 'completed' } },
+      { $match: { status: "completed" } },
       {
         $group: {
-          _id: '$donor',
-          totalCO2: { $sum: '$impact.co2SavedKg' }
-        }
+          _id: "$donor",
+          totalCO2: { $sum: "$impact.co2SavedKg" },
+        },
       },
-      { $sort: { totalCO2: -1 } }
+      { $sort: { totalCO2: -1 } },
     ]);
 
-    const userRank = allUsers.findIndex(u => u._id.toString() === userId.toString()) + 1;
+    const userRank =
+      allUsers.findIndex((u) => u._id.toString() === userId.toString()) + 1;
 
     const recentActivities = await Transaction.find({
       $or: [{ donor: userId }, { recipient: userId }],
-      status: 'completed'
+      status: "completed",
     })
-      .populate('listing', 'title category')
-      .populate('donor', 'firstName lastName')
-      .populate('recipient', 'firstName lastName')
+      .populate("listing", "title category")
+      .populate("donor", "firstName lastName")
+      .populate("recipient", "firstName lastName")
       .sort({ completedAt: -1 })
       .limit(5);
 
@@ -105,23 +137,23 @@ const getPersonalImpact = async (req, res) => {
       milestones,
       rank: {
         position: userRank || 0,
-        total: allUsers.length
+        total: allUsers.length,
       },
-      recentActivities: recentActivities.map(t => ({
+      recentActivities: recentActivities.map((t) => ({
         id: t._id,
         listing: t.listing,
-        type: t.donor._id.toString() === userId.toString() ? 'donated' : 'received',
+        type:
+          t.donor._id.toString() === userId.toString() ? "donated" : "received",
         completedAt: t.completedAt,
         impact: t.impact,
-      }))
+      })),
     });
-
   } catch (error) {
-    console.error('Get Personal Impact Error:', error);
+    console.error("Get Personal Impact Error:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch personal impact',
-      error: error.message
+      message: "Failed to fetch personal impact",
+      error: error.message,
     });
   }
 };
@@ -130,22 +162,22 @@ const getPersonalImpact = async (req, res) => {
 const getCommunityImpact = async (req, res) => {
   try {
     const allTransactions = await Transaction.find({
-      status: 'completed'
-    }).populate('donor', 'firstName lastName');
+      status: "completed",
+    }).populate("donor", "firstName lastName");
 
     const totalImpact = aggregateUserImpact(allTransactions);
 
     const topDonors = await Transaction.aggregate([
-      { $match: { status: 'completed' } },
+      { $match: { status: "completed" } },
       {
         $group: {
-          _id: '$donor',
-          totalCO2: { $sum: '$impact.co2SavedKg' },
-          count: { $sum: 1 }
-        }
+          _id: "$donor",
+          totalCO2: { $sum: "$impact.co2SavedKg" },
+          count: { $sum: 1 },
+        },
       },
       { $sort: { totalCO2: -1 } },
-      { $limit: 10 }
+      { $limit: 10 },
     ]);
 
     const oneWeekAgo = new Date();
@@ -154,49 +186,49 @@ const getCommunityImpact = async (req, res) => {
     const trendingCategories = await Transaction.aggregate([
       {
         $match: {
-          status: 'completed',
-          completedAt: { $gte: oneWeekAgo }
-        }
+          status: "completed",
+          completedAt: { $gte: oneWeekAgo },
+        },
       },
       {
         $lookup: {
-          from: 'listings',
-          localField: 'listing',
-          foreignField: '_id',
-          as: 'listingData'
-        }
+          from: "listings",
+          localField: "listing",
+          foreignField: "_id",
+          as: "listingData",
+        },
       },
-      { $unwind: '$listingData' },
+      { $unwind: "$listingData" },
       {
         $group: {
-          _id: '$listingData.category',
+          _id: "$listingData.category",
           count: { $sum: 1 },
-          totalWaste: { $sum: '$impact.wastePreventedKg' }
-        }
+          totalWaste: { $sum: "$impact.wastePreventedKg" },
+        },
       },
       { $sort: { count: -1 } },
-      { $limit: 5 }
+      { $limit: 5 },
     ]);
 
     const topDonorsWithDetails = await User.find({
-      _id: { $in: topDonors.map(d => d._id) }
-    }).select('firstName lastName avatar');
+      _id: { $in: topDonors.map((d) => d._id) },
+    }).select("firstName lastName avatar");
 
-    const enrichedTopDonors = topDonors.map(donor => {
+    const enrichedTopDonors = topDonors.map((donor) => {
       const userDetails = topDonorsWithDetails.find(
-        u => u._id.toString() === donor._id.toString()
+        (u) => u._id.toString() === donor._id.toString()
       );
       return {
         userId: donor._id,
         totalCO2: donor.totalCO2,
         count: donor.count,
-        user: userDetails
+        user: userDetails,
       };
     });
 
-    const activeThisWeek = await Transaction.distinct('donor', {
-      status: 'completed',
-      completedAt: { $gte: oneWeekAgo }
+    const activeThisWeek = await Transaction.distinct("donor", {
+      status: "completed",
+      completedAt: { $gte: oneWeekAgo },
     });
 
     res.status(200).json({
@@ -207,17 +239,16 @@ const getCommunityImpact = async (req, res) => {
       stats: {
         activeUsersThisWeek: activeThisWeek.length,
         transactionsThisWeek: allTransactions.filter(
-          t => t.completedAt >= oneWeekAgo
-        ).length
-      }
+          (t) => t.completedAt >= oneWeekAgo
+        ).length,
+      },
     });
-
   } catch (error) {
-    console.error('Get Community Impact Error:', error);
+    console.error("Get Community Impact Error:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch community impact',
-      error: error.message
+      message: "Failed to fetch community impact",
+      error: error.message,
     });
   }
 };
@@ -226,29 +257,28 @@ const getCommunityImpact = async (req, res) => {
 const getImpactHeatmap = async (req, res) => {
   try {
     const transactions = await Transaction.find({
-      status: 'completed',
-      'pickupLocation.coordinates': { $exists: true }
-    }).select('pickupLocation impact completedAt');
+      status: "completed",
+      "pickupLocation.coordinates": { $exists: true },
+    }).select("pickupLocation impact completedAt");
 
-    const heatmapData = transactions.map(t => ({
+    const heatmapData = transactions.map((t) => ({
       lat: t.pickupLocation.coordinates[1],
       lng: t.pickupLocation.coordinates[0],
       weight: t.impact?.wastePreventedKg || 1,
-      timestamp: t.completedAt
+      timestamp: t.completedAt,
     }));
 
     res.status(200).json({
       success: true,
       heatmap: heatmapData,
-      count: heatmapData.length
+      count: heatmapData.length,
     });
-
   } catch (error) {
-    console.error('Get Heatmap Error:', error);
+    console.error("Get Heatmap Error:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch heatmap data',
-      error: error.message
+      message: "Failed to fetch heatmap data",
+      error: error.message,
     });
   }
 };
@@ -257,7 +287,7 @@ const getImpactHeatmap = async (req, res) => {
 const getImpactTimeline = async (req, res) => {
   try {
     const userId = req.user._id; // ✅ FIXED
-    const { period = '30' } = req.query;
+    const { period = "30" } = req.query;
 
     const daysAgo = new Date();
     daysAgo.setDate(daysAgo.getDate() - parseInt(period));
@@ -267,36 +297,35 @@ const getImpactTimeline = async (req, res) => {
       {
         $match: {
           donor: new mongoose.Types.ObjectId(userId),
-          status: 'completed',
-          completedAt: { $gte: daysAgo }
-        }
+          status: "completed",
+          completedAt: { $gte: daysAgo },
+        },
       },
       {
         $group: {
           _id: {
-            $dateToString: { format: '%Y-%m-%d', date: '$completedAt' }
+            $dateToString: { format: "%Y-%m-%d", date: "$completedAt" },
           },
           count: { $sum: 1 },
-          totalWaste: { $sum: '$impact.wastePreventedKg' },
-          totalCO2: { $sum: '$impact.co2SavedKg' },
-          totalMeals: { $sum: '$impact.mealsProvided' }
-        }
+          totalWaste: { $sum: "$impact.wastePreventedKg" },
+          totalCO2: { $sum: "$impact.co2SavedKg" },
+          totalMeals: { $sum: "$impact.mealsProvided" },
+        },
       },
-      { $sort: { _id: 1 } }
+      { $sort: { _id: 1 } },
     ]);
 
     res.status(200).json({
       success: true,
       timeline,
-      period: parseInt(period)
+      period: parseInt(period),
     });
-
   } catch (error) {
-    console.error('Get Timeline Error:', error);
+    console.error("Get Timeline Error:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch timeline',
-      error: error.message
+      message: "Failed to fetch timeline",
+      error: error.message,
     });
   }
 };
@@ -306,11 +335,13 @@ const generateShareCard = async (req, res) => {
   try {
     const userId = req.user._id; // ✅ FIXED
 
-    const user = await User.findById(userId).select('firstName lastName avatar');
+    const user = await User.findById(userId).select(
+      "firstName lastName avatar"
+    );
 
     const transactions = await Transaction.find({
       donor: userId,
-      status: 'completed'
+      status: "completed",
     });
 
     const impact = aggregateUserImpact(transactions);
@@ -318,30 +349,133 @@ const generateShareCard = async (req, res) => {
     const shareData = {
       user: {
         name: `${user.firstName} ${user.lastName}`,
-        avatar: user.avatar
+        avatar: user.avatar,
       },
       impact: {
         wasteKg: impact.totalWastePreventedKg,
         co2Kg: impact.totalCO2SavedKg,
         meals: impact.totalMealsProvided,
-        trees: impact.treesEquivalent
+        trees: impact.treesEquivalent,
       },
-      message: `I've saved ${impact.totalCO2SavedKg.toFixed(1)}kg of CO2 and provided ${impact.totalMealsProvided} meals through community sharing! 🌍💚`,
-      timestamp: new Date()
+      message: `I've saved ${impact.totalCO2SavedKg.toFixed(
+        1
+      )}kg of CO2 and provided ${
+        impact.totalMealsProvided
+      } meals through community sharing! 🌍💚`,
+      timestamp: new Date(),
     };
 
     res.status(200).json({
       success: true,
-      shareData
+      shareData,
     });
-
   } catch (error) {
-    console.error('Generate Share Card Error:', error);
+    console.error("Generate Share Card Error:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to generate share card',
-      error: error.message
+      message: "Failed to generate share card",
+      error: error.message,
     });
+  }
+};
+
+const getDigitalTwinData = async (req, res) => {
+  try {
+    const { since, category } = req.query;
+
+    const matchStage = {
+      status: "completed",
+      verificationLocation: { $exists: true },
+    };
+
+    if (since) {
+      matchStage.completedAt = { $gte: new Date(since) };
+    }
+
+    const data = await Transaction.aggregate([
+      { $match: matchStage },
+      {
+        $lookup: {
+          from: "listings",
+          localField: "listing",
+          foreignField: "_id",
+          as: "listingData",
+        },
+      },
+      { $unwind: "$listingData" },
+      {
+        $group: {
+          _id: {
+            lat: {
+              $round: [
+                { $arrayElemAt: ["$verificationLocation.coordinates", 1] },
+                2,
+              ],
+            },
+            lng: {
+              $round: [
+                { $arrayElemAt: ["$verificationLocation.coordinates", 0] },
+                2,
+              ],
+            },
+          },
+          count: { $sum: 1 },
+          totalCO2Saved: { $sum: { $ifNull: ["$impact.co2SavedKg", 2] } },
+          totalWastePrevented: {
+            $sum: { $ifNull: ["$impact.wastePreventedKg", 2] },
+          },
+          transactions: { $push: "$_id" },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          lat: "$_id.lat",
+          lng: "$_id.lng",
+          count: 1,
+          impact: {
+            co2SavedKg: "$totalCO2Saved",
+            wastePreventedKg: "$totalWastePrevented",
+          },
+        },
+      },
+    ]);
+
+    // Get flows (donor -> recipient)
+    const flows = await Transaction.aggregate([
+      { $match: matchStage },
+      {
+        $lookup: {
+          from: "listings",
+          localField: "listing",
+          foreignField: "_id",
+          as: "listingData",
+        },
+      },
+      { $unwind: "$listingData" },
+      {
+        $project: {
+          from: "$listingData.location.coordinates",
+          to: "$verificationLocation.coordinates",
+          impact: {
+            co2: { $ifNull: ["$impact.co2SavedKg", 2] },
+            waste: { $ifNull: ["$impact.wastePreventedKg", 2] },
+          },
+        },
+      },
+      { $limit: 100 }, // Limit for demo performance
+    ]);
+
+    res.json({
+      success: true,
+      data: {
+        points: data,
+        flows: flows,
+      },
+    });
+  } catch (error) {
+    console.error("Digital Twin Error:", error);
+    res.status(500).json({ success: false, error: error.message });
   }
 };
 
@@ -350,5 +484,6 @@ module.exports = {
   getCommunityImpact,
   getImpactHeatmap,
   getImpactTimeline,
-  generateShareCard
+  generateShareCard,
+  getDigitalTwinData,
 };
