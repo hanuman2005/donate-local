@@ -1,12 +1,13 @@
-// src/pages/CreateListing/styledComponents.js - FIXED BULK MODE & POLISHED
+// src/pages/CreateListing/styledComponents.js - COMPLETE FILE FOR SIDEBAR LAYOUT
 
 import styled from "styled-components";
 
 export const CreateListingContainer = styled.div`
-  margin-top: 80px;
-  min-height: calc(100vh - 80px);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
   padding: 2rem 1rem;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  transition: all var(--transition-base);
 
   @media (max-width: 768px) {
     padding: 1.5rem 1rem;
@@ -20,21 +21,23 @@ export const CreateListingContainer = styled.div`
 export const CreateListingCard = styled.div`
   max-width: 900px;
   margin: 0 auto;
-  background: white;
-  border-radius: 20px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
   overflow: hidden;
+  border: 1px solid var(--border-color);
 
   @media (max-width: 768px) {
-    border-radius: 16px;
+    border-radius: var(--radius-lg);
   }
 `;
 
 export const Header = styled.div`
-  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  background: var(--gradient-primary);
   color: white;
   padding: 3rem 2rem;
   text-align: center;
+  position: relative;
 
   @media (max-width: 768px) {
     padding: 2.5rem 1.5rem;
@@ -90,7 +93,7 @@ export const Form = styled.form`
 export const FormSection = styled.div`
   margin-bottom: 2.5rem;
   padding-bottom: 2rem;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--border-color);
 
   &:last-of-type {
     border-bottom: none;
@@ -105,11 +108,11 @@ export const FormSection = styled.div`
 
 export const SectionTitle = styled.h3`
   font-size: 1.25rem;
-  font-weight: 600;
-  color: #2d3748;
+  font-weight: 700;
+  color: var(--text-primary);
   margin: 0 0 1.5rem 0;
   padding-bottom: 0.5rem;
-  border-bottom: 2px solid #4facfe;
+  border-bottom: 2px solid var(--primary);
   display: inline-block;
 
   @media (max-width: 768px) {
@@ -141,29 +144,31 @@ export const FormGroup = styled.div`
 
 export const Label = styled.label`
   font-weight: 600;
-  color: #4a5568;
+  color: var(--text-secondary);
   font-size: 0.95rem;
   line-height: 1.4;
 `;
 
 export const Input = styled.input`
   padding: 14px 16px;
-  border: 2px solid #e2e8f0;
-  border-radius: 12px;
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-lg);
   font-size: 1rem;
-  transition: all 0.3s ease;
-  background: #f8fafc;
+  transition: all var(--transition-base);
+  background: var(--bg-secondary);
   width: 100%;
+  color: var(--text-primary);
 
   &:focus {
     outline: none;
-    border-color: #4facfe;
-    background: white;
-    box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+    border-color: var(--primary);
+    background: var(--bg-card);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
   }
 
   &::placeholder {
-    color: #a0aec0;
+    color: var(--text-secondary);
+    opacity: 0.6;
   }
 
   @media (max-width: 768px) {
@@ -174,25 +179,27 @@ export const Input = styled.input`
 
 export const TextArea = styled.textarea`
   padding: 14px 16px;
-  border: 2px solid #e2e8f0;
-  border-radius: 12px;
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-lg);
   font-size: 1rem;
-  transition: all 0.3s ease;
-  background: #f8fafc;
+  transition: all var(--transition-base);
+  background: var(--bg-secondary);
   resize: vertical;
   font-family: inherit;
   width: 100%;
   min-height: 100px;
+  color: var(--text-primary);
 
   &:focus {
     outline: none;
-    border-color: #4facfe;
-    background: white;
-    box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+    border-color: var(--primary);
+    background: var(--bg-card);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
   }
 
   &::placeholder {
-    color: #a0aec0;
+    color: var(--text-secondary);
+    opacity: 0.6;
   }
 
   @media (max-width: 768px) {
@@ -203,19 +210,20 @@ export const TextArea = styled.textarea`
 
 export const Select = styled.select`
   padding: 14px 16px;
-  border: 2px solid #e2e8f0;
-  border-radius: 12px;
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-lg);
   font-size: 1rem;
-  transition: all 0.3s ease;
-  background: #f8fafc;
+  transition: all var(--transition-base);
+  background: var(--bg-secondary);
   cursor: pointer;
   width: 100%;
+  color: var(--text-primary);
 
   &:focus {
     outline: none;
-    border-color: #4facfe;
-    background: white;
-    box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+    border-color: var(--primary);
+    background: var(--bg-card);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
   }
 
   @media (max-width: 768px) {
@@ -234,19 +242,19 @@ export const FileInputLabel = styled.label`
   justify-content: center;
   gap: 0.5rem;
   padding: 12px 20px;
-  background: #f8fafc;
-  border: 2px dashed #cbd5e0;
-  border-radius: 12px;
+  background: var(--bg-secondary);
+  border: 2px dashed var(--border-color);
+  border-radius: var(--radius-lg);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all var(--transition-base);
   font-weight: 500;
-  color: #4a5568;
+  color: var(--text-secondary);
   width: 100%;
 
   &:hover {
-    background: #e2e8f0;
-    border-color: #4facfe;
-    color: #4facfe;
+    background: var(--bg-hover);
+    border-color: var(--primary);
+    color: var(--primary);
   }
 
   @media (max-width: 768px) {
@@ -276,9 +284,10 @@ export const ImageGrid = styled.div`
 export const ImageItem = styled.div`
   position: relative;
   aspect-ratio: 1;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   overflow: hidden;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
+  border: 2px solid var(--border-color);
 
   img {
     width: 100%;
@@ -294,20 +303,20 @@ export const RemoveImageButton = styled.button`
   width: 28px;
   height: 28px;
   background: rgba(255, 255, 255, 0.95);
-  color: #e53e3e;
+  color: var(--error);
   border: none;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 18px;
   font-weight: bold;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition: all var(--transition-base);
+  box-shadow: var(--shadow-md);
 
   &:hover {
-    background: #e53e3e;
+    background: var(--error);
     color: white;
     transform: scale(1.1);
   }
@@ -325,7 +334,7 @@ export const ButtonRow = styled.div`
   justify-content: flex-end;
   margin-top: 2rem;
   padding-top: 2rem;
-  border-top: 1px solid #e2e8f0;
+  border-top: 1px solid var(--border-color);
 
   @media (max-width: 600px) {
     flex-direction: column-reverse;
@@ -333,28 +342,31 @@ export const ButtonRow = styled.div`
 `;
 
 export const SubmitButton = styled.button`
-  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  background: var(--gradient-primary);
   color: white;
   font-size: 1.1rem;
-  font-weight: 600;
+  font-weight: 700;
   padding: 14px 28px;
   border: none;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all var(--transition-base);
   display: flex;
   align-items: center;
   justify-content: center;
   min-height: 50px;
   white-space: nowrap;
+  box-shadow: var(--shadow-md);
 
   &:hover:not(:disabled) {
-    box-shadow: 0 8px 25px rgba(79, 172, 254, 0.3);
+    box-shadow: var(--shadow-xl);
+    transform: translateY(-2px);
   }
 
   &:disabled {
-    opacity: 0.6;
+    opacity: 0.5;
     cursor: not-allowed;
+    transform: none !important;
   }
 
   @media (max-width: 600px) {
@@ -364,20 +376,20 @@ export const SubmitButton = styled.button`
 `;
 
 export const CancelButton = styled.button`
-  background: #f8fafc;
-  color: #4a5568;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
   font-size: 1.1rem;
   font-weight: 600;
   padding: 14px 28px;
-  border: 2px solid #e2e8f0;
-  border-radius: 12px;
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-lg);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all var(--transition-base);
   white-space: nowrap;
 
   &:hover {
-    background: #e2e8f0;
-    border-color: #cbd5e0;
+    background: var(--bg-hover);
+    border-color: var(--text-secondary);
   }
 
   @media (max-width: 600px) {
@@ -387,12 +399,12 @@ export const CancelButton = styled.button`
 `;
 
 export const ErrorMessage = styled.div`
-  background: #fed7d7;
-  color: #c53030;
+  background: var(--error-bg);
+  color: var(--error);
   padding: 12px 16px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   font-size: 0.95rem;
-  border: 1px solid #feb2b2;
+  border: 1px solid var(--error);
   margin-bottom: 1.5rem;
   line-height: 1.5;
 
@@ -402,12 +414,12 @@ export const ErrorMessage = styled.div`
 `;
 
 export const SuccessMessage = styled.div`
-  background: #c6f6d5;
-  color: #2f855a;
+  background: var(--success-bg);
+  color: var(--success);
   padding: 12px 16px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   font-size: 0.95rem;
-  border: 1px solid #9ae6b4;
+  border: 1px solid var(--success);
   margin-bottom: 1.5rem;
   line-height: 1.5;
 
@@ -416,7 +428,7 @@ export const SuccessMessage = styled.div`
   }
 `;
 
-// === BULK MODE COMPONENTS (FIXED) ===
+// === BULK MODE COMPONENTS ===
 
 export const BulkModeToggle = styled.div`
   display: flex;
@@ -424,9 +436,9 @@ export const BulkModeToggle = styled.div`
   gap: 1rem;
   margin-bottom: 2rem;
   padding: 1.25rem;
-  background: #f7fafc;
-  border-radius: 12px;
-  border: 2px solid #e2e8f0;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+  border: 2px solid var(--border-color);
 
   @media (max-width: 768px) {
     padding: 1rem;
@@ -453,9 +465,9 @@ export const Switch = styled.label`
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: #ccc;
-    transition: 0.4s;
-    border-radius: 30px;
+    background-color: var(--border-color);
+    transition: var(--transition-base);
+    border-radius: var(--radius-full);
 
     &:before {
       position: absolute;
@@ -465,13 +477,13 @@ export const Switch = styled.label`
       left: 4px;
       bottom: 4px;
       background-color: white;
-      transition: 0.4s;
-      border-radius: 50%;
+      transition: var(--transition-base);
+      border-radius: var(--radius-full);
     }
   }
 
   input:checked + span {
-    background-color: #667eea;
+    background-color: var(--primary);
   }
 
   input:checked + span:before {
@@ -491,44 +503,46 @@ export const BulkItem = styled.div`
   grid-template-columns: 2fr 1fr 1.2fr 50px;
   gap: 0.875rem;
   padding: 1.25rem;
-  background: #f8fafc;
-  border-radius: 12px;
-  border: 2px solid #e2e8f0;
-  transition: all 0.25s ease;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+  border: 2px solid var(--border-color);
+  transition: all var(--transition-base);
   align-items: center;
 
   &:hover {
-    border-color: #4facfe;
-    background: #fff;
-    box-shadow: 0 2px 8px rgba(79, 172, 254, 0.1);
+    border-color: var(--primary);
+    background: var(--bg-card);
+    box-shadow: var(--shadow-md);
   }
 
   input,
   select {
     padding: 10px 12px;
-    border-radius: 10px;
-    border: 2px solid #cbd5e0;
+    border-radius: var(--radius-md);
+    border: 2px solid var(--border-color);
     font-size: 0.95rem;
-    background: #ffffff;
-    transition: all 0.25s ease;
+    background: var(--bg-card);
+    color: var(--text-primary);
+    transition: all var(--transition-base);
     width: 100%;
-    min-width: 0; /* Prevent overflow */
+    min-width: 0;
 
     &:focus {
       outline: none;
-      border-color: #4facfe;
-      box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.15);
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
     }
   }
 
   button {
-    background: #feb2b2;
+    background: var(--error-bg);
+    color: var(--error);
     border: none;
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     padding: 10px;
     font-size: 1.1rem;
     cursor: pointer;
-    transition: all 0.25s ease;
+    transition: all var(--transition-base);
     height: 42px;
     width: 42px;
     display: flex;
@@ -537,8 +551,8 @@ export const BulkItem = styled.div`
     flex-shrink: 0;
 
     &:not(:disabled):hover {
-      background: #e53e3e;
-      color: #fff;
+      background: var(--error);
+      color: white;
       transform: scale(1.05);
     }
 
@@ -548,7 +562,6 @@ export const BulkItem = styled.div`
     }
   }
 
-  /* RESPONSIVE FIXES */
   @media (max-width: 900px) {
     grid-template-columns: 1.5fr 0.8fr 1fr 42px;
     gap: 0.75rem;
@@ -568,7 +581,7 @@ export const BulkItem = styled.div`
 
     input,
     select {
-      font-size: 14px; /* Prevents iOS zoom */
+      font-size: 14px;
       padding: 8px;
     }
 
@@ -611,7 +624,7 @@ export const BulkItem = styled.div`
       grid-area: remove;
       width: 100%;
       height: 40px;
-      border-radius: 10px;
+      border-radius: var(--radius-md);
     }
   }
 `;

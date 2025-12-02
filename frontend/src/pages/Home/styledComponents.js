@@ -1,4 +1,4 @@
-// src/pages/Home/styledComponents.js - THEMED VERSION
+// src/pages/Home/styledComponents.js - COMPLETE FILE FOR SIDEBAR LAYOUT
 import styled from "styled-components";
 
 export const HomeContainer = styled.div`
@@ -11,7 +11,7 @@ export const HomeContainer = styled.div`
 export const HeroSection = styled.section`
   background: var(--gradient-primary);
   color: white;
-  padding: 120px 20px 80px;
+  padding: 100px 20px 80px;
   text-align: center;
   position: relative;
   overflow: hidden;
@@ -28,7 +28,7 @@ export const HeroSection = styled.section`
   }
 
   @media (max-width: 768px) {
-    padding: 100px 20px 60px;
+    padding: 80px 20px 60px;
   }
 `;
 
@@ -138,6 +138,7 @@ export const StatCard = styled.div`
   min-width: 200px;
   flex: 1;
   max-width: 280px;
+  border: 1px solid var(--border-color);
 
   &:hover {
     transform: translateY(-8px);
@@ -275,6 +276,7 @@ export const FeatureCard = styled.div`
   box-shadow: var(--shadow-md);
   transition: all var(--transition-base);
   text-align: center;
+  border: 1px solid var(--border-color);
 
   &:hover {
     transform: translateY(-10px);

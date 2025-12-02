@@ -1,21 +1,21 @@
-// client/src/pages/Dashboard/styledComponents.js - COMPLETE & OPTIMIZED
+// client/src/pages/Dashboard/styledComponents.js - COMPLETE FILE FOR SIDEBAR LAYOUT
 import styled from "styled-components";
 
 export const DashboardContainer = styled.div`
-  max-width: 1400px;
-  margin: 0 auto;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
   padding: 2rem;
-  margin-top: 80px;
-  min-height: calc(100vh - 80px);
+  transition: all var(--transition-base);
   animation: fadeIn 0.5s ease;
 
   @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-
-  @media (max-width: 1024px) {
-    max-width: 100%;
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
   }
 
   @media (max-width: 768px) {
@@ -28,15 +28,34 @@ export const DashboardContainer = styled.div`
 `;
 
 export const DashboardHeader = styled.header`
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 20px;
+  background: var(--gradient-primary);
+  border-radius: var(--radius-xl);
   padding: 2.5rem;
   margin-bottom: 2rem;
-  box-shadow: 0 10px 40px rgba(102, 126, 234, 0.2);
+  box-shadow: var(--shadow-xl);
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 2rem;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 400px;
+    height: 400px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    z-index: 0;
+  }
+
+  > * {
+    position: relative;
+    z-index: 1;
+  }
 
   @media (max-width: 1024px) {
     padding: 2rem;
@@ -47,17 +66,17 @@ export const DashboardHeader = styled.header`
     align-items: flex-start;
     padding: 1.5rem;
     gap: 1.5rem;
+    border-radius: var(--radius-lg);
   }
 
   @media (max-width: 480px) {
     padding: 1.25rem;
-    border-radius: 16px;
   }
 `;
 
 export const WelcomeSection = styled.div`
   flex: 1;
-  min-width: 0; /* Prevents flex overflow */
+  min-width: 0;
 `;
 
 export const WelcomeTitle = styled.h1`
@@ -108,24 +127,24 @@ export const QuickActions = styled.div`
 
 export const ActionButton = styled.button`
   padding: 1rem 2rem;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   font-size: 1.05rem;
   font-weight: 700;
   border: none;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all var(--transition-base);
   white-space: nowrap;
 
   ${(props) =>
     props.$primary
       ? `
     background: white;
-    color: #667eea;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    color: var(--primary);
+    box-shadow: var(--shadow-md);
 
     &:hover {
       transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+      box-shadow: var(--shadow-lg);
     }
   `
       : `
@@ -205,9 +224,9 @@ export const StatCard = styled.div`
   background: ${(props) => gradients[props.$variant] || gradients.purple};
   color: white;
   padding: 1.5rem;
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   box-shadow: ${(props) => shadows[props.$variant] || shadows.purple};
-  transition: all 0.3s ease;
+  transition: all var(--transition-base);
   cursor: pointer;
   min-height: 120px;
   display: flex;
@@ -305,22 +324,22 @@ export const Sidebar = styled.aside`
 
 export const Section = styled.section`
   background: ${(props) =>
-    props.$impact
-      ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
-      : "white"};
-  color: ${(props) => (props.$impact ? "white" : "inherit")};
-  border-radius: 20px;
+    props.$impact ? "var(--gradient-primary)" : "var(--bg-card)"};
+  color: ${(props) => (props.$impact ? "white" : "var(--text-primary)")};
+  border-radius: var(--radius-xl);
   padding: 2rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  transition: box-shadow 0.3s ease;
+  box-shadow: var(--shadow-lg);
+  transition: all var(--transition-base);
+  border: 1px solid var(--border-color);
 
   &:hover {
-    box-shadow: 0 6px 30px rgba(0, 0, 0, 0.12);
+    box-shadow: var(--shadow-xl);
+    transform: translateY(-2px);
   }
 
   @media (max-width: 768px) {
     padding: 1.5rem;
-    border-radius: 16px;
+    border-radius: var(--radius-lg);
   }
 
   @media (max-width: 480px) {
@@ -345,7 +364,7 @@ export const SectionHeader = styled.div`
 export const SectionTitle = styled.h2`
   font-size: 1.5rem;
   font-weight: 800;
-  color: ${(props) => (props.$impact ? "white" : "#2d3748")};
+  color: ${(props) => (props.$impact ? "white" : "var(--text-primary)")};
   line-height: 1.2;
   margin: 0;
 
@@ -381,13 +400,13 @@ export const ViewAllButton = styled.button`
   background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
   color: white;
   padding: 0.8rem 2rem;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   border: none;
   font-weight: 600;
   font-size: 0.95rem;
   cursor: pointer;
   box-shadow: 0 4px 15px rgba(67, 233, 123, 0.3);
-  transition: all 0.3s ease;
+  transition: all var(--transition-base);
   white-space: nowrap;
 
   &:hover {
@@ -413,8 +432,8 @@ export const ViewAllButton = styled.button`
 export const TabContainer = styled.div`
   display: flex;
   gap: 0.5rem;
-  background: #f7fafc;
-  border-radius: 12px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-lg);
   padding: 0.3rem;
   flex-wrap: wrap;
 
@@ -427,23 +446,21 @@ export const TabContainer = styled.div`
 export const Tab = styled.button`
   padding: 0.6rem 1.2rem;
   border: none;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   font-weight: 600;
   font-size: 0.9rem;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all var(--transition-base);
   background: ${(props) =>
-    props.$active
-      ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
-      : "transparent"};
-  color: ${(props) => (props.$active ? "white" : "#4a5568")};
+    props.$active ? "var(--gradient-primary)" : "transparent"};
+  color: ${(props) => (props.$active ? "white" : "var(--text-secondary)")};
   white-space: nowrap;
 
   &:hover {
     ${(props) =>
       !props.$active &&
       `
-      background: #e2e8f0;
+      background: var(--bg-hover);
     `}
   }
 
@@ -474,24 +491,27 @@ export const ListingsGrid = styled.div`
 `;
 
 export const MapContainer = styled.div`
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   overflow: hidden;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
 
   @media (max-width: 480px) {
-    border-radius: 12px;
+    border-radius: var(--radius-md);
   }
 `;
 
 export const EmptyState = styled.div`
-  background: #f7fafc;
-  border-radius: ${(props) => (props.$compact ? "12px" : "16px")};
+  background: ${(props) =>
+    props.$compact ? "transparent" : "var(--bg-secondary)"};
+  border-radius: ${(props) =>
+    props.$compact ? "var(--radius-md)" : "var(--radius-lg)"};
   padding: ${(props) => (props.$compact ? "2rem" : "3rem")};
   text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 0.5rem;
+  border: 1px solid var(--border-color);
 
   @media (max-width: 768px) {
     padding: ${(props) => (props.$compact ? "1.5rem" : "2.5rem")};
@@ -517,7 +537,8 @@ export const EmptyStateIcon = styled.div`
 `;
 
 export const EmptyStateText = styled.p`
-  color: ${(props) => (props.$large ? "#2d3748" : "#718096")};
+  color: ${(props) =>
+    props.$large ? "var(--text-primary)" : "var(--text-secondary)"};
   font-size: ${(props) => {
     if (props.$large) return "1.2rem";
     if (props.$small) return "0.85rem";
@@ -546,7 +567,7 @@ export const LoadingContainer = styled.div`
 `;
 
 export const LoadingText = styled.p`
-  color: #718096;
+  color: var(--text-secondary);
   font-size: 1.1rem;
   margin: 0;
 

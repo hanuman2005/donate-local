@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { useNavigate } from 'react-router-dom'; // ← Removed unused useLocation
 import styled from "styled-components";
 import { motion, AnimatePresence } from "framer-motion";
-import QrScanner from "react-qr-scanner";
+import { Scanner } from "@yudiel/react-qr-scanner";
 import { motionVariants } from "../../animations/motionVariants";
 import api from "../../services/api";
 import { toast } from "react-toastify";
@@ -205,7 +205,7 @@ const CheckIn = () => {
               animate="show"
               exit="hidden"
             >
-              <QrScanner
+              <Scanner
                 delay={300}
                 onError={(err) => console.error("QR scan error:", err)}
                 onScan={handleQrScan}

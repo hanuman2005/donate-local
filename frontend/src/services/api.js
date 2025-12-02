@@ -121,6 +121,7 @@ export const impactAPI = {
   getImpactHeatmap: (params) => api.get("/impact/heatmap", { params }),
   getImpactTimeline: (params) => api.get("/impact/timeline", { params }),
   generateShareCard: () => api.get("/impact/share-card"),
+  getDigitalTwin: (params) => api.get("/impact/digital-twin", { params }),
 };
 
 export const uploadAPI = {
@@ -227,6 +228,18 @@ export const wasteAPI = {
   // Get eco score leaderboard
   getLeaderboard: (params = {}) =>
     api.get("/waste-analysis/leaderboard", { params }),
+};
+
+export const routeAPI = {
+  // Optimize routes
+  optimizeRoutes: (data) => api.post("/routes/optimize", data),
+
+  // Get assigned pickups for current user
+  getMyAssignedPickups: () => api.get("/routes/my-assigned-pickups"),
+};
+
+export const aiAPI = {
+  generateUpcyclingIdeas: (data) => api.post('/ai/upcycle', data)
 };
 
 export default api;

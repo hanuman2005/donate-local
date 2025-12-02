@@ -1,19 +1,19 @@
 # ShareTogether - Frontend Documentation (Updated January 2025)
 
-## ✅ FRONTEND VERIFICATION - 100% COMPLETE
+## ✅ FRONTEND VERIFICATION
 
 ### 📊 Final Status Report
 
-| Component | Status | Details |
-|-----------|--------|---------|
-| **Pages** | ✅ Complete | 10+ pages (Home, Login, Register, Dashboard, Listings, etc.) |
-| **Components** | ✅ Complete | 20+ reusable components |
-| **Context Providers** | ✅ Complete | Auth, Socket, Notification, Language, Theme |
-| **Routing** | ✅ Complete | React Router v7 with protected routes |
-| **Real-time Features** | ✅ Complete | Socket.IO client + live notifications |
-| **Maps** | ✅ Complete | Leaflet with geospatial markers |
-| **QR Scanner** | ✅ Complete | ZXing WASM camera scanning |
-| **Styling** | ✅ Complete | Styled Components + responsive design |
+| Component              | Status      | Details                                                      |
+| ---------------------- | ----------- | ------------------------------------------------------------ |
+| **Pages**              | ✅ Complete | 10+ pages (Home, Login, Register, Dashboard, Listings, etc.) |
+| **Components**         | ✅ Complete | 20+ reusable components                                      |
+| **Context Providers**  | ✅ Complete | Auth, Socket, Notification, Language, Theme                  |
+| **Routing**            | ✅ Complete | React Router v7 with protected routes                        |
+| **Real-time Features** | ✅ Complete | Socket.IO client + live notifications                        |
+| **Maps**               | ✅ Complete | Leaflet with geospatial markers                              |
+| **QR Scanner**         | ✅ Complete | ZXing WASM camera scanning                                   |
+| **Styling**            | ✅ Complete | Styled Components + responsive design                        |
 
 ---
 
@@ -194,21 +194,21 @@ frontend/
 
 ### Core Dependencies
 
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| **React** | 19.1.1 | UI framework |
-| **React DOM** | 19.1.1 | Rendering |
-| **React Router** | 7.9.5 | Client routing |
-| **Styled Components** | 6.1.19 | Component styling |
-| **Axios** | 1.11.0 | HTTP client |
-| **Socket.IO Client** | 4.8.1 | Real-time communication |
-| **React Toastify** | 11.0.5 | Toast notifications |
-| **Leaflet** | 1.9.4 | Interactive maps |
-| **React Leaflet** | 4.2.1 | Leaflet React bindings |
-| **Framer Motion** | 11.18.1 | Animations |
-| **React Icons** | 5.5.0 | Icon library |
-| **QRCode.react** | 4.2.0 | QR generation |
-| **ZXing WASM** | 2.2.3 | QR scanning |
+| Technology            | Version | Purpose                 |
+| --------------------- | ------- | ----------------------- |
+| **React**             | 19.1.1  | UI framework            |
+| **React DOM**         | 19.1.1  | Rendering               |
+| **React Router**      | 7.9.5   | Client routing          |
+| **Styled Components** | 6.1.19  | Component styling       |
+| **Axios**             | 1.11.0  | HTTP client             |
+| **Socket.IO Client**  | 4.8.1   | Real-time communication |
+| **React Toastify**    | 11.0.5  | Toast notifications     |
+| **Leaflet**           | 1.9.4   | Interactive maps        |
+| **React Leaflet**     | 4.2.1   | Leaflet React bindings  |
+| **Framer Motion**     | 11.18.1 | Animations              |
+| **React Icons**       | 5.5.0   | Icon library            |
+| **QRCode.react**      | 4.2.0   | QR generation           |
+| **ZXing WASM**        | 2.2.3   | QR scanning             |
 
 ---
 
@@ -216,37 +216,39 @@ frontend/
 
 ### Public Routes
 
-| Route | Component | Description |
-|-------|-----------|-------------|
-| `/` | Home | Landing page with hero |
-| `/login` | Login | User login |
-| `/register` | Register | User registration |
-| `/listings` | Listings | Browse all listings |
-| `/listings/:id` | ListingDetails | Single listing view |
-| `/about` | About | About page |
-| `/impact/community` | CommunityStats | Community stats |
+| Route               | Component      | Description            |
+| ------------------- | -------------- | ---------------------- |
+| `/`                 | Home           | Landing page with hero |
+| `/login`            | Login          | User login             |
+| `/register`         | Register       | User registration      |
+| `/listings`         | Listings       | Browse all listings    |
+| `/listings/:id`     | ListingDetails | Single listing view    |
+| `/about`            | About          | About page             |
+| `/impact/community` | CommunityStats | Community stats        |
 
 ### Protected Routes
 
-| Route | Component | Auth Required |
-|-------|-----------|---------------|
-| `/dashboard` | Dashboard | ✅ |
-| `/create-listing` | CreateListing | ✅ |
-| `/profile` | Profile | ✅ |
-| `/notifications` | Notifications | ✅ |
-| `/chat` | Chat | ✅ |
-| `/chat/:chatId` | Chat | ✅ |
-| `/verify-pickup` | QRScanner | ✅ |
-| `/impact/personal` | PersonalImpact | ✅ |
+| Route              | Component      | Auth Required |
+| ------------------ | -------------- | ------------- |
+| `/dashboard`       | Dashboard      | ✅            |
+| `/create-listing`  | CreateListing  | ✅            |
+| `/profile`         | Profile        | ✅            |
+| `/notifications`   | Notifications  | ✅            |
+| `/chat`            | Chat           | ✅            |
+| `/chat/:chatId`    | Chat           | ✅            |
+| `/verify-pickup`   | QRScanner      | ✅            |
+| `/impact/personal` | PersonalImpact | ✅            |
 
 ---
 
 ## 🧩 COMPONENT BREAKDOWN
 
 ### 1. Header Component
+
 **Location**: `src/components/Header/`
 
 **Features**:
+
 - Navigation menu
 - User dropdown
 - Notification badge (unread count)
@@ -259,9 +261,11 @@ frontend/
 ---
 
 ### 2. ListingCard Component
+
 **Location**: `src/components/ListingCard/`
 
 **Features**:
+
 - Image gallery
 - Category badge
 - Status indicator
@@ -270,6 +274,7 @@ frontend/
 - Responsive design
 
 **Props**:
+
 ```javascript
 {
   listing: Object,
@@ -281,9 +286,11 @@ frontend/
 ---
 
 ### 3. Map Component (Leaflet)
+
 **Location**: `src/components/Map/`
 
 **Features**:
+
 - **OpenStreetMap tiles**
 - Custom markers by category (emojis + colors)
 - User location marker (blue pulse)
@@ -294,6 +301,7 @@ frontend/
 - Responsive design
 
 **Props**:
+
 ```javascript
 {
   listings: Array,
@@ -306,6 +314,7 @@ frontend/
 ```
 
 **Category Icons**:
+
 - 🥕 produce (green)
 - 🥛 dairy (blue)
 - 🍞 bakery (orange)
@@ -317,9 +326,11 @@ frontend/
 ---
 
 ### 4. QRScanner Component
+
 **Location**: `src/components/QRScanner/`
 
 **Features**:
+
 - **ZXing WASM** camera integration
 - Real-time QR detection
 - Scan overlay with animation
@@ -329,13 +340,15 @@ frontend/
 - Mobile-optimized
 
 **Props**:
+
 ```javascript
 {
-  onScanComplete: Function
+  onScanComplete: Function;
 }
 ```
 
 **Flow**:
+
 1. Request camera access
 2. Stream video feed
 3. Scan for QR codes
@@ -346,15 +359,18 @@ frontend/
 ---
 
 ### 5. QRCode Component
+
 **Location**: `src/components/QRCode/`
 
 **Features**:
+
 - QR code generation
 - Download as PNG
 - Display QR image
 - Transaction linking
 
 **Props**:
+
 ```javascript
 {
   value: String,
@@ -366,9 +382,11 @@ frontend/
 ---
 
 ### 6. Chat Component
+
 **Location**: `src/components/Chat/`
 
 **Features**:
+
 - Real-time messaging (Socket.IO)
 - Typing indicators
 - Read receipts
@@ -378,6 +396,7 @@ frontend/
 - Image sharing
 
 **Props**:
+
 ```javascript
 {
   chatId: String,
@@ -390,9 +409,11 @@ frontend/
 ### 7. ImpactDashboard Components
 
 #### PersonalImpact
+
 **Location**: `src/components/ImpactDashboard/PersonalImpact.js`
 
 **Features**:
+
 - Personal statistics
 - Animated counters
 - Milestone tracking
@@ -401,6 +422,7 @@ frontend/
 - Rank display
 
 **Metrics Displayed**:
+
 - ♻️ Waste prevented (kg)
 - 🌍 CO2 saved (kg)
 - 🍽️ Items shared
@@ -409,9 +431,11 @@ frontend/
 - ✨ Badges earned
 
 #### CommunityStats
+
 **Location**: `src/components/ImpactDashboard/CommunityStats.js`
 
 **Features**:
+
 - Community-wide impact
 - Top donors leaderboard
 - Trending categories
@@ -422,9 +446,11 @@ frontend/
 ---
 
 ### 8. LiveStats Component
+
 **Location**: `src/components/LiveStats/`
 
 **Features**:
+
 - Real-time community stats
 - Daily donations count
 - Claims today
@@ -438,9 +464,11 @@ frontend/
 ---
 
 ### 9. LiveDonationFeed Component
+
 **Location**: `src/components/LiveDonationFeed/`
 
 **Features**:
+
 - Live donation stream
 - Socket.IO real-time updates
 - Toast notifications
@@ -453,9 +481,11 @@ frontend/
 ---
 
 ### 10. DonationCenterInfo Component
+
 **Location**: `src/components/DonationCenterInfo/`
 
 **Features**:
+
 - Center details
 - Open/closed status
 - Contact info
@@ -468,9 +498,11 @@ frontend/
 ---
 
 ### 11. LiveNotificationBanner Component
+
 **Location**: `src/components/LiveNotificationBanner/`
 
 **Features**:
+
 - Real-time notifications
 - Toast integration
 - Badge counter
@@ -481,9 +513,11 @@ frontend/
 ---
 
 ### 12. RatingModal Component
+
 **Location**: `src/components/RatingModal/`
 
 **Features**:
+
 - 5-star rating UI
 - Written review input
 - Submit/cancel buttons
@@ -491,6 +525,7 @@ frontend/
 - Success feedback
 
 **Props**:
+
 ```javascript
 {
   userId: String,
@@ -503,9 +538,11 @@ frontend/
 ---
 
 ### 13. FilterPanel Component
+
 **Location**: `src/components/FilterPanel/`
 
 **Features**:
+
 - Category filter
 - Distance slider
 - Condition filter
@@ -514,6 +551,7 @@ frontend/
 - Clear filters button
 
 **Props**:
+
 ```javascript
 {
   filters: Object,
@@ -524,15 +562,18 @@ frontend/
 ---
 
 ### 14. ProtectedRoute Component
+
 **Location**: `src/components/ProtectedRoute/`
 
 **Features**:
+
 - Auth check
 - Redirect to login
 - Loading state
 - Preserve redirect URL
 
 **Usage**:
+
 ```javascript
 <ProtectedRoute>
   <Dashboard />
@@ -544,7 +585,9 @@ frontend/
 ## 📄 PAGE COMPONENTS
 
 ### 1. Home Page
+
 **Features**:
+
 - Hero section
 - Live stats
 - Live donation feed
@@ -556,7 +599,9 @@ frontend/
 ---
 
 ### 2. Dashboard Page
+
 **Features**:
+
 - User stats
 - Quick actions
 - Recent listings
@@ -567,7 +612,9 @@ frontend/
 ---
 
 ### 3. Listings Page
+
 **Features**:
+
 - Browse all listings
 - Filter panel (category, distance, status)
 - Search bar
@@ -578,7 +625,9 @@ frontend/
 ---
 
 ### 4. ListingDetails Page
+
 **Features**:
+
 - Image gallery
 - Full description
 - Donor profile
@@ -590,7 +639,9 @@ frontend/
 ---
 
 ### 5. CreateListing Page
+
 **Features**:
+
 - Multi-step form
 - Image upload (drag & drop)
 - Category selection
@@ -602,7 +653,9 @@ frontend/
 ---
 
 ### 6. Profile Page
+
 **Features**:
+
 - User info display
 - Edit profile form
 - Avatar upload
@@ -613,7 +666,9 @@ frontend/
 ---
 
 ### 7. Notifications Page
+
 **Features**:
+
 - Notification list
 - Mark as read
 - Filter by type
@@ -626,13 +681,16 @@ frontend/
 ## 🔌 CONTEXT PROVIDERS
 
 ### 1. AuthContext
+
 **State**:
+
 - `user` - Current user
 - `token` - JWT token
 - `loading` - Loading state
 - `isAuthenticated` - Auth status
 
 **Methods**:
+
 - `login(email, password)`
 - `register(userData)`
 - `logout()`
@@ -641,12 +699,15 @@ frontend/
 ---
 
 ### 2. SocketContext
+
 **State**:
+
 - `socket` - Socket.IO instance
 - `connected` - Connection status
 - `onlineUsers` - Online user list
 
 **Methods**:
+
 - `joinChat(chatId)`
 - `leaveChat(chatId)`
 - `sendMessage(chatId, message)`
@@ -655,11 +716,14 @@ frontend/
 ---
 
 ### 3. NotificationContext
+
 **State**:
+
 - `notifications` - Notification list
 - `unreadCount` - Unread count
 
 **Methods**:
+
 - `markAsRead(id)`
 - `markAllAsRead()`
 - `deleteNotification(id)`
@@ -667,20 +731,26 @@ frontend/
 ---
 
 ### 4. ThemeContext
+
 **State**:
+
 - `theme` - 'light' or 'dark'
 
 **Methods**:
+
 - `toggleTheme()`
 
 ---
 
 ### 5. LanguageContext
+
 **State**:
+
 - `language` - Current language
 - `translations` - Translation object
 
 **Methods**:
+
 - `setLanguage(lang)`
 - `t(key)` - Translation function
 
@@ -691,37 +761,38 @@ frontend/
 ### Services (`src/services/api.js`)
 
 **API Groups**:
+
 ```javascript
 // Auth
-authAPI.login(credentials)
-authAPI.register(userData)
-authAPI.getMe()
+authAPI.login(credentials);
+authAPI.register(userData);
+authAPI.getMe();
 
 // Listings
-listingsAPI.getAll(params)
-listingsAPI.getById(id)
-listingsAPI.create(data)
-listingsAPI.getNearby(lat, lng, radius)
+listingsAPI.getAll(params);
+listingsAPI.getById(id);
+listingsAPI.create(data);
+listingsAPI.getNearby(lat, lng, radius);
 
 // Chat
-chatAPI.getUserChats()
-chatAPI.getMessages(chatId)
-chatAPI.sendMessage(chatId, data)
+chatAPI.getUserChats();
+chatAPI.getMessages(chatId);
+chatAPI.sendMessage(chatId, data);
 
 // QR
-qrAPI.generateQR(listingId, recipientId)
-qrAPI.verifyQR(qrCode, location)
+qrAPI.generateQR(listingId, recipientId);
+qrAPI.verifyQR(qrCode, location);
 
 // Impact
-impactAPI.getPersonalImpact()
-impactAPI.getCommunityImpact()
+impactAPI.getPersonalImpact();
+impactAPI.getCommunityImpact();
 
 // Ratings
-ratingsAPI.rateUser(userId, data)
-ratingsAPI.getUserReviews(userId)
+ratingsAPI.rateUser(userId, data);
+ratingsAPI.getUserReviews(userId);
 
 // Analytics
-analyticsAPI.getUserAnalytics()
+analyticsAPI.getUserAnalytics();
 ```
 
 ---
@@ -729,6 +800,7 @@ analyticsAPI.getUserAnalytics()
 ## 🎨 STYLING ARCHITECTURE
 
 ### Styled Components
+
 - Component-scoped styles
 - Theme support (light/dark)
 - Responsive breakpoints
@@ -736,20 +808,21 @@ analyticsAPI.getUserAnalytics()
 - Global styles
 
 ### Theme Structure
+
 ```javascript
 const theme = {
   colors: {
-    primary: '#4299e1',
-    secondary: '#48bb78',
-    background: '#f7fafc',
-    text: '#2d3748'
+    primary: "#4299e1",
+    secondary: "#48bb78",
+    background: "#f7fafc",
+    text: "#2d3748",
   },
   breakpoints: {
-    mobile: '768px',
-    tablet: '1024px',
-    desktop: '1200px'
-  }
-}
+    mobile: "768px",
+    tablet: "1024px",
+    desktop: "1200px",
+  },
+};
 ```
 
 ---
@@ -772,6 +845,7 @@ REACT_APP_CLOUDINARY_CLOUD_NAME=your_cloud_name
 ## 🛠️ INSTALLATION & SETUP
 
 ### Prerequisites
+
 ```bash
 Node.js >= 18.0.0
 npm >= 9.0.0
@@ -780,31 +854,37 @@ npm >= 9.0.0
 ### Setup Steps
 
 1. **Install Dependencies**
+
 ```bash
 cd frontend
 npm install
 ```
 
 2. **Install Leaflet**
+
 ```bash
 npm install react-leaflet leaflet
 ```
 
 3. **Environment Variables**
-Create `.env` with API URLs
+   Create `.env` with API URLs
 
 4. **Add Leaflet CSS to index.css**
+
 ```css
-@import 'leaflet/dist/leaflet.css';
+@import "leaflet/dist/leaflet.css";
 ```
 
 5. **Start Development**
+
 ```bash
 npm start
 ```
+
 Runs on `http://localhost:3000`
 
 6. **Build Production**
+
 ```bash
 npm run build
 ```
@@ -814,6 +894,7 @@ npm run build
 ## 🚀 FEATURES IMPLEMENTED
 
 ### 1. Real-time Features
+
 - Socket.IO chat
 - Live notifications
 - Typing indicators
@@ -823,6 +904,7 @@ npm run build
 - Live stats updates
 
 ### 2. Geospatial Features
+
 - Leaflet maps
 - OpenStreetMap tiles
 - Custom markers
@@ -832,6 +914,7 @@ npm run build
 - Radius circles
 
 ### 3. Image Handling
+
 - Cloudinary integration
 - Multi-image upload
 - Drag & drop
@@ -840,6 +923,7 @@ npm run build
 - Lazy loading
 
 ### 4. QR Code Features
+
 - QR generation
 - Camera scanning (ZXing WASM)
 - Verification flow
@@ -847,6 +931,7 @@ npm run build
 - Transaction tracking
 
 ### 5. Impact Tracking
+
 - Personal dashboard
 - Community stats
 - Animated counters
@@ -855,6 +940,7 @@ npm run build
 - Timeline visualization
 
 ### 6. Responsive Design
+
 - Mobile-first
 - Tablet support
 - Desktop optimization
@@ -865,6 +951,7 @@ npm run build
 ## 📊 PROJECT STATISTICS
 
 ### Code Metrics
+
 - **Pages**: 10+
 - **Components**: 20+
 - **Context Providers**: 5
@@ -873,6 +960,7 @@ npm run build
 - **Language Support**: 3 languages (en, hi, te)
 
 ### Features
+
 - User Authentication
 - Listing Management
 - Real-time Chat
@@ -889,25 +977,41 @@ npm run build
 ## 🚀 DEPLOYMENT
 
 ### Build for Production
+
 ```bash
 npm run build
 ```
 
 ### Deploy to Vercel
+
 ```bash
 vercel --prod
 ```
 
 ### Deploy to Netlify
+
 ```bash
 netlify deploy --prod
 ```
 
 ### Production Environment
+
 ```env
 REACT_APP_API_URL=https://your-api.com/api
 REACT_APP_SOCKET_URL=https://your-api.com
 ```
+
+### Frontend Status Summary
+
+- ✅ Pages & components: Implemented and functional
+- ⚠️ Known issues: Leaflet markers may default to [0,0] when coordinates are missing; ZXing requires HTTPS or camera permissions; TensorFlow model may take time to load on slow networks.
+
+### Known Issues & Notes
+
+- If Leaflet markers default to [0,0], ensure backend listings contain `location.coordinates` as [lng, lat] and geocoding succeeds.
+- QR scanning uses camera; browsers may require HTTPS to enable camera access. For development, allow camera permissions or use localhost allowed exceptions.
+- The TensorFlow.js models are loaded dynamically. On slow connections or older devices, the Waste Analyzer may take a few seconds to initialize.
+- If sockets fail to connect, verify `REACT_APP_SOCKET_URL` in `.env` and `CLIENT_URL` in the backend `.env`.
 
 ---
 
@@ -927,6 +1031,7 @@ REACT_APP_SOCKET_URL=https://your-api.com
 ## 👨‍💻 AUTHOR
 
 **Hanumantha Madineni**
+
 - GitHub: [@hanuman2005](https://github.com/hanuman2005)
 - Email: madenenihanumanturao@gmail.com
 
@@ -946,7 +1051,7 @@ MIT License
 ✅ **Real-time**: Socket.IO Working  
 ✅ **Maps**: Leaflet Integrated  
 ✅ **QR Scanner**: Camera Working  
-✅ **Security**: Production Ready  
+✅ **Security**: Production Ready
 
 ---
 
@@ -956,4 +1061,4 @@ MIT License
 
 ---
 
-*Made with ❤️ for ShareTogether*
+_Made with ❤️ for ShareTogether_

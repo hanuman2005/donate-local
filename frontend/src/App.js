@@ -26,6 +26,8 @@ import Notifications from "./pages/Notifications";
 import WasteAnalyzer from "./pages/WasteAnalyzer";
 import AnalysisHistory from "./pages/AnalysisHistory";
 import MyPickups from "./pages/MyPickups";
+import RouteOptimizer from "./pages/RouteOptimizer";
+import DigitalTwin from "./pages/DigitalTwin";
 
 import Chat from "./components/Chat";
 import ContactModal from "./components/ContactModal";
@@ -127,6 +129,8 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route path="/route-optimizer" element={<RouteOptimizer />} />
+          <Route path="/digital-twin" element={<DigitalTwin />} />
 
           {/* Chat Routes */}
           <Route

@@ -1,13 +1,12 @@
-// src/pages/Listings/styledComponents.js - ENHANCED WITH FILTERS & MAP
+// src/pages/Listings/styledComponents.js - COMPLETE FILE FOR SIDEBAR LAYOUT
 import styled from "styled-components";
 
 export const ListingsContainer = styled.div`
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-  min-height: calc(100vh - 80px);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
   padding: 2rem;
-  max-width: 1400px;
-  margin: 0 auto;
-  margin-top: 80px;
+  transition: all var(--transition-base);
 
   @media (max-width: 768px) {
     padding: 1.5rem 1rem;
@@ -32,7 +31,7 @@ export const Header = styled.div`
 export const Title = styled.h1`
   font-size: 2.8rem;
   font-weight: 800;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--gradient-primary);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -49,7 +48,7 @@ export const Title = styled.h1`
 
 export const Subtitle = styled.p`
   font-size: 1.1rem;
-  color: #718096;
+  color: var(--text-secondary);
   font-weight: 500;
 
   @media (max-width: 768px) {
@@ -57,14 +56,14 @@ export const Subtitle = styled.p`
   }
 `;
 
-// ✅ NEW: View Toggle Buttons
 export const ViewToggle = styled.div`
   display: flex;
   gap: 0.5rem;
-  background: white;
+  background: var(--bg-card);
   padding: 0.5rem;
-  border-radius: 12px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border-color);
 
   @media (max-width: 768px) {
     width: 100%;
@@ -74,20 +73,20 @@ export const ViewToggle = styled.div`
 export const ToggleButton = styled.button`
   padding: 0.75rem 1.5rem;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all var(--transition-base);
   background: ${props => props.$active 
-    ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' 
+    ? 'var(--gradient-primary)' 
     : 'transparent'};
-  color: ${props => props.$active ? 'white' : '#718096'};
+  color: ${props => props.$active ? 'white' : 'var(--text-secondary)'};
 
   &:hover {
     background: ${props => props.$active 
-      ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' 
-      : '#f7fafc'};
+      ? 'var(--gradient-primary)' 
+      : 'var(--bg-hover)'};
   }
 
   @media (max-width: 768px) {
@@ -97,22 +96,21 @@ export const ToggleButton = styled.button`
   }
 `;
 
-// ✅ NEW: Content Wrapper
 export const ContentWrapper = styled.div`
   margin-top: 2rem;
 `;
 
-// ✅ NEW: Map Wrapper
 export const MapWrapper = styled.div`
-  background: white;
-  border-radius: 20px;
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
   padding: 1.5rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-lg);
   overflow: hidden;
+  border: 1px solid var(--border-color);
 
   @media (max-width: 768px) {
     padding: 1rem;
-    border-radius: 15px;
+    border-radius: var(--radius-lg);
   }
 `;
 
@@ -134,9 +132,10 @@ export const Grid = styled.div`
 export const EmptyState = styled.div`
   text-align: center;
   padding: 5rem 2rem;
-  background: white;
-  border-radius: 20px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border-color);
 
   @media (max-width: 768px) {
     padding: 4rem 1.5rem;
@@ -155,7 +154,7 @@ export const EmptyIcon = styled.div`
 
 export const EmptyText = styled.div`
   font-size: 1.5rem;
-  color: #2d3748;
+  color: var(--text-primary);
   font-weight: 700;
   margin-bottom: 0.5rem;
 
@@ -166,26 +165,26 @@ export const EmptyText = styled.div`
 
 export const EmptySubtext = styled.div`
   font-size: 1rem;
-  color: #a0aec0;
+  color: var(--text-secondary);
   line-height: 1.6;
 `;
 
 export const RetryButton = styled.button`
   margin-top: 1.5rem;
   padding: 0.75rem 2rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--gradient-primary);
   color: white;
   border: none;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   font-weight: 600;
   font-size: 1rem;
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  transition: all var(--transition-base);
+  box-shadow: var(--shadow-md);
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+    box-shadow: var(--shadow-xl);
   }
 
   &:active {
@@ -198,16 +197,15 @@ export const RetryButton = styled.button`
 `;
 
 export const LoadingContainer = styled.div`
-  min-height: calc(100vh - 80px);
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   gap: 1.5rem;
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  background: var(--bg-primary);
 `;
 
-// ✅ NEW: Pagination Controls
 export const PaginationControls = styled.div`
   display: flex;
   justify-content: center;
@@ -215,9 +213,10 @@ export const PaginationControls = styled.div`
   gap: 2rem;
   margin-top: 3rem;
   padding: 2rem;
-  background: white;
-  border-radius: 15px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border-color);
 
   @media (max-width: 768px) {
     flex-direction: column;
@@ -229,24 +228,24 @@ export const PaginationControls = styled.div`
 export const PageButton = styled.button`
   padding: 0.75rem 2rem;
   background: ${props => props.disabled 
-    ? '#e2e8f0' 
-    : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'};
-  color: ${props => props.disabled ? '#a0aec0' : 'white'};
+    ? 'var(--bg-secondary)' 
+    : 'var(--gradient-primary)'};
+  color: ${props => props.disabled ? 'var(--text-secondary)' : 'white'};
   border: none;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   font-weight: 600;
   font-size: 1rem;
   cursor: ${props => props.disabled ? 'not-allowed' : 'pointer'};
-  transition: all 0.3s ease;
+  transition: all var(--transition-base);
   box-shadow: ${props => props.disabled 
     ? 'none' 
-    : '0 4px 15px rgba(102, 126, 234, 0.3)'};
+    : 'var(--shadow-md)'};
 
   &:hover {
     transform: ${props => props.disabled ? 'none' : 'translateY(-2px)'};
     box-shadow: ${props => props.disabled 
       ? 'none' 
-      : '0 8px 20px rgba(102, 126, 234, 0.4)'};
+      : 'var(--shadow-xl)'};
   }
 
   &:active {
@@ -261,7 +260,7 @@ export const PageButton = styled.button`
 export const PageInfo = styled.div`
   font-size: 1.1rem;
   font-weight: 600;
-  color: #2d3748;
+  color: var(--text-primary);
   min-width: 150px;
   text-align: center;
 

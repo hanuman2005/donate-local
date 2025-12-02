@@ -108,6 +108,7 @@ const Sidebar = ({ children }) => {
         { path: "/waste-analyzer", label: "AI Analysis", icon: "🤖" },
         { path: "/analysis-history", label: "Analysis History", icon: "📜" },
         { path: "/schedules", label: "My Schedules", icon: "📅" },
+        {path: "/route-optimizer", label: "Route Optimizer", icon: "🚗"},
         ...(isDonor
           ? [
               { path: "/my-pickups", label: "Pending Pickups", icon: "📦" },

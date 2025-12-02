@@ -1,4 +1,4 @@
-// src/pages/Dashboard/index.jsx - FULLY OPTIMIZED & FIXED
+// src/pages/Dashboard/index.jsx - COMPLETE & FIXED FOR SIDEBAR
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -57,7 +57,7 @@ const Dashboard = () => {
   const [chats, setChats] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("available");
-  const [myListingsTab, setMyListingsTab] = useState("active"); // ✅ Separate tab for my listings
+  const [myListingsTab, setMyListingsTab] = useState("active");
   const [userLocation, setUserLocation] = useState(null);
   const [selectedChat, setSelectedChat] = useState(null);
   const [showLiveFeed, setShowLiveFeed] = useState(false);
@@ -85,7 +85,6 @@ const Dashboard = () => {
     }
   };
 
-  // ✅ Deduplicate chats helper
   const deduplicateChats = (chats) => {
     const seen = new Set();
     return chats.filter((chat) => {
@@ -96,25 +95,22 @@ const Dashboard = () => {
       return true;
     });
   };
+
   const fetchCommunityStats = useCallback(async () => {
     try {
-      // Fetch all listings to calculate community impact
       const allListingsRes = await listingsAPI.getAll();
       const allListings =
         allListingsRes.data.listings || allListingsRes.data.data || [];
 
-      // Calculate completed donations
       const completedListings = allListings.filter(
         (l) => l.status === "completed"
       );
 
-      // Calculate total weight saved (assuming avg 2kg per item)
       const totalWeight = completedListings.reduce((sum, listing) => {
         const quantity = listing.quantity || 1;
-        return sum + quantity * 2; // 2kg per item
+        return sum + quantity * 2;
       }, 0);
 
-      // Get unique donor count (approximate community members)
       const uniqueDonors = new Set();
       allListings.forEach((listing) => {
         if (listing.donor?._id) {
@@ -128,11 +124,10 @@ const Dashboard = () => {
         totalMembers: uniqueDonors.size,
         totalListings: allListings.length,
         totalCompleted: completedListings.length,
-        totalPoundsSaved: Math.round(totalWeight * 2.20462), // Convert kg to lbs
+        totalPoundsSaved: Math.round(totalWeight * 2.20462),
       });
     } catch (error) {
       console.error("Error fetching community stats:", error);
-      // Set default values on error
       setCommunityStats({
         totalMembers: 100,
         totalListings: 50,
@@ -146,31 +141,54 @@ const Dashboard = () => {
     try {
       setLoading(true);
 
-      const [myListingsRes, allListingsRes, chatsRes] = await Promise.all([
-        listingsAPI.getUserListings(),
+      const isDonor = user?.userType === "donor" || user?.userType === "both";
+
+      const requests = [
         listingsAPI.getAll({ limit: 50, status: "available" }),
         chatAPI.getUserChats(),
-      ]);
+      ];
 
-      const myItems =
-        myListingsRes.data.listings || myListingsRes.data.data || [];
-      const allItems =
-        allListingsRes.data.listings || allListingsRes.data.data || [];
-      const myChats = chatsRes.data.chats || chatsRes.data.data || [];
+      // Only fetch user listings if user is a donor
+      if (isDonor) {
+        requests.unshift(listingsAPI.getUserListings());
+      }
 
-      // ✅ Deduplicate chats
+      const responses = await Promise.all(requests);
+
+      let myItems = [];
+      let allItems = [];
+      let myChats = [];
+
+      if (isDonor) {
+        const myListingsRes = responses[0];
+        const allListingsRes = responses[1];
+        const chatsRes = responses[2];
+
+        myItems = myListingsRes.data.listings || myListingsRes.data.data || [];
+        allItems =
+          allListingsRes.data.listings || allListingsRes.data.data || [];
+        myChats = chatsRes.data.chats || chatsRes.data.data || [];
+      } else {
+        const allListingsRes = responses[0];
+        const chatsRes = responses[1];
+
+        allItems =
+          allListingsRes.data.listings || allListingsRes.data.data || [];
+        myChats = chatsRes.data.chats || chatsRes.data.data || [];
+      }
+
       const uniqueChats = deduplicateChats(myChats);
 
       setMyListings(myItems);
 
-      // ✅ Filter out own listings from available
+      // Filter out own listings from available
       const othersListings = allItems.filter(
         (listing) =>
           listing.donor?._id !== user?._id && listing.donor !== user?._id
       );
       setAvailableListings(othersListings);
 
-      // ✅ Get listings assigned to current user
+      // Get listings assigned to current user
       const interested = allItems.filter(
         (listing) =>
           listing.assignedTo?._id === user?._id ||
@@ -184,18 +202,13 @@ const Dashboard = () => {
     } finally {
       setLoading(false);
     }
-  }, [user?._id]);
+  }, [user?._id, user?.userType]);
 
   useEffect(() => {
     fetchDashboardData();
     getCurrentLocation();
-    fetchCommunityStats(); // ← Add this line
+    fetchCommunityStats();
   }, [fetchDashboardData, fetchCommunityStats]);
-
-  useEffect(() => {
-    fetchDashboardData();
-    getCurrentLocation();
-  }, [fetchDashboardData]);
 
   const handleCreateListing = () => navigate("/create-listing");
   const handleChatSelect = (chat) => setSelectedChat(chat);
@@ -216,7 +229,6 @@ const Dashboard = () => {
 
   const isDonor = user?.userType === "donor" || user?.userType === "both";
 
-  // ✅ Calculate stats
   const stats = {
     myActive: myListings.filter((l) => l.status === "available").length,
     myPending: myListings.filter((l) => l.status === "pending").length,
@@ -412,8 +424,10 @@ const Dashboard = () => {
           </>
         )}
       </StatsRow>
-      {/* 🆕 NEW: Add Upcoming Schedules Widget */}
+
+      {/* ========== UPCOMING SCHEDULES ========== */}
       <UpcomingSchedulesWidget limit={3} />
+
       {/* ========== MAIN CONTENT ========== */}
       <DashboardContent>
         <MainSection>
@@ -743,9 +757,7 @@ const Dashboard = () => {
             <DonationCenterInfo />
           </motion.div>
 
-          {/* Messages */}
-
-          {/* ========== MESSAGES SECTION (LIMITED) ========== */}
+          {/* ========== MESSAGES SECTION ========== */}
           <Section
             as={motion.section}
             variants={motionVariants.fadeSlideUp}
@@ -771,15 +783,13 @@ const Dashboard = () => {
 
             {chats.length > 0 ? (
               <>
-                {/* ✅ SHOW ONLY FIRST 3 CHATS */}
                 <Chat
-                  chats={chats.slice(0, 3)} // ← LIMIT TO 3
+                  chats={chats.slice(0, 3)}
                   selectedChat={selectedChat}
                   onChatSelect={handleChatSelect}
                   compact={true}
                 />
 
-                {/* ✅ SHOW "VIEW MORE" IF THERE ARE MORE THAN 3 */}
                 {chats.length > 3 && (
                   <ViewAllButton
                     as={motion.button}
@@ -811,13 +821,15 @@ const Dashboard = () => {
                 <EmptyStateIcon $small>💬</EmptyStateIcon>
                 <EmptyStateText>No messages yet</EmptyStateText>
                 <EmptyStateText $small>
-                  Start conversations with donors
+                  {isDonor
+                    ? "Start conversations with recipients"
+                    : "Start conversations with donors"}
                 </EmptyStateText>
               </EmptyState>
             )}
           </Section>
 
-          {/* Impact Card */}
+          {/* ========== IMPACT CARD ========== */}
           <Section
             as={motion.section}
             variants={motionVariants.scaleIn}
@@ -833,7 +845,6 @@ const Dashboard = () => {
               animate="show"
             >
               {isDonor ? (
-                // DONOR STATS (Already dynamic from previous artifact)
                 <>
                   <ImpactStat
                     as={motion.div}
@@ -870,7 +881,6 @@ const Dashboard = () => {
                   </ImpactStat>
                 </>
               ) : (
-                // ✅ RECIPIENT STATS (NOW FULLY DYNAMIC)
                 <>
                   <ImpactStat
                     as={motion.div}

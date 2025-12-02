@@ -1,44 +1,28 @@
 // src/utils/recyclingCenters.js
 
 /**
- * Get search query based on material type
- */
-export const getMaterialSearchQuery = (material) => {
-  const queries = {
-    'E-Waste': 'electronics recycling center',
-    'Plastic': 'plastic recycling',
-    'Paper/Cardboard': 'paper recycling bin',
-    'Glass': 'glass recycling center',
-    'Metal': 'scrap metal recycling',
-    'Cloth/Textile': 'clothes donation center',
-    'Organic Waste': 'compost center',
-  };
-  
-  return queries[material] || 'recycling drop-off';
-};
-
-/**
- * Get user's current location
+ * Get user's current geolocation
+ * @returns {Promise<{lat: number, lon: number}>}
  */
 export const getUserLocation = () => {
   return new Promise((resolve, reject) => {
     if (!navigator.geolocation) {
-      reject(new Error('Geolocation not supported'));
+      reject(new Error('Geolocation is not supported by your browser'));
       return;
     }
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
         resolve({
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
+          lat: position.coords.latitude,
+          lon: position.coords.longitude,
         });
       },
       (error) => {
         reject(error);
       },
       {
-        enableHighAccuracy: false,
+        enableHighAccuracy: true,
         timeout: 10000,
         maximumAge: 300000, // 5 minutes cache
       }
@@ -47,29 +31,33 @@ export const getUserLocation = () => {
 };
 
 /**
- * Calculate distance between two coordinates (Haversine formula)
- * Returns distance in kilometers
+ * Calculate distance between two coordinates using Haversine formula
+ * @param {number} lat1 - Latitude of point 1
+ * @param {number} lon1 - Longitude of point 1
+ * @param {number} lat2 - Latitude of point 2
+ * @param {number} lon2 - Longitude of point 2
+ * @returns {number} Distance in kilometers
  */
-export const calculateDistance = (lat1, lon1, lat2, lon2) => {
+const calculateDistance = (lat1, lon1, lat2, lon2) => {
   const R = 6371; // Earth's radius in km
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLon = (lon2 - lon1) * Math.PI / 180;
-  
-  const a = 
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-    Math.sin(dLon / 2) * Math.sin(dLon / 2);
-  
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  const distance = R * c;
-  
-  return distance;
+  return R * c;
 };
 
 /**
  * Format distance for display
+ * @param {number} distanceKm - Distance in kilometers
+ * @returns {string} Formatted distance string
  */
-export const formatDistance = (distanceKm) => {
+const formatDistance = (distanceKm) => {
   if (distanceKm < 1) {
     return `${Math.round(distanceKm * 1000)}m`;
   }
@@ -77,77 +65,102 @@ export const formatDistance = (distanceKm) => {
 };
 
 /**
- * Shorten display name for recycling center
+ * Map waste material to recycling facility search terms
+ * @param {string} material - Material type from AI analysis
+ * @returns {string} Search query for Nominatim API
  */
-export const shortenCenterName = (displayName) => {
-  if (!displayName) return 'Recycling Center';
-  
-  // Split by comma and take first 2-3 parts
-  const parts = displayName.split(',').map(p => p.trim());
-  
-  if (parts.length === 1) return parts[0];
-  if (parts.length === 2) return parts.join(', ');
-  
-  // Return first part + city
-  return `${parts[0]}, ${parts[parts.length - 2] || parts[1]}`;
+const getMaterialSearchQuery = (material) => {
+  const materialMap = {
+    'E-Waste': 'electronics recycling',
+    'Plastic': 'plastic recycling',
+    'Paper/Cardboard': 'paper recycling',
+    'Glass': 'glass recycling',
+    'Metal': 'metal recycling scrap',
+    'Cloth/Textile': 'textile recycling clothing donation',
+    'Organic Waste': 'composting facility',
+    'Other': 'recycling center',
+  };
+
+  return materialMap[material] || 'recycling center';
 };
 
 /**
- * Fetch nearby recycling centers from OpenStreetMap Nominatim
+ * Get material icon for display
+ * @param {string} material - Material type
+ * @returns {string} Emoji icon
+ */
+export const getMaterialIcon = (material) => {
+  const iconMap = {
+    'E-Waste': '💻',
+    'Plastic': '♻️',
+    'Paper/Cardboard': '📄',
+    'Glass': '🍾',
+    'Metal': '🔩',
+    'Cloth/Textile': '👕',
+    'Organic Waste': '🌱',
+    'Other': '📦',
+  };
+
+  return iconMap[material] || '♻️';
+};
+
+/**
+ * Fetch nearby recycling centers from OpenStreetMap Nominatim API
+ * @param {string} material - Material type (E-Waste, Plastic, etc.)
+ * @param {Object} userLocation - User's coordinates {lat, lon}
+ * @returns {Promise<Array>} Array of nearby centers with details
  */
 export const fetchNearbyCenters = async (material, userLocation) => {
   try {
-    const query = getMaterialSearchQuery(material);
-    const { latitude, longitude } = userLocation;
+    const searchQuery = getMaterialSearchQuery(material);
+    const { lat, lon } = userLocation;
 
-    // Build Nominatim API URL
-    const baseUrl = 'https://nominatim.openstreetmap.org/search';
-    const params = new URLSearchParams({
-      format: 'json',
-      q: `${query} near ${latitude},${longitude}`,
-      limit: 5,
-      addressdetails: 1,
-    });
-
-    const response = await fetch(`${baseUrl}?${params}`, {
-      headers: {
-        'User-Agent': 'ShareTogether-WasteAnalyzer/1.0',
-      },
-    });
+    // OpenStreetMap Nominatim API (Free, no API key needed!)
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/search?` +
+        `format=json` +
+        `&q=${encodeURIComponent(searchQuery)}` +
+        `&lat=${lat}` +
+        `&lon=${lon}` +
+        `&addressdetails=1` +
+        `&limit=10` +
+        `&bounded=1` +
+        `&viewbox=${lon - 0.5},${lat - 0.5},${lon + 0.5},${lat + 0.5}`,
+      {
+        headers: {
+          'User-Agent': 'ShareTogether-WasteAnalyzer/1.0',
+        },
+      }
+    );
 
     if (!response.ok) {
-      throw new Error('Failed to fetch centers');
+      throw new Error('Failed to fetch recycling centers');
     }
 
     const data = await response.json();
 
-    // Transform and enrich data
-    const centers = data.map((center) => {
-      const centerLat = parseFloat(center.lat);
-      const centerLon = parseFloat(center.lon);
-      const distance = calculateDistance(
-        latitude,
-        longitude,
-        centerLat,
-        centerLon
-      );
+    // Process and enrich results
+    const centers = data
+      .map((place) => {
+        const placeLat = parseFloat(place.lat);
+        const placeLon = parseFloat(place.lon);
+        const distance = calculateDistance(lat, lon, placeLat, placeLon);
 
-      return {
-        id: center.place_id,
-        name: shortenCenterName(center.display_name),
-        fullName: center.display_name,
-        latitude: centerLat,
-        longitude: centerLon,
-        distance: distance,
-        distanceText: formatDistance(distance),
-        type: center.type,
-        address: center.address,
-        googleMapsUrl: `https://www.google.com/maps/dir/?api=1&destination=${centerLat},${centerLon}`,
-      };
-    });
-
-    // Sort by distance
-    centers.sort((a, b) => a.distance - b.distance);
+        return {
+          id: place.place_id,
+          name: place.display_name.split(',')[0] || 'Recycling Center',
+          fullAddress: place.display_name,
+          lat: placeLat,
+          lon: placeLon,
+          distance: distance,
+          distanceText: formatDistance(distance),
+          type: place.type,
+          googleMapsUrl: `https://www.google.com/maps/dir/?api=1&destination=${placeLat},${placeLon}`,
+        };
+      })
+      .filter((center) => center.distance <= 50) // Within 50km
+      .sort((a, b) => a.distance - b.distance) // Sort by nearest first
+      .slice(0, 5); // Top 5 results
 
     return centers;
   } catch (error) {
@@ -157,18 +170,26 @@ export const fetchNearbyCenters = async (material, userLocation) => {
 };
 
 /**
- * Get icon for material type
+ * Fallback: Get generic recycling centers if material-specific search fails
+ * @param {Object} userLocation - User's coordinates {lat, lon}
+ * @returns {Promise<Array>} Array of generic recycling centers
  */
-export const getMaterialIcon = (material) => {
-  const icons = {
-    'E-Waste': '💻',
-    'Plastic': '♻️',
-    'Paper/Cardboard': '📄',
-    'Glass': '🍾',
-    'Metal': '🔩',
-    'Cloth/Textile': '👕',
-    'Organic Waste': '🌱',
-  };
-  
-  return icons[material] || '📍';
+export const fetchGenericCenters = async (userLocation) => {
+  return fetchNearbyCenters('Other', userLocation);
+};
+
+/**
+ * Get distance between user and a specific location
+ * @param {Object} userLocation - {lat, lon}
+ * @param {Object} centerLocation - {lat, lon}
+ * @returns {string} Formatted distance
+ */
+export const getDistanceToCenter = (userLocation, centerLocation) => {
+  const distance = calculateDistance(
+    userLocation.lat,
+    userLocation.lon,
+    centerLocation.lat,
+    centerLocation.lon
+  );
+  return formatDistance(distance);
 };
