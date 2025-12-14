@@ -1,8 +1,8 @@
 // src/components/ProtectedRoute/index.jsx - FIXED INFINITE LOOP
 
 import { Navigate, useLocation } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
-import LoadingSpinner from "./Common/LoadingSpinner";
+import { useAuth } from "../../context/AuthContext";
+import LoadingSpinner from "../Common/LoadingSpinner";
 import styled from "styled-components";
 
 const LoadingContainer = styled.div`

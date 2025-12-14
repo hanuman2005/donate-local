@@ -1,4 +1,4 @@
-// src/pages/WasteAnalyzer/index.js - COMPLETE MULTI-IMAGE VERSION
+// src/pages/WasteAnalyzer/index.js - COMPLETE WITH AI UPCYCLING FEATURE
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
@@ -15,6 +15,7 @@ import {
 import NearbyCentersSection from "../../components/AIWasteAnalyzer";
 import { analyzeMaterialComposition } from "../../utils/materialCompositionAnalyzer";
 import MaterialCompositionDisplay from "../../components/MaterialCompositionDisplay";
+import UpcycleModal from "./UpcycleModal";
 import {
   shimmer,
   float,
@@ -59,8 +60,6 @@ import {
   HiddenInput
 } from "./styledComponents";
 
-
-
 // =====================
 // Main Component
 // =====================
@@ -76,6 +75,11 @@ const WasteAnalyzer = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [result, setResult] = useState(null);
   const [showConfetti, setShowConfetti] = useState(false);
+  
+  // ✅ NEW: AI Upcycling state
+  const [showUpcycleModal, setShowUpcycleModal] = useState(false);
+  const [upcycleIdeas, setUpcycleIdeas] = useState([]);
+  const [loadingIdeas, setLoadingIdeas] = useState(false);
 
   // Load TensorFlow model
   useEffect(() => {
@@ -370,6 +374,41 @@ const WasteAnalyzer = () => {
     });
   };
 
+  // ✅ NEW: Handle AI Upcycling Ideas
+  const handleGetUpcycleIdeas = async () => {
+    if (!result) {
+      toast.error("Please analyze an item first");
+      return;
+    }
+
+    setLoadingIdeas(true);
+    try {
+      const { aiAPI } = await import("../../services/api");
+      
+      const response = await aiAPI.generateUpcyclingIdeas({
+        itemLabel: result.label,
+        condition: 'fair', // You can add a condition field to your form
+        material: result.material || 'general'
+      });
+
+      setUpcycleIdeas(response.data.data);
+      setShowUpcycleModal(true);
+      toast.success("✨ AI generated creative ideas!");
+    } catch (error) {
+      console.error("Error getting upcycle ideas:", error);
+      
+      if (error.response?.status === 429) {
+        toast.error("Daily limit reached. Try again tomorrow!");
+      } else if (error.response?.status === 401) {
+        toast.error("Please login to use AI features");
+      } else {
+        toast.error("Failed to generate ideas. Please try again.");
+      }
+    } finally {
+      setLoadingIdeas(false);
+    }
+  };
+
   if (loading) {
     return (
       <PageContainer>
@@ -581,6 +620,30 @@ const WasteAnalyzer = () => {
               </EnhancedAnalysisBadge>
             )}
 
+            {/* ✅ NEW: AI Upcycling Button */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.7 }}
+              style={{ textAlign: 'center', margin: '1.5rem 0' }}
+            >
+              <Button
+                $primary
+                onClick={handleGetUpcycleIdeas}
+                disabled={loadingIdeas}
+                whileHover={{ scale: 1.05, y: -3 }}
+                whileTap={{ scale: 0.95 }}
+                style={{
+                  background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                  fontSize: '1.1rem',
+                  padding: '1rem 2rem',
+                  boxShadow: '0 8px 25px rgba(240, 147, 251, 0.3)'
+                }}
+              >
+                {loadingIdeas ? '✨ Generating Ideas...' : '💡 Get AI Upcycling Ideas'}
+              </Button>
+            </motion.div>
+
             <MaterialCompositionDisplay analysis={result} />
 
             <SectionGrid>
@@ -744,6 +807,13 @@ const WasteAnalyzer = () => {
           </ResultsCard>
         )}
       </ContentWrapper>
+
+      {/* ✅ NEW: Upcycle Modal */}
+      <UpcycleModal
+        isOpen={showUpcycleModal}
+        onClose={() => setShowUpcycleModal(false)}
+        ideas={upcycleIdeas}
+      />
 
       <AnimatePresence>
         {analyzing && (

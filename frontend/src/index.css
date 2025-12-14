@@ -1,4 +1,5 @@
 @import 'leaflet/dist/leaflet.css';
+/* Removed Tailwind CSS directives */
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
@@ -6,6 +7,20 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Modern vibrant color palette */
+  --primary: #6a82fb;
+  --secondary: #fc5c7d;
+  --accent: #43e97b;
+  --accent2: #38f9d7;
+  --bg-primary: #f8fafc;
+  --bg-secondary: #fff;
+  --text-primary: #22223b;
+  --text-secondary: #4a4e69;
+  --gradient-primary: linear-gradient(135deg, #6a82fb 0%, #fc5c7d 100%);
+  --gradient-accent: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+  --radius-xl: 24px;
+  --shadow-xl: 0 20px 60px rgba(106, 130, 251, 0.15);
+  --transition-base: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 code {

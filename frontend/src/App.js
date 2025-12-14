@@ -6,8 +6,8 @@ import "react-toastify/dist/ReactToastify.css";
 
 import Sidebar from "./components/Sidebar";
 import LoadingSpinner from "./components/Common/LoadingSpinner";
-import ProtectedRoute from "./components/ProtectedRoute";
-import FloatingChatbot from "./components/FloatingChatbot";
+import ProtectedRoute from "./components/Auth/ProtectedRoute";
+import FloatingChatbot from "./components/Common/FloatingChatbot";
 import LiveNotificationBanner from "./components/LiveNotificationBanner";
 
 // Public Pages

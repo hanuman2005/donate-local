@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { protect } = require('../middleware/auth');
+const { auth } = require('../middleware/auth');
 const {
   joinQueue,
   leaveQueue,
@@ -8,12 +8,9 @@ const {
   cancelAssignment
 } = require('../controllers/queueController');
 
-// Queue management
-router.post('/listings/:id/queue/join', protect, joinQueue);
-router.delete('/listings/:id/queue/leave', protect, leaveQueue);
-router.get('/listings/:id/queue/status', protect, getQueueStatus);
-
-// Donor actions
-router.post('/listings/:id/cancel-assignment', protect, cancelAssignment);
+router.post('/:id/join', auth, joinQueue);
+router.post('/:id/leave', auth, leaveQueue);
+router.get('/:id/status', auth, getQueueStatus);
+router.post('/:id/cancel-assignment', auth, cancelAssignment);
 
 module.exports = router;

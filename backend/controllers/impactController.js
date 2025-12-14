@@ -69,7 +69,7 @@ const getImpactMilestones = (totalCO2) => {
 // GET /api/impact/personal
 const getPersonalImpact = async (req, res) => {
   try {
-    const userId = req.user._id; // ✅ FIXED: was req.user.id
+    const userId = req.user._id;
 
     const donorTransactions = await Transaction.find({
       donor: userId,
@@ -414,7 +414,12 @@ const getDigitalTwinData = async (req, res) => {
             },
             lng: {
               $round: [
-                { $arrayElemAt: ["$verificationLocation.coordinates", 0] },
+                {
+                  $arrayElemAt: [
+                    { $ifNull: ["$verificationLocation.coordinates", [0, 0]] },
+                    1,
+                  ],
+                },
                 2,
               ],
             },

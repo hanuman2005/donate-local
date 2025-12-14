@@ -2,6 +2,13 @@ const cron = require('node-cron');
 const Listing = require('../models/Listing');
 const notificationHelper = require('./notificationHelper');
 
+let io; // ✅ ADD THIS
+
+// ✅ ADD THIS FUNCTION
+const setIO = (socketIO) => {
+  io = socketIO;
+};
+
 // Run every hour
 const checkExpiredQueueAssignments = cron.schedule('0 * * * *', async () => {
   try {
@@ -21,29 +28,29 @@ const checkExpiredQueueAssignments = cron.schedule('0 * * * *', async () => {
       if (expiredEntry) {
         console.log(`⏰ Assignment expired for listing ${listing._id}`);
 
-        // Remove from queue
         await listing.removeFromQueue(expiredEntry.user);
 
-        // Assign to next person
         const nextUser = await listing.assignToNextInQueue();
 
-        if (nextUser) {
-          await notificationHelper.notifyAssignedFromQueue(listing, nextUser);
+        if (nextUser && io) { // ✅ FIXED
+          await notificationHelper.notifyAssignedFromQueue(listing, nextUser, io);
         } else {
-          // No one left, make available
           listing.assignedTo = null;
           listing.status = 'available';
           await listing.save();
         }
 
         // Notify expired user
-        await notificationHelper.create({
-          recipient: expiredEntry.user,
-          type: 'queue_expired',
-          title: '⏰ Assignment Expired',
-          message: `Your 24-hour window for "${listing.title}" has expired`,
-          listing: listing._id
-        });
+        if (io) { // ✅ ADD CHECK
+          await notificationHelper.create({
+            recipient: expiredEntry.user,
+            type: 'queue_expired',
+            title: '⏰ Assignment Expired',
+            message: `Your 24-hour window for "${listing.title}" has expired`,
+            listing: listing._id,
+            io // ✅ PASS io
+          });
+        }
       }
     }
 
@@ -53,4 +60,8 @@ const checkExpiredQueueAssignments = cron.schedule('0 * * * *', async () => {
   }
 });
 
-module.exports = checkExpiredQueueAssignments;
+// ✅ EXPORT BOTH
+module.exports = {
+  checkExpiredQueueAssignments,
+  setIO
+};

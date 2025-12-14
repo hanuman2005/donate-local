@@ -26,6 +26,7 @@ const reportRoutes = require("./routes/reports");
 const wasteAnalysisRoutes = require('./routes/wasteAnalysis');
 const chatbotRoutes = require('./routes/chatbot');
 const routeOptimizationRoutes = require('./routes/routeOptimization');
+const queueRoutes = require('./routes/queue');
 
 
 // Import socket handler
@@ -36,7 +37,7 @@ const errorHandler = require("./middleware/errorHandler");
 
 const { initScheduleCronJobs } = require("./utils/scheduleCron");
 // ⏱️ Auto-start queue expiration scheduler
-require('./utils/queueCronJob');
+const { setIO: setQueueIO } = require('./utils/queueCronJob');
 
 const app = express();
 const server = http.createServer(app);
@@ -74,6 +75,7 @@ const io = socketIO(server, {
 socketHandler(io);
 // After io is initialized
 initScheduleCronJobs(io);
+setQueueIO(io);
 
 // Make io accessible to routes
 app.use((req, res, next) => {
@@ -136,6 +138,8 @@ app.use('/api/chatbot', chatbotRoutes);
 app.use('/api/routes', routeOptimizationRoutes);
 app.use('/api/health', require('./routes/health'));
 app.use('/api/ai', require('./routes/ai'));
+app.use('/api/queue', queueRoutes);
+
 
 // Error handling middleware
 app.use(errorHandler);

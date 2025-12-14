@@ -5,7 +5,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../../context/AuthContext";
 import { useNotifications } from "../../context/NotificationContext";
 import ThemeToggle from "../ThemeToggle";
-import { motionVariants } from "../../animations/motionVariants";
+// eslint-disable-next-line no-unused-vars
+// import { motionVariants } from "../../animations/motionVariants";
 
 import {
   SidebarContainer,
@@ -107,13 +108,9 @@ const Sidebar = ({ children }) => {
         { path: "/dashboard", label: "Dashboard", icon: "📊" },
         { path: "/waste-analyzer", label: "AI Analysis", icon: "🤖" },
         { path: "/analysis-history", label: "Analysis History", icon: "📜" },
-        { path: "/schedules", label: "My Schedules", icon: "📅" },
-        {path: "/route-optimizer", label: "Route Optimizer", icon: "🚗"},
+        { path: "/route-optimizer", label: "Route Optimizer", icon: "🚗" },
         ...(isDonor
-          ? [
-              { path: "/my-pickups", label: "Pending Pickups", icon: "📦" },
-              { path: "/create-listing", label: "Create Listing", icon: "➕" },
-            ]
+          ? [{ path: "/create-listing", label: "Create Listing", icon: "➕" }]
           : []),
       ]
     : [];
