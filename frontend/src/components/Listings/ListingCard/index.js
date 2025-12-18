@@ -4,12 +4,12 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { useAuth } from "../../context/AuthContext";
-import { chatAPI, listingsAPI } from "../../services/api";
+import { useAuth } from "../../../context/AuthContext";
+import { chatAPI, listingsAPI } from "../../../services/api";
 import { toast } from "react-toastify";
-import { calculateDistance, formatDistance } from "../../utils/helpers";
-import { motionVariants } from "../../animations/motionVariants";
-import TrustBadges from "../TrustBadges";
+import { calculateDistance, formatDistance } from "../../../utils/helpers";
+import { motionVariants } from "../../../animations/motionVariants";
+import TrustBadges from "../../Common/TrustBadges";
 
 import {
   CardContainer,

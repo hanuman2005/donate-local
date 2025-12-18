@@ -1,187 +1,40 @@
 // ============================================
-// src/components/ImpactDashboard/CommunityStats.jsx - WITH MOTION
+// src/components/ImpactDashboard/CommunityStats.jsx - THEME-AWARE VERSION
 // ============================================
 import React, { useState, useEffect } from "react";
-import styled from "styled-components";
 import { motion, AnimatePresence } from "framer-motion";
 import { motionVariants } from "../../animations/motionVariants";
 import ImpactCard from "./ImpactCard";
 import { impactAPI } from "../../services/api";
 import { toast } from "react-toastify";
+import {
+  Container,
+  Header,
+  Title,
+  Subtitle,
+  CardsGrid,
+  Section,
+  SectionTitle,
+  LeaderboardList,
+  LeaderboardItem,
+  RankBadge,
+  UserInfo,
+  UserName,
+  UserStats,
+  TrendingGrid,
+  TrendingCard,
+  CategoryIcon,
+  CategoryName,
+  CategoryCount,
+  StatsRow,
+  StatBox,
+  StatValue,
+  StatLabel,
+  LoadingSpinner,
+  ErrorMessage,
+} from "./styledComponents";
 
-const Container = styled(motion.div)`
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem;
-  min-height: 100vh;
-  background: #f7fafc;
-`;
-
-const Header = styled(motion.div)`
-  text-align: center;
-  margin-bottom: 3rem;
-`;
-
-const Title = styled.h1`
-  color: #2d3748;
-  font-size: 2.5rem;
-  margin-bottom: 0.5rem;
-  font-weight: 800;
-`;
-
-const Subtitle = styled.p`
-  color: #718096;
-  font-size: 1.2rem;
-`;
-
-const CardsGrid = styled(motion.div)`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 2rem;
-  margin-bottom: 3rem;
-`;
-
-const Section = styled(motion.div)`
-  background: white;
-  border-radius: 20px;
-  padding: 2rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  margin-bottom: 2rem;
-`;
-
-const SectionTitle = styled.h2`
-  color: #2d3748;
-  font-size: 1.75rem;
-  margin-bottom: 1.5rem;
-  font-weight: 700;
-`;
-
-const LeaderboardList = styled(motion.div)`
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-`;
-
-const LeaderboardItem = styled(motion.div)`
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-  padding: 1.25rem;
-  border-radius: 15px;
-  background: ${(props) =>
-    props.$rank <= 3
-      ? "linear-gradient(135deg, #ffd700 0%, #ffed4e 100%)"
-      : "#f7fafc"};
-`;
-
-const RankBadge = styled(motion.div)`
-  font-size: 2rem;
-  font-weight: 800;
-  width: 50px;
-  height: 50px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  background: ${(props) => {
-    if (props.$rank === 1)
-      return "linear-gradient(135deg, #ffd700 0%, #ffed4e 100%)";
-    if (props.$rank === 2)
-      return "linear-gradient(135deg, #c0c0c0 0%, #e8e8e8 100%)";
-    if (props.$rank === 3)
-      return "linear-gradient(135deg, #cd7f32 0%, #daa520 100%)";
-    return "#e2e8f0";
-  }};
-  color: ${(props) => (props.$rank <= 3 ? "#2d3748" : "#718096")};
-  flex-shrink: 0;
-`;
-
-const UserInfo = styled.div`
-  flex: 1;
-`;
-
-const UserName = styled.div`
-  color: #2d3748;
-  font-weight: 700;
-  font-size: 1.1rem;
-  margin-bottom: 0.25rem;
-`;
-
-const UserStats = styled.div`
-  color: #718096;
-  font-size: 0.9rem;
-`;
-
-const TrendingGrid = styled(motion.div)`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 1rem;
-`;
-
-const TrendingCard = styled(motion.div)`
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 15px;
-  padding: 1.5rem;
-  color: white;
-  text-align: center;
-`;
-
-const CategoryIcon = styled(motion.div)`
-  font-size: 2.5rem;
-  margin-bottom: 0.75rem;
-`;
-
-const CategoryName = styled.div`
-  font-weight: 700;
-  font-size: 1rem;
-  margin-bottom: 0.5rem;
-  text-transform: capitalize;
-`;
-
-const CategoryCount = styled.div`
-  font-size: 0.9rem;
-  opacity: 0.9;
-`;
-
-const StatsRow = styled(motion.div)`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1.5rem;
-  margin-top: 1.5rem;
-`;
-
-const StatBox = styled(motion.div)`
-  background: #f7fafc;
-  border-radius: 12px;
-  padding: 1.5rem;
-  text-align: center;
-`;
-
-const StatValue = styled.div`
-  font-size: 2rem;
-  font-weight: 800;
-  color: #667eea;
-  margin-bottom: 0.5rem;
-`;
-
-const StatLabel = styled.div`
-  color: #718096;
-  font-size: 0.95rem;
-`;
-
-const LoadingSpinner = styled(motion.div)`
-  text-align: center;
-  padding: 4rem;
-  font-size: 2rem;
-  color: #667eea;
-`;
-
-const ErrorMessage = styled(motion.div)`
-  text-align: center;
-  padding: 4rem;
-  color: #e53e3e;
-  font-size: 1.2rem;
-`;
+// All styled-components are now imported from styledComponents.js and use theme variables for perfect theme switching.
 
 const getCategoryIcon = (category) => {
   const icons = {
@@ -294,6 +147,12 @@ const CommunityStats = () => {
   }
 
   const { community, topDonors, trendingCategories, stats } = data;
+  // Determine user type for display
+  const userType = (
+    window.localStorage.getItem("userType") || ""
+  ).toLowerCase();
+  const isDonor = userType === "donor" || userType === "both";
+  const isRecipient = userType === "recipient";
 
   return (
     <Container
@@ -320,8 +179,12 @@ const CommunityStats = () => {
           <ImpactCard
             icon="♻️"
             value={community.totalWastePreventedKg || 0}
-            label="Total Waste Prevented"
-            subtitle="Community-wide impact"
+            label={isDonor ? "Total Waste Prevented" : "Total Waste Diverted"}
+            subtitle={
+              isDonor
+                ? "Community-wide impact"
+                : "Waste kept out of landfill by all"
+            }
             decimals={1}
             suffix=" kg"
             gradient="linear-gradient(135deg, #48bb78 0%, #38a169 100%)"
@@ -332,25 +195,46 @@ const CommunityStats = () => {
           <ImpactCard
             icon="🌍"
             value={community.totalCO2SavedKg || 0}
-            label="Total CO2 Saved"
-            subtitle={`${community.treesEquivalent || 0} trees equivalent`}
+            label={isDonor ? "Total CO2 Saved" : "CO2 Offset"}
+            subtitle={
+              isDonor
+                ? `${community.treesEquivalent || 0} trees equivalent`
+                : "CO2 reduction by community"
+            }
             decimals={1}
             suffix=" kg"
             gradient="linear-gradient(135deg, #4299e1 0%, #3182ce 100%)"
           />
         </motion.div>
 
-        <motion.div variants={motionVariants.scaleIn}>
-          <ImpactCard
-            icon="📦"
-            value={
-              community.totalItemsSaved || community.totalMealsProvided || 0
-            }
-            label="Items Shared"
-            subtitle="Helping our community"
-            gradient="linear-gradient(135deg, #ed8936 0%, #dd6b20 100%)"
-          />
-        </motion.div>
+        {isDonor && (
+          <motion.div variants={motionVariants.scaleIn}>
+            <ImpactCard
+              icon="📦"
+              value={
+                community.totalItemsSaved || community.totalMealsProvided || 0
+              }
+              label="Items Shared"
+              subtitle="Helping our community"
+              gradient="linear-gradient(135deg, #ed8936 0%, #dd6b20 100%)"
+            />
+          </motion.div>
+        )}
+        {isRecipient && (
+          <motion.div variants={motionVariants.scaleIn}>
+            <ImpactCard
+              icon="📦"
+              value={
+                community.totalItemsReceived ||
+                community.totalMealsProvided ||
+                0
+              }
+              label="Items Received"
+              subtitle="Support received by community"
+              gradient="linear-gradient(135deg, #ed8936 0%, #dd6b20 100%)"
+            />
+          </motion.div>
+        )}
 
         <motion.div variants={motionVariants.scaleIn}>
           <ImpactCard

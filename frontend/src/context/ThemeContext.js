@@ -1,6 +1,6 @@
 // src/context/ThemeContext.js
-
 import React, { createContext, useState, useContext, useEffect } from 'react';
+import { ThemeProvider as StyledThemeProvider } from 'styled-components'; // ✅ Add this import
 
 const ThemeContext = createContext();
 
@@ -146,6 +146,19 @@ export const ThemeProvider = ({ children }) => {
         theme === 'dark' ? '#1e293b' : '#ffffff'
       );
     }
+
+    // ✅ ADD THIS: Update CSS variables for compatibility
+    const root = document.documentElement;
+    const currentTheme = theme === 'light' ? lightTheme : darkTheme;
+    
+    root.style.setProperty('--bg-primary', currentTheme.colors.background);
+    root.style.setProperty('--bg-card', currentTheme.colors.cardBg);
+    root.style.setProperty('--text-primary', currentTheme.colors.textPrimary);
+    root.style.setProperty('--text-secondary', currentTheme.colors.textSecondary);
+    root.style.setProperty('--primary', currentTheme.colors.primary);
+    root.style.setProperty('--border-color', currentTheme.colors.border);
+    root.style.setProperty('--bg-hover', currentTheme.colors.surfaceHover);
+    root.style.setProperty('--bg-secondary', currentTheme.colors.surface);
   }, [theme]);
 
   // Listen for system theme changes
@@ -185,7 +198,10 @@ export const ThemeProvider = ({ children }) => {
 
   return (
     <ThemeContext.Provider value={value}>
-      {children}
+      {/* ✅ WRAP children with styled-components ThemeProvider */}
+      <StyledThemeProvider theme={currentTheme}>
+        {children}
+      </StyledThemeProvider>
     </ThemeContext.Provider>
   );
 };

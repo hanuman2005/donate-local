@@ -6,7 +6,7 @@ import { usersAPI, uploadAPI } from "../../services/api";
 import api from "../../services/api";
 import { toast } from "react-toastify";
 import { motionVariants } from "../../animations/motionVariants";
-import TrustBadges from "../../components/TrustBadges";
+import TrustBadges from "../../components/Common/TrustBadges";
 
 import {
   ProfileContainer,

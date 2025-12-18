@@ -1,175 +1,40 @@
 // ============================================
-// src/components/ImpactDashboard/PersonalImpact.jsx - WITH MOTION
+// src/components/ImpactDashboard/PersonalImpact.jsx - THEME-AWARE VERSION
 // ============================================
 import React, { useState, useEffect } from "react";
-import styled from "styled-components";
 import { motion, AnimatePresence } from "framer-motion";
 import { motionVariants } from "../../animations/motionVariants";
 import ImpactCard from "./ImpactCard";
 import { impactAPI } from "../../services/api";
 import { toast } from "react-toastify";
+import {
+  Container,
+  Header,
+  Title,
+  Subtitle,
+  CardsGrid,
+  RankCard,
+  RankBadge,
+  RankText,
+  RankSubtext,
+  MilestonesSection,
+  MilestoneTitle,
+  AchievementsList,
+  Achievement,
+  NextMilestone,
+  ProgressBar,
+  ProgressFill,
+  RecentActivities,
+  ActivityItem,
+  ActivityIcon,
+  ActivityDetails,
+  ActivityTitle,
+  ActivityDate,
+  LoadingSpinner,
+  ErrorMessage,
+} from "./styledComponents";
 
-const Container = styled(motion.div)`
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem;
-  min-height: 100vh;
-  background: #f7fafc;
-`;
-
-const Header = styled(motion.div)`
-  text-align: center;
-  margin-bottom: 3rem;
-`;
-
-const Title = styled.h1`
-  color: #2d3748;
-  font-size: 2.5rem;
-  margin-bottom: 0.5rem;
-  font-weight: 800;
-`;
-
-const Subtitle = styled.p`
-  color: #718096;
-  font-size: 1.2rem;
-`;
-
-const CardsGrid = styled(motion.div)`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 2rem;
-  margin-bottom: 3rem;
-`;
-
-const RankCard = styled(motion.div)`
-  background: white;
-  border-radius: 20px;
-  padding: 2rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  text-align: center;
-  margin-bottom: 2rem;
-`;
-
-const RankBadge = styled(motion.div)`
-  font-size: 4rem;
-  margin-bottom: 1rem;
-`;
-
-const RankText = styled.div`
-  color: #2d3748;
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-`;
-
-const RankSubtext = styled.div`
-  color: #a0aec0;
-  font-size: 1rem;
-`;
-
-const MilestonesSection = styled(motion.div)`
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-  border-radius: 20px;
-  padding: 2rem;
-  margin-bottom: 2rem;
-`;
-
-const MilestoneTitle = styled.h3`
-  color: #2d3748;
-  font-size: 1.5rem;
-  margin-bottom: 1.5rem;
-  font-weight: 700;
-`;
-
-const AchievementsList = styled(motion.div)`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-`;
-
-const Achievement = styled(motion.div)`
-  background: white;
-  padding: 0.75rem 1.5rem;
-  border-radius: 30px;
-  font-weight: 600;
-  color: #38a169;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-`;
-
-const NextMilestone = styled(motion.div)`
-  background: white;
-  border-radius: 15px;
-  padding: 1.5rem;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-`;
-
-const ProgressBar = styled.div`
-  width: 100%;
-  height: 12px;
-  background: #e2e8f0;
-  border-radius: 10px;
-  overflow: hidden;
-  margin-top: 0.75rem;
-`;
-
-const ProgressFill = styled(motion.div)`
-  height: 100%;
-  background: linear-gradient(90deg, #48bb78 0%, #38a169 100%);
-  border-radius: 10px;
-  width: ${(props) => props.$progress}%;
-`;
-
-const RecentActivities = styled(motion.div)`
-  background: white;
-  border-radius: 20px;
-  padding: 2rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-`;
-
-const ActivityItem = styled(motion.div)`
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-  padding: 1rem;
-  border-radius: 12px;
-  margin-bottom: 1rem;
-  background: #f7fafc;
-`;
-
-const ActivityIcon = styled(motion.div)`
-  font-size: 2rem;
-  flex-shrink: 0;
-`;
-
-const ActivityDetails = styled.div`
-  flex: 1;
-`;
-
-const ActivityTitle = styled.div`
-  color: #2d3748;
-  font-weight: 600;
-  margin-bottom: 0.25rem;
-`;
-
-const ActivityDate = styled.div`
-  color: #a0aec0;
-  font-size: 0.9rem;
-`;
-
-const LoadingSpinner = styled(motion.div)`
-  text-align: center;
-  padding: 4rem;
-  font-size: 2rem;
-  color: #667eea;
-`;
-
-const ErrorMessage = styled(motion.div)`
-  text-align: center;
-  padding: 4rem;
-  color: #e53e3e;
-  font-size: 1.2rem;
-`;
+// All styled-components are now imported from styledComponents.js and use theme variables for perfect theme switching.
 
 const PersonalImpact = () => {
   const [loading, setLoading] = useState(true);
@@ -262,6 +127,13 @@ const PersonalImpact = () => {
 
   const { impact, milestones, rank, recentActivities } = data;
 
+  // Determine user type for impact display
+  const userType =
+    data?.userType ||
+    (window.localStorage.getItem("userType") || "").toLowerCase();
+  const isDonor = userType === "donor" || userType === "both";
+  const isRecipient = userType === "recipient";
+
   return (
     <Container
       variants={motionVariants.pageTransition}
@@ -275,7 +147,13 @@ const PersonalImpact = () => {
         animate="show"
       >
         <Title>Your Environmental Impact 🌍</Title>
-        <Subtitle>Making a difference, one donation at a time</Subtitle>
+        <Subtitle>
+          {isDonor
+            ? "Making a difference, one donation at a time"
+            : isRecipient
+            ? "See your positive impact from items received!"
+            : "Making a difference in your community"}
+        </Subtitle>
       </Header>
 
       <CardsGrid
@@ -287,8 +165,12 @@ const PersonalImpact = () => {
           <ImpactCard
             icon="♻️"
             value={impact.totalWastePreventedKg || 0}
-            label="Waste Prevented"
-            subtitle="Kilograms saved from landfills"
+            label={isDonor ? "Waste Prevented" : "Waste Diverted"}
+            subtitle={
+              isDonor
+                ? "Kilograms saved from landfills"
+                : "Waste kept out of landfill"
+            }
             decimals={1}
             suffix=" kg"
             gradient="linear-gradient(135deg, #48bb78 0%, #38a169 100%)"
@@ -299,23 +181,42 @@ const PersonalImpact = () => {
           <ImpactCard
             icon="🌍"
             value={impact.totalCO2SavedKg || 0}
-            label="CO2 Saved"
-            subtitle={`Equivalent to ${impact.treesEquivalent || 0} trees`}
+            label={isDonor ? "CO2 Saved" : "CO2 Offset"}
+            subtitle={
+              isDonor
+                ? `Equivalent to ${impact.treesEquivalent || 0} trees`
+                : "Your share of CO2 reduction"
+            }
             decimals={1}
             suffix=" kg"
             gradient="linear-gradient(135deg, #4299e1 0%, #3182ce 100%)"
           />
         </motion.div>
 
-        <motion.div variants={motionVariants.scaleIn}>
-          <ImpactCard
-            icon="🍽️"
-            value={impact.totalMealsProvided || 0}
-            label="Items Shared"
-            subtitle="Helping our community"
-            gradient="linear-gradient(135deg, #ed8936 0%, #dd6b20 100%)"
-          />
-        </motion.div>
+        {isDonor && (
+          <motion.div variants={motionVariants.scaleIn}>
+            <ImpactCard
+              icon="🍽️"
+              value={impact.totalMealsProvided || 0}
+              label="Items Shared"
+              subtitle="Helping our community"
+              gradient="linear-gradient(135deg, #ed8936 0%, #dd6b20 100%)"
+            />
+          </motion.div>
+        )}
+        {isRecipient && (
+          <motion.div variants={motionVariants.scaleIn}>
+            <ImpactCard
+              icon="📦"
+              value={
+                impact.totalItemsReceived || impact.totalMealsProvided || 0
+              }
+              label="Items Received"
+              subtitle="Support you've received"
+              gradient="linear-gradient(135deg, #ed8936 0%, #dd6b20 100%)"
+            />
+          </motion.div>
+        )}
 
         <motion.div variants={motionVariants.scaleIn}>
           <ImpactCard

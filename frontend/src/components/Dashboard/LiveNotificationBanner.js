@@ -1,8 +1,8 @@
 // src/components/LiveNotificationBanner/index.jsx - OPTIONAL
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useSocket } from '../../context/SocketContext';
-import styled, { keyframes } from 'styled-components';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useSocket } from "../../context/SocketContext";
+import styled, { keyframes } from "styled-components";
 
 const slideDown = keyframes`
   from { transform: translate(-50%, -120%); opacity: 0; }
@@ -27,7 +27,9 @@ const Banner = styled.div`
   cursor: pointer;
   max-width: 500px;
   width: 90%;
-  &:hover { transform: translateX(-50%) scale(1.02); }
+  &:hover {
+    transform: translateX(-50%) scale(1.02);
+  }
 `;
 
 const Icon = styled.div`
@@ -57,7 +59,9 @@ const CloseButton = styled.button`
   height: 30px;
   border-radius: 50%;
   cursor: pointer;
-  &:hover { background: rgba(255, 255, 255, 0.3); }
+  &:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
 `;
 
 const LiveNotificationBanner = () => {
@@ -73,20 +77,34 @@ const LiveNotificationBanner = () => {
       setTimeout(() => setAlert(null), 10000);
     };
 
-    socket.on('newListingAlert', handleAlert);
-    return () => socket.off('newListingAlert', handleAlert);
+    socket.on("newListingAlert", handleAlert);
+    return () => socket.off("newListingAlert", handleAlert);
   }, [socket]);
 
   if (!alert) return null;
 
   return (
-    <Banner onClick={() => { navigate(`/listings/${alert.listing._id}`); setAlert(null); }}>
+    <Banner
+      onClick={() => {
+        navigate(`/listings/${alert.listing._id}`);
+        setAlert(null);
+      }}
+    >
       <Icon>🎁</Icon>
       <Content>
         <Title>New Donation Available!</Title>
-        <Message>{alert.donor.name} donated {alert.listing.title}</Message>
+        <Message>
+          {alert.donor.name} donated {alert.listing.title}
+        </Message>
       </Content>
-      <CloseButton onClick={(e) => { e.stopPropagation(); setAlert(null); }}>×</CloseButton>
+      <CloseButton
+        onClick={(e) => {
+          e.stopPropagation();
+          setAlert(null);
+        }}
+      >
+        ×
+      </CloseButton>
     </Banner>
   );
 };

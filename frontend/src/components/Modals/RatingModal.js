@@ -23,7 +23,7 @@ import {
   SubmitButton,
   CancelButton,
   Label,
-} from './styledComponents';
+} from './RatingModal/styledComponents';
 
 const RatingModal = ({ isOpen, onClose, user, listingId, onSuccess }) => {
   const [rating, setRating] = useState(0);

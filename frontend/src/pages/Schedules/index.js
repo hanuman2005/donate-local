@@ -4,7 +4,7 @@ import styled from "styled-components";
 import { motion } from "framer-motion";
 import { scheduleAPI } from "../../services/api";
 import { toast } from "react-toastify";
-import ScheduleCard from "../../components/ScheduleCard";
+import ScheduleCard from "../../components/Schedule/ScheduleCard";
 
 const Container = styled.div`
   max-width: 1200px;

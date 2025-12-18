@@ -1,9 +1,10 @@
 // ============================================
-// src/components/FiltersPanel/index.jsx - ENHANCED VERSION
+// src/components/FiltersPanel/index.jsx
 // ============================================
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { motionVariants } from "../../animations/motionVariants";
+import { motionVariants } from "../../../animations/motionVariants";
+import { listingsAPI } from "../../../services/api";
 import { toast } from "react-toastify";
 import {
   FiltersWrapper,
@@ -31,7 +32,6 @@ import {
   HistoryItem,
   ClearHistoryButton,
 } from "./styledComponents";
-import { listingsAPI } from "../../services/api";
 
 const FiltersPanel = ({ onResults, autoSearch = false, userLocation }) => {
   // Basic filters

@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import api from "../../services/api";
 import LoadingSpinner from "../../components/Common/LoadingSpinner";
 import { toast } from "react-toastify";
-import QRCodeGenerator from "../../components/QRCode";
+import QRGenerator from "../../components/QR/QRCode";
 
 const Container = styled.div`
   max-width: 1200px;
@@ -49,7 +49,8 @@ const StatusBadge = styled.span`
   border-radius: 20px;
   font-size: 0.85rem;
   font-weight: 600;
-  background: ${props => props.$status === 'pending' ? '#ed8936' : '#48bb78'};
+  background: ${(props) =>
+    props.$status === "pending" ? "#ed8936" : "#48bb78"};
   color: white;
   margin-bottom: 1rem;
 `;
@@ -125,34 +126,36 @@ const MyPickups = () => {
 
   // In fetchPendingPickups function - REPLACE with:
 
-const fetchPendingPickups = async () => {
-  try {
-    setLoading(true);
-    
-    // Use existing route and filter on frontend
-    const response = await api.get('/listings/user');
-    
-    // Filter for pending + assigned listings
-    const pendingListings = (response.data.listings || response.data || [])
-      .filter(listing => 
-        listing.status === 'pending' && 
-        listing.assignedTo != null
+  const fetchPendingPickups = async () => {
+    try {
+      setLoading(true);
+
+      // Use existing route and filter on frontend
+      const response = await api.get("/listings/user");
+
+      // Filter for pending + assigned listings
+      const pendingListings = (
+        response.data.listings ||
+        response.data ||
+        []
+      ).filter(
+        (listing) => listing.status === "pending" && listing.assignedTo != null
       );
-    
-    setListings(pendingListings);
-  } catch (error) {
-    console.error("Error fetching pickups:", error);
-    toast.error("Failed to load pending pickups");
-    setListings([]); // Set empty array on error
-  } finally {
-    setLoading(false);
-  }
-};
+
+      setListings(pendingListings);
+    } catch (error) {
+      console.error("Error fetching pickups:", error);
+      toast.error("Failed to load pending pickups");
+      setListings([]); // Set empty array on error
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const toggleQR = (listingId) => {
-    setShowQR(prev => ({
+    setShowQR((prev) => ({
       ...prev,
-      [listingId]: !prev[listingId]
+      [listingId]: !prev[listingId],
     }));
   };
 
@@ -169,12 +172,12 @@ const fetchPendingPickups = async () => {
       <Container>
         <Title>📦 Pending Pickups</Title>
         <EmptyState>
-          <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>📭</div>
+          <div style={{ fontSize: "4rem", marginBottom: "1rem" }}>📭</div>
           <h2>No Pending Pickups</h2>
           <p>You don't have any assigned listings waiting for pickup.</p>
           <Button
-            onClick={() => navigate('/listings')}
-            style={{ maxWidth: '300px', margin: '2rem auto 0' }}
+            onClick={() => navigate("/listings")}
+            style={{ maxWidth: "300px", margin: "2rem auto 0" }}
           >
             Browse Listings
           </Button>
@@ -203,7 +206,9 @@ const fetchPendingPickups = async () => {
 
             <DetailRow>
               <Label>📦 Quantity:</Label>
-              <Value>{listing.quantity} {listing.unit}</Value>
+              <Value>
+                {listing.quantity} {listing.unit}
+              </Value>
             </DetailRow>
 
             <DetailRow>
@@ -217,8 +222,7 @@ const fetchPendingPickups = async () => {
               <DetailRow>
                 <Label>📅 Pickup Time:</Label>
                 <Value>
-                  {new Date(listing.scheduledPickup.date).toLocaleDateString()}
-                  {' '}
+                  {new Date(listing.scheduledPickup.date).toLocaleDateString()}{" "}
                   {listing.scheduledPickup.timeSlot}
                 </Value>
               </DetailRow>
@@ -230,49 +234,57 @@ const fetchPendingPickups = async () => {
             </DetailRow>
 
             {listing.scheduledPickup?.recipientNotes && (
-              <div style={{
-                marginTop: '1rem',
-                padding: '0.75rem',
-                background: '#fef3c7',
-                borderRadius: '8px',
-                fontSize: '0.9rem'
-              }}>
+              <div
+                style={{
+                  marginTop: "1rem",
+                  padding: "0.75rem",
+                  background: "#fef3c7",
+                  borderRadius: "8px",
+                  fontSize: "0.9rem",
+                }}
+              >
                 <strong>💬 Recipient Notes:</strong>
-                <p style={{ margin: '0.5rem 0 0 0' }}>
+                <p style={{ margin: "0.5rem 0 0 0" }}>
                   {listing.scheduledPickup.recipientNotes}
                 </p>
               </div>
             )}
 
             <Button onClick={() => toggleQR(listing._id)}>
-              {showQR[listing._id] ? '🔒 Hide QR Code' : '📱 Show QR Code'}
+              {showQR[listing._id] ? "🔒 Hide QR Code" : "📱 Show QR Code"}
             </Button>
 
-            <SecondaryButton onClick={() => navigate(`/listings/${listing._id}`)}>
+            <SecondaryButton
+              onClick={() => navigate(`/listings/${listing._id}`)}
+            >
               📋 View Details
             </SecondaryButton>
 
             {showQR[listing._id] && (
               <QRSection>
-                <h4 style={{ 
-                  textAlign: 'center', 
-                  color: '#2d3748', 
-                  marginBottom: '1rem' 
-                }}>
+                <h4
+                  style={{
+                    textAlign: "center",
+                    color: "#2d3748",
+                    marginBottom: "1rem",
+                  }}
+                >
                   📱 Pickup QR Code
                 </h4>
-                <QRCodeGenerator
+                <QRGenerator
                   listingId={listing._id}
                   listingTitle={listing.title}
                   recipientId={listing.assignedTo._id}
                   recipientName={`${listing.assignedTo.firstName} ${listing.assignedTo.lastName}`}
                 />
-                <p style={{
-                  textAlign: 'center',
-                  color: '#718096',
-                  fontSize: '0.85rem',
-                  marginTop: '1rem'
-                }}>
+                <p
+                  style={{
+                    textAlign: "center",
+                    color: "#718096",
+                    fontSize: "0.85rem",
+                    marginTop: "1rem",
+                  }}
+                >
                   Show this QR code to {listing.assignedTo.firstName} at pickup
                 </p>
               </QRSection>

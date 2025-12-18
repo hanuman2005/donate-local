@@ -3,7 +3,8 @@ import styled from "styled-components";
 
 export const NotificationsContainer = styled.div`
   min-height: calc(100vh - 80px);
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  background: var(--bg-primary);
+  color: var(--text-primary);
   padding: 2rem;
   margin-top: 80px;
 
@@ -51,7 +52,7 @@ export const HeaderTop = styled.div`
 export const Title = styled.h1`
   font-size: 2.5rem;
   font-weight: 800;
-  color: #2d3748;
+  color: var(--text-primary);
   display: flex;
   align-items: center;
   gap: 1rem;
@@ -92,10 +93,10 @@ export const UnreadBadge = styled.span`
 
 export const MarkAllButton = styled.button`
   padding: 0.75rem 1.5rem;
-  background: white;
-  border: 2px solid #e2e8f0;
+  background: var(--bg-card);
+  border: 2px solid var(--border-color);
   border-radius: 12px;
-  color: #667eea;
+  color: var(--primary);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s;
@@ -103,9 +104,9 @@ export const MarkAllButton = styled.button`
   font-size: 0.95rem;
 
   &:hover {
-    background: #667eea;
+    background: var(--primary);
     color: white;
-    border-color: #667eea;
+    border-color: var(--primary);
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
   }
@@ -138,9 +139,10 @@ export const FilterButton = styled.button`
   background: ${(props) =>
     props.$active
       ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
-      : "white"};
-  color: ${(props) => (props.$active ? "white" : "#4a5568")};
-  border: 2px solid ${(props) => (props.$active ? "transparent" : "#e2e8f0")};
+      : "var(--bg-card)"};
+  color: ${(props) => (props.$active ? "white" : "var(--text-primary)")};
+  border: 2px solid
+    ${(props) => (props.$active ? "transparent" : "var(--border-color)")};
   border-radius: 12px;
   font-weight: 600;
   cursor: pointer;
@@ -219,16 +221,17 @@ export const DateLabel = styled.div`
 `;
 
 export const NotificationCard = styled.div`
-  background: white;
+  background: var(--bg-card);
   border-radius: 16px;
   padding: 1.5rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-lg);
   display: flex;
   gap: 1.5rem;
   align-items: start;
   cursor: pointer;
   transition: all 0.3s;
-  border-left: 4px solid ${(props) => (props.$read ? "transparent" : "#667eea")};
+  border-left: 4px solid
+    ${(props) => (props.$read ? "transparent" : "var(--primary)")};
   opacity: ${(props) => (props.$read ? 0.7 : 1)};
   position: relative;
   overflow: hidden;
@@ -318,7 +321,7 @@ export const NotificationHeader = styled.div`
 export const NotificationTitle = styled.h3`
   font-size: 1.1rem;
   font-weight: 700;
-  color: #2d3748;
+  color: var(--text-primary);
   margin: 0;
   line-height: 1.3;
   word-wrap: break-word;
@@ -349,7 +352,7 @@ export const NotificationTime = styled.span`
 
 export const NotificationMessage = styled.p`
   font-size: 0.95rem;
-  color: #4a5568;
+  color: var(--text-secondary);
   margin: 0.5rem 0;
   line-height: 1.6;
   word-wrap: break-word;
@@ -411,9 +414,9 @@ export const ActionButton = styled.button`
 export const EmptyState = styled.div`
   text-align: center;
   padding: 4rem 2rem;
-  background: white;
+  background: var(--bg-card);
   border-radius: 20px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-lg);
 
   @media (max-width: 768px) {
     padding: 3.5rem 1.5rem;
@@ -454,7 +457,7 @@ export const EmptyIcon = styled.div`
 
 export const EmptyText = styled.h3`
   font-size: 1.5rem;
-  color: #2d3748;
+  color: var(--text-primary);
   margin-bottom: 0.5rem;
   font-weight: 700;
   line-height: 1.2;
@@ -469,7 +472,7 @@ export const EmptyText = styled.h3`
 `;
 
 export const EmptySubtext = styled.p`
-  color: #a0aec0;
+  color: var(--text-secondary);
   font-size: 1rem;
   margin: 0;
   line-height: 1.5;

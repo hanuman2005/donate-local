@@ -1,6 +1,6 @@
 // src/components/QRCode/QRGenerator.jsx
 import React, { useState, useEffect } from "react";
-import { qrAPI } from "../../services/api";
+import { qrAPI } from "../../../services/api";
 import { toast } from "react-toastify";
 import {
   QRContainer,

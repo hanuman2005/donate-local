@@ -12,9 +12,9 @@ import {
   calculateEcoImpact,
   getRandomMotivation,
 } from "../../utils/wasteClassifier";
-import NearbyCentersSection from "../../components/AIWasteAnalyzer";
+import NearbyCentersSection from "../../components/AI/AiWasteAnalyzer.js";
 import { analyzeMaterialComposition } from "../../utils/materialCompositionAnalyzer";
-import MaterialCompositionDisplay from "../../components/MaterialCompositionDisplay";
+import MaterialCompositionDisplay from "../../components/Map/MaterialCompositionDisplay";
 import UpcycleModal from "./UpcycleModal";
 import {
   shimmer,

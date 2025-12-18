@@ -4,10 +4,12 @@ export const LoginContainer = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  background: var(--bg-primary);
+  color: var(--text-primary);
   padding: 2rem 1rem;
-  margin-top: 80px; /* ✅ Match header height */
+  margin-top: 80px; /* Match header height */
   min-height: calc(100vh - 80px);
+  transition: all var(--transition-base);
 `;
 
 export const LoginCard = styled.div`
@@ -62,6 +64,11 @@ export const LoginForm = styled.form`
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
+  padding: 2rem;
+  transition: all var(--transition-base);
 `;
 
 export const FormGroup = styled.div`
@@ -72,27 +79,28 @@ export const FormGroup = styled.div`
 
 export const Label = styled.label`
   font-weight: 600;
-  color: #4a5568;
+  color: var(--text-primary);
   font-size: 0.95rem;
 `;
 
 export const Input = styled.input`
   padding: 14px 16px;
-  border: 2px solid #e2e8f0;
-  border-radius: 12px;
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-lg);
   font-size: 1rem;
   transition: all 0.3s ease;
-  background: #f8fafc;
+  background: var(--bg-input);
+  color: var(--text-primary);
 
   &:focus {
     outline: none;
-    border-color: #667eea;
-    background: white;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    border-color: var(--primary-color);
+    background: var(--bg-card);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.08);
   }
 
   &::placeholder {
-    color: #a0aec0;
+    color: var(--text-secondary);
   }
 `;
 

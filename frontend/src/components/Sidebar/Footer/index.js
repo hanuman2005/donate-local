@@ -6,7 +6,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FaInstagram, FaWhatsapp, FaGithub } from "react-icons/fa";
-import { motionVariants } from "../../animations/motionVariants";
+import { motionVariants } from "../../../animations/motionVariants";
 import {
   FooterContainer,
   FooterContent,
@@ -17,7 +17,7 @@ import {
   SocialIcon,
   FooterBottom,
 } from "./styledComponents";
-import ContactModal from "../ContactModal";
+import ContactModal from "../../Modals/ContactModal";
 
 const Footer = () => {
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);

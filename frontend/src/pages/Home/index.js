@@ -1,14 +1,14 @@
-// src/pages/Home/index.jsx - CIRCULAR ECONOMY VERSION
+// src/pages/Home/index.jsx
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAuth } from "../../context/AuthContext";
 import { listingsAPI } from "../../services/api";
-import ListingCard from "../../components/ListingCard";
-import Footer from "../../components/Footer";
+import ListingCard from "../../components/Listings/ListingCard";
+import Footer from "../../components/Sidebar/Footer";
 import LoadingSpinner from "../../components/Common/LoadingSpinner";
-import LiveStats from "../../components/LiveStats";
-import DonationCenterInfo from "../../components/DonationCenterInfo";
+import LiveStats from "../../components/Dashboard/LiveStats";
+import DonationCenterInfo from "../../components/Listings/DonationCenterInfo";
 import { motionVariants } from "../../animations/motionVariants";
 import {
   HomeContainer,

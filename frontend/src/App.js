@@ -1,4 +1,5 @@
-// src/App.js - CORRECTED
+import AdminDashboard from "./pages/AdminDashboard";
+// src/App.js 
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import { ToastContainer } from "react-toastify";
@@ -8,7 +9,7 @@ import Sidebar from "./components/Sidebar";
 import LoadingSpinner from "./components/Common/LoadingSpinner";
 import ProtectedRoute from "./components/Auth/ProtectedRoute";
 import FloatingChatbot from "./components/Common/FloatingChatbot";
-import LiveNotificationBanner from "./components/LiveNotificationBanner";
+import LiveNotificationBanner from "./components/Dashboard/LiveNotificationBanner";
 
 // Public Pages
 import Home from "./pages/Home";
@@ -30,10 +31,10 @@ import RouteOptimizer from "./pages/RouteOptimizer";
 import DigitalTwin from "./pages/DigitalTwin";
 
 import Chat from "./components/Chat";
-import ContactModal from "./components/ContactModal";
+import ContactModal from "./components/Modals/ContactModal";
 
 // Impact Pages
-import CheckIn from "./components/CheckIn";
+import CheckIn from "./components/QR/checkIn";
 import PersonalImpact from "./components/ImpactDashboard/PersonalImpact";
 import CommunityStats from "./components/ImpactDashboard/CommunityStats";
 
