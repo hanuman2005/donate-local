@@ -1,5 +1,5 @@
 import AdminDashboard from "./pages/AdminDashboard";
-// src/App.js 
+// src/App.js
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import { ToastContainer } from "react-toastify";
@@ -18,6 +18,7 @@ import Register from "./pages/Register";
 import Listings from "./pages/Listings";
 import ListingDetails from "./pages/ListingDetails";
 import SchedulesPage from "./pages/Schedules";
+import ContactModal from "./components/Modals/ContactModal";
 
 // Protected Pages
 import Dashboard from "./pages/Dashboard";
@@ -29,14 +30,13 @@ import AnalysisHistory from "./pages/AnalysisHistory";
 import MyPickups from "./pages/MyPickups";
 import RouteOptimizer from "./pages/RouteOptimizer";
 import DigitalTwin from "./pages/DigitalTwin";
-
 import Chat from "./components/Chat";
-import ContactModal from "./components/Modals/ContactModal";
 
 // Impact Pages
 import CheckIn from "./components/QR/checkIn";
 import PersonalImpact from "./components/ImpactDashboard/PersonalImpact";
 import CommunityStats from "./components/ImpactDashboard/CommunityStats";
+import ScheduleDetails from "./pages/Schedules/ScheduleDetails";
 
 function App() {
   const { loading } = useAuth();
@@ -109,6 +109,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <SchedulesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/schedules/:id"
+            element={
+              <ProtectedRoute>
+                <ScheduleDetails />
               </ProtectedRoute>
             }
           />

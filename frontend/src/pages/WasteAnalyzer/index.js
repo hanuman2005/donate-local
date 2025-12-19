@@ -57,7 +57,7 @@ import {
   MotivationBanner,
   LoadingOverlay,
   LoadingCard,
-  HiddenInput
+  HiddenInput,
 } from "./styledComponents";
 
 // =====================
@@ -75,7 +75,7 @@ const WasteAnalyzer = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [result, setResult] = useState(null);
   const [showConfetti, setShowConfetti] = useState(false);
-  
+
   // ✅ NEW: AI Upcycling state
   const [showUpcycleModal, setShowUpcycleModal] = useState(false);
   const [upcycleIdeas, setUpcycleIdeas] = useState([]);
@@ -178,6 +178,101 @@ const WasteAnalyzer = () => {
     }
   };
 
+  // Map MobileNet classes to waste categories
+  const classToWasteCategory = {
+    // Add more mappings as needed
+    can: "Metal",
+    "water bottle": "Plastic",
+    "plastic bag": "Plastic",
+    carton: "Paper",
+    "paper towel": "Paper",
+    banana: "Organic",
+    orange: "Organic",
+    bottlecap: "Metal",
+    "milk can": "Metal",
+    packet: "Plastic",
+    envelope: "Paper",
+    "toilet tissue": "Paper",
+    matchstick: "Wood",
+    screw: "Metal",
+    nail: "Metal",
+    "tin can": "Metal",
+    "book jacket": "Paper",
+    newspaper: "Paper",
+    magazine: "Paper",
+    bottle: "Plastic",
+    glass: "Glass",
+    "wine bottle": "Glass",
+    "beer bottle": "Glass",
+    cup: "Plastic",
+    plate: "Plastic",
+    fork: "Plastic",
+    spoon: "Plastic",
+    knife: "Plastic",
+    egg: "Organic",
+    apple: "Organic",
+    lemon: "Organic",
+    cucumber: "Organic",
+    potato: "Organic",
+    carrot: "Organic",
+    broccoli: "Organic",
+    lettuce: "Organic",
+    strawberry: "Organic",
+    "granny smith": "Organic",
+    orange: "Organic",
+    lemon: "Organic",
+    lime: "Organic",
+    eggplant: "Organic",
+    zucchini: "Organic",
+    cabbage: "Organic",
+    onion: "Organic",
+    garlic: "Organic",
+    mushroom: "Organic",
+    corn: "Organic",
+    "pop bottle": "Plastic",
+    "soda bottle": "Plastic",
+    tin: "Metal",
+    "aluminum can": "Metal",
+    "steel can": "Metal",
+    "cardboard box": "Paper",
+    "pizza box": "Paper",
+    "egg carton": "Paper",
+    "plastic container": "Plastic",
+    "plastic cup": "Plastic",
+    "plastic plate": "Plastic",
+    "plastic fork": "Plastic",
+    "plastic spoon": "Plastic",
+    "plastic knife": "Plastic",
+    "plastic straw": "Plastic",
+    "plastic lid": "Plastic",
+    "plastic wrap": "Plastic",
+    "plastic bag": "Plastic",
+    "glass jar": "Glass",
+    "glass bottle": "Glass",
+    jar: "Glass",
+    newspaper: "Paper",
+    magazine: "Paper",
+    book: "Paper",
+    notebook: "Paper",
+    tissue: "Paper",
+    napkin: "Paper",
+    "paper bag": "Paper",
+    "paper cup": "Paper",
+    "paper plate": "Paper",
+    wood: "Wood",
+    stick: "Wood",
+    branch: "Wood",
+    leaf: "Organic",
+    flower: "Organic",
+    plant: "Organic",
+    food: "Organic",
+    fruit: "Organic",
+    vegetable: "Organic",
+    // fallback
+  };
+
+  const CONFIDENCE_THRESHOLD = 0.6; // 60%
+
   const handleAnalyze = async () => {
     if (uploadedImages.length === 0 || !model) {
       toast.error("Please upload at least one image");
@@ -214,9 +309,28 @@ const WasteAnalyzer = () => {
         allMaterialAnalyses
       );
 
-      const wasteCategory = classifyWasteItem(
-        aggregatedResult.bestPrediction.className
-      );
+      // Use confidence threshold
+      if (aggregatedResult.bestPrediction.probability < CONFIDENCE_THRESHOLD) {
+        setResult({
+          label: "Uncertain",
+          confidence: (aggregatedResult.averageConfidence * 100).toFixed(1),
+          material: "Unknown",
+          uncertain: true,
+        });
+        toast.warn(
+          "AI is not confident in its prediction. Please try another image or retake the photo."
+        );
+        setShowConfetti(false);
+        setAnalyzing(false);
+        return;
+      }
+
+      // Map MobileNet class to waste category if possible
+      const mappedCategory =
+        classToWasteCategory[
+          aggregatedResult.bestPrediction.className.toLowerCase()
+        ] || classifyWasteItem(aggregatedResult.bestPrediction.className);
+      const wasteCategory = mappedCategory;
       const advice = getWasteAdvice(wasteCategory);
       const impact = calculateEcoImpact(wasteCategory);
 
@@ -384,11 +498,11 @@ const WasteAnalyzer = () => {
     setLoadingIdeas(true);
     try {
       const { aiAPI } = await import("../../services/api");
-      
+
       const response = await aiAPI.generateUpcyclingIdeas({
         itemLabel: result.label,
-        condition: 'fair', // You can add a condition field to your form
-        material: result.material || 'general'
+        condition: "fair", // You can add a condition field to your form
+        material: result.material || "general",
       });
 
       setUpcycleIdeas(response.data.data);
@@ -396,7 +510,7 @@ const WasteAnalyzer = () => {
       toast.success("✨ AI generated creative ideas!");
     } catch (error) {
       console.error("Error getting upcycle ideas:", error);
-      
+
       if (error.response?.status === 429) {
         toast.error("Daily limit reached. Try again tomorrow!");
       } else if (error.response?.status === 401) {
@@ -465,7 +579,13 @@ const WasteAnalyzer = () => {
                   <div className="icon">📸</div>
                   <h3>Drop Multiple Images Here</h3>
                   <p>or click to browse • Up to 5 images • JPG, PNG</p>
-                  <p style={{ fontSize: '0.9rem', marginTop: '0.5rem', color: '#667eea' }}>
+                  <p
+                    style={{
+                      fontSize: "0.9rem",
+                      marginTop: "0.5rem",
+                      color: "#667eea",
+                    }}
+                  >
                     💡 More photos = Better AI analysis!
                   </p>
                 </UploadZone>
@@ -502,14 +622,15 @@ const WasteAnalyzer = () => {
                     </motion.div>
                   ))}
                 </ImageGrid>
-                
+
                 <UploadInfo>
-                  <strong>{imagePreviews.length}</strong> image{imagePreviews.length > 1 ? 's' : ''} uploaded
+                  <strong>{imagePreviews.length}</strong> image
+                  {imagePreviews.length > 1 ? "s" : ""} uploaded
                   {imagePreviews.length < 5 && (
                     <> • You can add up to {5 - imagePreviews.length} more</>
                   )}
                 </UploadInfo>
-                
+
                 <ButtonGroup>
                   <Button onClick={() => handleRemoveImage(null)}>
                     🗑️ Remove All
@@ -527,7 +648,9 @@ const WasteAnalyzer = () => {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
-                    {analyzing ? `🔄 Analyzing ${imagePreviews.length} images...` : `🤖 Analyze All Images`}
+                    {analyzing
+                      ? `🔄 Analyzing ${imagePreviews.length} images...`
+                      : `🤖 Analyze All Images`}
                   </Button>
                 </ButtonGroup>
               </>
@@ -589,9 +712,9 @@ const WasteAnalyzer = () => {
 
             {imagePreviews.length > 1 ? (
               <ImageCarousel>
-                <CarouselImage 
-                  src={imagePreviews[currentImageIndex]} 
-                  alt={`Analyzed ${currentImageIndex + 1}`} 
+                <CarouselImage
+                  src={imagePreviews[currentImageIndex]}
+                  alt={`Analyzed ${currentImageIndex + 1}`}
                 />
                 <ImageCounter>
                   {currentImageIndex + 1} / {imagePreviews.length}
@@ -614,7 +737,8 @@ const WasteAnalyzer = () => {
 
             {result.totalImagesAnalyzed > 1 && (
               <EnhancedAnalysisBadge>
-                📸 Enhanced Analysis: {result.totalImagesAnalyzed} images processed
+                📸 Enhanced Analysis: {result.totalImagesAnalyzed} images
+                processed
                 <br />
                 <span>Higher accuracy with multiple perspectives</span>
               </EnhancedAnalysisBadge>
@@ -625,7 +749,7 @@ const WasteAnalyzer = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.7 }}
-              style={{ textAlign: 'center', margin: '1.5rem 0' }}
+              style={{ textAlign: "center", margin: "1.5rem 0" }}
             >
               <Button
                 $primary
@@ -634,13 +758,16 @@ const WasteAnalyzer = () => {
                 whileHover={{ scale: 1.05, y: -3 }}
                 whileTap={{ scale: 0.95 }}
                 style={{
-                  background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-                  fontSize: '1.1rem',
-                  padding: '1rem 2rem',
-                  boxShadow: '0 8px 25px rgba(240, 147, 251, 0.3)'
+                  background:
+                    "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+                  fontSize: "1.1rem",
+                  padding: "1rem 2rem",
+                  boxShadow: "0 8px 25px rgba(240, 147, 251, 0.3)",
                 }}
               >
-                {loadingIdeas ? '✨ Generating Ideas...' : '💡 Get AI Upcycling Ideas'}
+                {loadingIdeas
+                  ? "✨ Generating Ideas..."
+                  : "💡 Get AI Upcycling Ideas"}
               </Button>
             </motion.div>
 
@@ -829,7 +956,11 @@ const WasteAnalyzer = () => {
             >
               <div className="spinner" />
               <h3>🤖 AI Analyzing...</h3>
-              <p>Processing {imagePreviews.length} image{imagePreviews.length > 1 ? 's' : ''} for accurate material detection</p>
+              <p>
+                Processing {imagePreviews.length} image
+                {imagePreviews.length > 1 ? "s" : ""} for accurate material
+                detection
+              </p>
             </LoadingCard>
           </LoadingOverlay>
         )}

@@ -272,14 +272,16 @@ const ListingDetails = () => {
             {listing.interestedUsers.map((interest) => (
               <div
                 key={interest.user._id}
+                className="interested-recipient-card"
                 style={{
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center",
                   marginBottom: "1rem",
                   padding: "1rem",
-                  background: "#f7fafc",
                   borderRadius: "10px",
+                  background: "var(--bg-card)",
+                  color: "var(--text-primary)",
                 }}
               >
                 <div>
@@ -294,8 +296,9 @@ const ListingDetails = () => {
                 <button
                   onClick={() => handleAssignClick(interest.user)}
                   style={{
-                    background: "#4299e1",
-                    color: "white",
+                    background:
+                      "linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%)",
+                    color: "#fff",
                     border: "none",
                     padding: "0.6rem 1rem",
                     borderRadius: "10px",

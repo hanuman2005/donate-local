@@ -1,4 +1,5 @@
 import styled, { keyframes } from "styled-components";
+import { useTheme } from "../../context/ThemeContext";
 import { motion } from "framer-motion";
 // =====================
 // Animations
@@ -38,7 +39,7 @@ export const confetti = keyframes`
 // =====================
 export const PageContainer = styled(motion.div)`
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: ${({ theme }) => theme.colors.background};
   position: relative;
   overflow: hidden;
 
@@ -73,7 +74,7 @@ export const ContentWrapper = styled.div`
 
 export const Hero = styled(motion.div)`
   text-align: center;
-  color: white;
+  color: ${({ theme }) => theme.colors.textPrimary};
   margin-bottom: 4rem;
   position: relative;
 `;
@@ -82,11 +83,8 @@ export const Title = styled(motion.h1)`
   font-size: 4rem;
   font-weight: 900;
   margin: 0 0 1rem 0;
-  background: linear-gradient(45deg, #fff, #a8dadc, #fff);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  color: ${({ theme }) => theme.colors.textPrimary};
+  text-shadow: none;
 
   @media (max-width: 768px) {
     font-size: 2.5rem;
@@ -98,7 +96,8 @@ export const Subtitle = styled(motion.p)`
   opacity: 0.95;
   max-width: 700px;
   margin: 0 auto;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  color: ${({ theme }) => theme.colors.textSecondary};
+  text-shadow: none;
 
   @media (max-width: 768px) {
     font-size: 1.1rem;
@@ -106,43 +105,21 @@ export const Subtitle = styled(motion.p)`
 `;
 
 export const Card = styled(motion.div)`
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
-  border-radius: 32px;
-  padding: 3rem;
-  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: ${({ theme }) => theme.colors.cardBg};
+  border-radius: 24px;
+  padding: 2rem 1.5rem;
+  box-shadow: 0 4px 24px ${({ theme }) => theme.colors.shadow};
+  border: 1px solid ${({ theme }) => theme.colors.cardBorder};
   position: relative;
   overflow: hidden;
-
-  &:before {
-    content: "";
-    position: absolute;
-    top: -2px;
-    left: -2px;
-    right: -2px;
-    bottom: -2px;
-    background: linear-gradient(45deg, #667eea, #764ba2, #667eea);
-    border-radius: 32px;
-    z-index: -1;
-    animation: ${shimmer} 3s infinite;
-  }
-
-  @media (max-width: 768px) {
-    padding: 2rem 1.5rem;
-    border-radius: 24px;
-  }
 `;
 
 export const UploadZone = styled.div`
-  border: 4px dashed ${(props) => (props.$isDragging ? "#667eea" : "#cbd5e0")};
-  border-radius: 24px;
-  padding: 4rem 2rem;
+  border: 3px dashed ${(props) => (props.$isDragging ? "#4299e1" : "#cbd5e0")};
+  border-radius: 16px;
+  padding: 3rem 1.5rem;
   text-align: center;
-  background: ${(props) =>
-    props.$isDragging
-      ? "linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1))"
-      : "linear-gradient(135deg, #f7fafc, #edf2f7)"};
+  background: ${({ theme }) => theme.colors.surface};
   transition: all 0.3s ease;
   cursor: pointer;
   position: relative;
@@ -245,7 +222,7 @@ export const UploadInfo = styled.div`
   margin-top: 1rem;
   color: #64748b;
   font-size: 0.95rem;
-  
+
   strong {
     color: #667eea;
   }
@@ -276,15 +253,14 @@ export const Button = styled(motion.button)`
   ${(props) =>
     props.$primary
       ? `
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
-    
+    background: ${({ theme }) => theme.colors.info};
+    color: #fff;
+    box-shadow: 0 2px 8px ${({ theme }) => theme.colors.shadow};
     &:hover {
-      box-shadow: 0 15px 40px rgba(102, 126, 234, 0.6);
-      transform: translateY(-3px);
+      background: ${({ theme }) => theme.colors.info};
+      box-shadow: 0 4px 16px ${({ theme }) => theme.colors.shadowHover};
+      transform: translateY(-2px);
     }
-    
     &:disabled {
       opacity: 0.6;
       cursor: not-allowed;
@@ -292,23 +268,19 @@ export const Button = styled(motion.button)`
     }
   `
       : `
-    background: linear-gradient(135deg, #f7fafc, #edf2f7);
-    color: #4a5568;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    
+    background: #edf2f7;
+    color: #2d3748;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
     &:hover {
-      background: linear-gradient(135deg, #edf2f7, #e2e8f0);
-      transform: translateY(-2px);
+      background: #e2e8f0;
+      transform: translateY(-1px);
     }
   `}
 `;
 
 export const ResultsCard = styled(Card)`
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.95) 0%,
-    rgba(247, 250, 252, 0.95) 100%
-  );
+  background: ${({ theme }) => theme.colors.cardBg};
+  color: ${({ theme }) => theme.colors.textPrimary};
   animation: ${slideInFromRight} 0.5s ease-out;
 `;
 
@@ -316,7 +288,7 @@ export const ResultHeader = styled.div`
   text-align: center;
   margin-bottom: 3rem;
   position: relative;
-
+  color: ${({ theme }) => theme.colors.textPrimary};
   .confetti-wrapper {
     position: absolute;
     top: -50px;
@@ -326,12 +298,11 @@ export const ResultHeader = styled.div`
     pointer-events: none;
     overflow: hidden;
   }
-
   .confetti {
     position: absolute;
     width: 10px;
     height: 10px;
-    background: #667eea;
+    background: ${({ theme }) => theme.colors.info};
     animation: ${confetti} 3s ease-out forwards;
   }
 `;
@@ -340,7 +311,7 @@ export const SuccessBadge = styled(motion.div)`
   display: inline-flex;
   align-items: center;
   gap: 0.75rem;
-  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+  background: ${({ theme }) => theme.colors.success};
   color: white;
   padding: 1rem 2rem;
   border-radius: 50px;
@@ -353,12 +324,12 @@ export const SuccessBadge = styled(motion.div)`
 
 export const ItemName = styled(motion.h2)`
   font-size: 3rem;
-  color: #2d3748;
+  color: ${({ theme }) => theme.colors.textPrimary};
   margin: 0 0 1rem 0;
   font-weight: 900;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  background: none;
+  -webkit-background-clip: unset;
+  -webkit-text-fill-color: unset;
 
   @media (max-width: 768px) {
     font-size: 2rem;
@@ -367,7 +338,7 @@ export const ItemName = styled(motion.h2)`
 
 export const MaterialTag = styled.div`
   display: inline-block;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: ${({ theme }) => theme.colors.info};
   color: white;
   padding: 0.75rem 2rem;
   border-radius: 50px;
@@ -385,13 +356,13 @@ export const ConfidenceBar = styled.div`
     display: flex;
     justify-content: space-between;
     margin-bottom: 0.5rem;
-    color: #718096;
+    color: ${({ theme }) => theme.colors.textSecondary};
     font-weight: 600;
   }
 
   .bar-container {
     height: 12px;
-    background: #e2e8f0;
+    background: ${({ theme }) => theme.colors.surfaceHover};
     border-radius: 50px;
     overflow: hidden;
     position: relative;
@@ -399,7 +370,11 @@ export const ConfidenceBar = styled.div`
 
   .bar-fill {
     height: 100%;
-    background: linear-gradient(90deg, #48bb78 0%, #38a169 100%);
+    background: linear-gradient(
+      90deg,
+      ${({ theme }) => theme.colors.success} 0%,
+      ${({ theme }) => theme.colors.info} 100%
+    );
     border-radius: 50px;
     transition: width 1s ease-out;
     position: relative;
@@ -451,7 +426,7 @@ export const CarouselDot = styled.button`
   height: 12px;
   border-radius: 50%;
   border: none;
-  background: ${props => props.$active ? '#667eea' : '#cbd5e0'};
+  background: ${(props) => (props.$active ? "#667eea" : "#cbd5e0")};
   cursor: pointer;
   transition: all 0.3s ease;
 
@@ -657,7 +632,7 @@ export const ImpactCard = styled(motion.div)`
 `;
 
 export const MotivationBanner = styled(motion.div)`
-  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+  background: ${({ theme }) => theme.colors.success};
   color: white;
   padding: 1.5rem 2rem;
   border-radius: 20px;

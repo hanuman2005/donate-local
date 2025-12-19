@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { scheduleAPI } from "../../services/api";
 import { toast } from "react-toastify";
 import ScheduleCard from "../../components/Schedule/ScheduleCard";
+import { useAuth } from "../../context/AuthContext";
 
 const Container = styled.div`
   max-width: 1200px;
@@ -135,6 +136,7 @@ const LoadingSpinner = styled(motion.div)`
 `;
 
 const SchedulesPage = () => {
+  const { user } = useAuth();
   const [schedules, setSchedules] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("all"); // all, donor, recipient
@@ -178,6 +180,10 @@ const SchedulesPage = () => {
 
   const filteredSchedules = schedules;
 
+  // Determine user type (donor or recipient)
+  const isDonor = user?.userType === "donor";
+  const isRecipient = user?.userType === "recipient";
+
   return (
     <Container>
       <Header>
@@ -199,22 +205,27 @@ const SchedulesPage = () => {
         >
           All Schedules
         </Tab>
-        <Tab
-          $active={activeTab === "donor"}
-          onClick={() => setActiveTab("donor")}
-          whileHover={{ y: -2 }}
-          whileTap={{ y: 0 }}
-        >
-          As Donor
-        </Tab>
-        <Tab
-          $active={activeTab === "recipient"}
-          onClick={() => setActiveTab("recipient")}
-          whileHover={{ y: -2 }}
-          whileTap={{ y: 0 }}
-        >
-          As Recipient
-        </Tab>
+        {/* Only show donor/recipient tabs if user is neither strictly donor nor strictly recipient */}
+        {!isDonor && !isRecipient && (
+          <>
+            <Tab
+              $active={activeTab === "donor"}
+              onClick={() => setActiveTab("donor")}
+              whileHover={{ y: -2 }}
+              whileTap={{ y: 0 }}
+            >
+              As Donor
+            </Tab>
+            <Tab
+              $active={activeTab === "recipient"}
+              onClick={() => setActiveTab("recipient")}
+              whileHover={{ y: -2 }}
+              whileTap={{ y: 0 }}
+            >
+              As Recipient
+            </Tab>
+          </>
+        )}
       </Tabs>
 
       <FilterGroup>
