@@ -1,6 +1,29 @@
 // src/pages/ListingDetails/styledComponents.js - FIXED FOR SIDEBAR LAYOUT
 import styled from "styled-components";
 
+// Framer Motion props that should not be forwarded to the DOM
+const motionProps = [
+  "initial",
+  "animate",
+  "exit",
+  "variants",
+  "transition",
+  "whileHover",
+  "whileTap",
+  "whileFocus",
+  "whileDrag",
+  "whileInView",
+  "drag",
+  "dragConstraints",
+  "dragElastic",
+  "dragMomentum",
+  "layout",
+  "layoutId",
+  "onAnimationStart",
+  "onAnimationComplete",
+];
+const shouldForwardProp = (prop) => !motionProps.includes(prop);
+
 export const DetailsContainer = styled.div`
   background: var(--bg-primary);
   color: var(--text-primary);
@@ -19,7 +42,7 @@ export const DetailsContainer = styled.div`
   }
 `;
 
-export const BackButton = styled.button`
+export const BackButton = styled.button.withConfig({ shouldForwardProp })`
   background: transparent;
   border: none;
   color: var(--primary);
@@ -163,7 +186,7 @@ export const ActionButtons = styled.div`
   }
 `;
 
-export const ActionButton = styled.button`
+export const ActionButton = styled.button.withConfig({ shouldForwardProp })`
   flex: 1;
   min-width: 150px;
   padding: 1rem 2rem;
@@ -372,9 +395,7 @@ export const QueueTimestamp = styled.div`
 
 export const PositionBadge = styled.span`
   background: ${(props) =>
-    props.$isUser
-      ? "var(--success)"
-      : "rgba(255, 255, 255, 0.25)"};
+    props.$isUser ? "var(--success)" : "rgba(255, 255, 255, 0.25)"};
   padding: 0.5rem 1rem;
   border-radius: var(--radius-full);
   font-weight: 700;

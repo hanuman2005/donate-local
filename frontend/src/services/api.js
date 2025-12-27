@@ -171,11 +171,6 @@ export const analyticsAPI = {
   getPlatform: () => api.get("/analytics/platform"),
 };
 
-export const centersAPI = {
-  getById: (id) => api.get(`/donation-centers/${id}`),
-  getAll: () => api.get(`/donation-centers`),
-};
-
 export const ratingsAPI = {
   rateUser: (userId, data) => api.post(`/ratings/${userId}`, data),
   getUserReviews: (userId, params) => api.get(`/ratings/${userId}`, { params }),
@@ -187,15 +182,34 @@ export const scheduleAPI = {
   proposeSchedule: (listingId, data) =>
     api.post(`/listings/${listingId}/schedule`, data),
 
+  getSchedules: (params) => api.get("/schedules", { params }),
+
   getMySchedules: (params) => api.get("/schedules/my-schedules", { params }),
 
   getUpcomingSchedules: () => api.get("/schedules/upcoming"),
+
+  getScheduleById: (id) => api.get(`/schedules/${id}`),
 
   confirmSchedule: (id, data) => api.put(`/schedules/${id}/confirm`, data),
 
   cancelSchedule: (id, data) => api.put(`/schedules/${id}/cancel`, data),
 
   completeSchedule: (id) => api.put(`/schedules/${id}/complete`),
+
+  // Pickup tracking
+  startPickup: (id) => api.put(`/schedules/${id}/start-pickup`),
+
+  updateDriverLocation: (id, location) =>
+    api.put(`/schedules/${id}/driver-location`, { location }),
+
+  getPickupStatus: (id) => api.get(`/schedules/${id}/pickup-status`),
+
+  // Recurring schedules
+  createRecurring: (data) => api.post("/schedules/recurring", data),
+
+  getRecurringSchedules: () => api.get("/schedules/recurring"),
+
+  cancelRecurring: (id) => api.delete(`/schedules/recurring/${id}`),
 };
 // ✅ Waste Analysis API (for TensorFlow.js AI Waste Analyzer)
 export const wasteAPI = {
@@ -239,7 +253,43 @@ export const routeAPI = {
 };
 
 export const aiAPI = {
-  generateUpcyclingIdeas: (data) => api.post('/ai/upcycle', data)
+  generateUpcyclingIdeas: (data) => api.post("/ai/upcycle", data),
+};
+
+// ✅ Admin API (requires admin role)
+export const adminAPI = {
+  // Dashboard
+  getDashboardStats: () => api.get("/admin/dashboard-stats"),
+
+  // User Management
+  getAllUsers: (params) => api.get("/admin/users", { params }),
+  getUserById: (id) => api.get(`/admin/users/${id}`),
+  suspendUser: (id, data) => api.put(`/admin/users/${id}/suspend`, data),
+  unsuspendUser: (id) => api.put(`/admin/users/${id}/unsuspend`),
+  warnUser: (id, data) => api.put(`/admin/users/${id}/warn`, data),
+  updateUserRole: (id, data) => api.put(`/admin/users/${id}/role`, data),
+  bulkUserAction: (data) => api.post("/admin/users/bulk-action", data),
+
+  // Verifications
+  getVerifications: (params) => api.get("/admin/verifications", { params }),
+  approveVerification: (id, data) =>
+    api.put(`/admin/verifications/${id}/approve`, data),
+  rejectVerification: (id, data) =>
+    api.put(`/admin/verifications/${id}/reject`, data),
+
+  // Flagged Content
+  getFlaggedContent: (params) => api.get("/admin/flagged-content", { params }),
+  removeContent: (id, data) =>
+    api.put(`/admin/flagged-content/${id}/remove`, data),
+  restoreContent: (id, data) =>
+    api.put(`/admin/flagged-content/${id}/restore`, data),
+
+  // Reports
+  getAllReports: (params) => api.get("/admin/reports", { params }),
+  resolveReport: (id, data) => api.put(`/reports/${id}/resolve`, data),
+
+  // Logs
+  getLogs: (params) => api.get("/admin/logs", { params }),
 };
 
 export default api;

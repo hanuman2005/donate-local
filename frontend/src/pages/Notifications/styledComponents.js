@@ -1,6 +1,29 @@
 // client/src/pages/Notifications/styledComponents.js - COMPLETE & OPTIMIZED
 import styled from "styled-components";
 
+// Framer Motion props that should not be forwarded to the DOM
+const motionProps = [
+  "initial",
+  "animate",
+  "exit",
+  "variants",
+  "transition",
+  "whileHover",
+  "whileTap",
+  "whileFocus",
+  "whileDrag",
+  "whileInView",
+  "drag",
+  "dragConstraints",
+  "dragElastic",
+  "dragMomentum",
+  "layout",
+  "layoutId",
+  "onAnimationStart",
+  "onAnimationComplete",
+];
+const shouldForwardProp = (prop) => !motionProps.includes(prop);
+
 export const NotificationsContainer = styled.div`
   min-height: calc(100vh - 80px);
   background: var(--bg-primary);
@@ -91,7 +114,7 @@ export const UnreadBadge = styled.span`
   }
 `;
 
-export const MarkAllButton = styled.button`
+export const MarkAllButton = styled.button.withConfig({ shouldForwardProp })`
   padding: 0.75rem 1.5rem;
   background: var(--bg-card);
   border: 2px solid var(--border-color);
@@ -134,7 +157,7 @@ export const FilterContainer = styled.div`
   }
 `;
 
-export const FilterButton = styled.button`
+export const FilterButton = styled.button.withConfig({ shouldForwardProp })`
   padding: 0.75rem 1.5rem;
   background: ${(props) =>
     props.$active
@@ -378,7 +401,7 @@ export const NotificationActions = styled.div`
   }
 `;
 
-export const ActionButton = styled.button`
+export const ActionButton = styled.button.withConfig({ shouldForwardProp })`
   padding: 0.5rem 1rem;
   background: ${(props) =>
     props.$primary

@@ -84,9 +84,49 @@ const listingSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["available", "assigned", "pending", "completed", "cancelled"], // ← added assigned
+      enum: [
+        "available",
+        "assigned",
+        "pending",
+        "completed",
+        "cancelled",
+        "pending_review",
+        "rejected",
+      ],
       default: "available",
     },
+
+    // --------------------------------------------------
+    // Content Moderation Fields
+    // --------------------------------------------------
+    moderationScore: {
+      type: Number,
+      default: 100,
+      min: 0,
+      max: 100,
+    },
+    moderationFlags: [
+      {
+        field: String,
+        type: {
+          type: String,
+          enum: ["profanity", "spam", "suspicious", "image"],
+        },
+        details: [String],
+        timestamp: { type: Date, default: Date.now },
+      },
+    ],
+    moderationStatus: {
+      type: String,
+      enum: ["approved", "pending", "rejected", "auto_approved"],
+      default: "auto_approved",
+    },
+    moderatedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+    moderatedAt: Date,
+    moderationNotes: String,
 
     expiryDate: Date,
     additionalNotes: {
@@ -243,7 +283,6 @@ listingSchema.index({ assignedTo: 1 });
 listingSchema.index({ "qrCode.secret": 1 });
 listingSchema.index({ schedule: 1 });
 
-
 //
 // --------------------------------------------------
 // Instance Methods — Queue Management
@@ -337,20 +376,19 @@ listingSchema.methods.verifyQRCode = async function (secret, scannedBy) {
   return true;
 };
 
-
 // Add this method (after existing methods)
 listingSchema.methods.linkSchedule = async function (scheduleId) {
   this.schedule = scheduleId;
   this.hasSchedule = true;
-  this.scheduleStatus = 'proposed';
+  this.scheduleStatus = "proposed";
   await this.save();
   return this;
 };
 
 listingSchema.methods.updateScheduleStatus = async function (status) {
   this.scheduleStatus = status;
-  if (status === 'completed') {
-    this.status = 'completed';
+  if (status === "completed") {
+    this.status = "completed";
     this.completedAt = new Date();
   }
   await this.save();

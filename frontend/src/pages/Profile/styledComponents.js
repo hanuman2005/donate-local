@@ -1,5 +1,28 @@
 import styled from "styled-components";
 
+// Framer Motion props that should not be forwarded to the DOM
+const motionProps = [
+  "initial",
+  "animate",
+  "exit",
+  "variants",
+  "transition",
+  "whileHover",
+  "whileTap",
+  "whileFocus",
+  "whileDrag",
+  "whileInView",
+  "drag",
+  "dragConstraints",
+  "dragElastic",
+  "dragMomentum",
+  "layout",
+  "layoutId",
+  "onAnimationStart",
+  "onAnimationComplete",
+];
+const shouldForwardProp = (prop) => !motionProps.includes(prop);
+
 export const ProfileContainer = styled.div`
   min-height: calc(100vh - 80px);
   background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
@@ -150,7 +173,7 @@ export const ProfileActions = styled.div`
   }
 `;
 
-export const ActionButton = styled.button`
+export const ActionButton = styled.button.withConfig({ shouldForwardProp })`
   padding: 0.75rem 1.5rem;
   background: ${(props) =>
     props.$primary
@@ -232,7 +255,7 @@ export const ContentTabs = styled.div`
   }
 `;
 
-export const Tab = styled.button`
+export const Tab = styled.button.withConfig({ shouldForwardProp })`
   padding: 1.25rem 2rem;
   background: transparent;
   border: none;
@@ -481,7 +504,7 @@ export const HistorySection = styled.div`
   background: white;
   border-radius: 16px;
   padding: 2rem;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   margin-top: 1rem;
 `;
 
@@ -491,7 +514,9 @@ export const HistoryItem = styled.div`
   align-items: center;
   padding: 1.25rem;
   border-bottom: 1px solid #e2e8f0;
-  &:last-child { border-bottom: none; }
+  &:last-child {
+    border-bottom: none;
+  }
 `;
 
 export const ItemDetails = styled.div`
@@ -511,7 +536,7 @@ export const ItemMeta = styled.div`
   color: #718096;
 `;
 
-export const ReceiptButton = styled.button`
+export const ReceiptButton = styled.button.withConfig({ shouldForwardProp })`
   padding: 0.6rem 1rem;
   border: none;
   border-radius: 8px;
@@ -520,13 +545,18 @@ export const ReceiptButton = styled.button`
   font-weight: 600;
   cursor: pointer;
   transition: 0.2s;
-  &:hover { opacity: 0.9; }
+  &:hover {
+    opacity: 0.9;
+  }
 `;
 
 export const ReceiptModal = styled.div`
   position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.85);
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
   display: flex;
   align-items: center;
   justify-content: center;

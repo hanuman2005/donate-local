@@ -1,9 +1,32 @@
 // src/components/Map/styledComponents.js - UPDATED FOR LEAFLET
-import styled from 'styled-components';
+import styled from "styled-components";
+
+// Framer Motion props that should not be forwarded to the DOM
+const motionProps = [
+  "initial",
+  "animate",
+  "exit",
+  "variants",
+  "transition",
+  "whileHover",
+  "whileTap",
+  "whileFocus",
+  "whileDrag",
+  "whileInView",
+  "drag",
+  "dragConstraints",
+  "dragElastic",
+  "dragMomentum",
+  "layout",
+  "layoutId",
+  "onAnimationStart",
+  "onAnimationComplete",
+];
+const shouldForwardProp = (prop) => !motionProps.includes(prop);
 
 export const MapWrapper = styled.div`
   width: 100%;
-  height: ${props => props.height || '500px'};
+  height: ${(props) => props.height || "500px"};
   border-radius: 12px;
   overflow: hidden;
   position: relative;
@@ -45,7 +68,8 @@ export const MapWrapper = styled.div`
   }
 
   @keyframes userPulse {
-    0%, 100% {
+    0%,
+    100% {
       transform: scale(1);
       opacity: 1;
     }
@@ -71,7 +95,7 @@ export const MapWrapper = styled.div`
     width: 36px !important;
     height: 36px !important;
     line-height: 36px !important;
-    
+
     &:hover {
       background: #f7fafc !important;
     }
@@ -103,8 +127,15 @@ export const LoadingMessage = styled.div`
   }
 
   @keyframes pulse {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.5; transform: scale(1.1); }
+    0%,
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.5;
+      transform: scale(1.1);
+    }
   }
 
   p {
@@ -152,7 +183,7 @@ export const MapControls = styled.div`
   }
 `;
 
-export const ControlButton = styled.button`
+export const ControlButton = styled.button.withConfig({ shouldForwardProp })`
   width: 40px;
   height: 40px;
   background: white;
@@ -328,7 +359,7 @@ export const InfoDistance = styled.div`
   }
 `;
 
-export const InfoButton = styled.button`
+export const InfoButton = styled.button.withConfig({ shouldForwardProp })`
   width: 100%;
   margin-top: 12px;
   padding: 8px 16px;

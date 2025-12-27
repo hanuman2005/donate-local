@@ -1,5 +1,28 @@
 import styled from "styled-components";
 
+// Framer Motion props that should not be forwarded to the DOM
+const motionProps = [
+  "initial",
+  "animate",
+  "exit",
+  "variants",
+  "transition",
+  "whileHover",
+  "whileTap",
+  "whileFocus",
+  "whileDrag",
+  "whileInView",
+  "drag",
+  "dragConstraints",
+  "dragElastic",
+  "dragMomentum",
+  "layout",
+  "layoutId",
+  "onAnimationStart",
+  "onAnimationComplete",
+];
+const shouldForwardProp = (prop) => !motionProps.includes(prop);
+
 export const CardContainer = styled.div`
   background: var(--bg-secondary);
   color: var(--text-primary);
@@ -142,7 +165,7 @@ export const CardFooter = styled.div`
   align-items: center;
 `;
 
-export const ContactButton = styled.button`
+export const ContactButton = styled.button.withConfig({ shouldForwardProp })`
   background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
   color: white;
   font-size: 0.9rem;
@@ -171,7 +194,7 @@ export const ContactButton = styled.button`
   }
 `;
 
-export const ViewButton = styled.button`
+export const ViewButton = styled.button.withConfig({ shouldForwardProp })`
   background: #f8fafc;
   color: #4a5568;
   font-size: 0.9rem;
@@ -199,7 +222,7 @@ export const OwnerActions = styled.div`
   width: 100%;
 `;
 
-export const EditButton = styled.button`
+export const EditButton = styled.button.withConfig({ shouldForwardProp })`
   background: #48bb78;
   color: white;
   font-size: 0.85rem;
@@ -221,7 +244,7 @@ export const EditButton = styled.button`
   }
 `;
 
-export const DeleteButton = styled.button`
+export const DeleteButton = styled.button.withConfig({ shouldForwardProp })`
   background: #e53e3e;
   color: white;
   font-size: 0.85rem;
@@ -260,7 +283,7 @@ export const LoadingSpinner = styled.div`
     }
   }
 `;
-export const QuickClaimButton = styled.button`
+export const QuickClaimButton = styled.button.withConfig({ shouldForwardProp })`
   width: 100%;
   padding: 1rem;
   background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
@@ -276,16 +299,16 @@ export const QuickClaimButton = styled.button`
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  
+
   &:hover:not(:disabled) {
     transform: scale(1.02);
     box-shadow: 0 4px 15px rgba(72, 187, 120, 0.4);
   }
-  
+
   &:active:not(:disabled) {
     transform: scale(0.98);
   }
-  
+
   &:disabled {
     background: #cbd5e0;
     cursor: not-allowed;

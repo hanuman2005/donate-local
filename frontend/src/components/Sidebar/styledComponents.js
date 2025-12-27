@@ -1,6 +1,29 @@
 // src/components/Sidebar/styledComponents.js - THEMED VERSION
 import styled from "styled-components";
 
+// Framer Motion props that should not be forwarded to the DOM
+const motionProps = [
+  "initial",
+  "animate",
+  "exit",
+  "variants",
+  "transition",
+  "whileHover",
+  "whileTap",
+  "whileFocus",
+  "whileDrag",
+  "whileInView",
+  "drag",
+  "dragConstraints",
+  "dragElastic",
+  "dragMomentum",
+  "layout",
+  "layoutId",
+  "onAnimationStart",
+  "onAnimationComplete",
+];
+const shouldForwardProp = (prop) => !motionProps.includes(prop);
+
 export const SidebarContainer = styled.aside`
   position: fixed;
   left: 0;
@@ -87,7 +110,7 @@ export const NavSectionTitle = styled.div`
   margin-bottom: var(--spacing-xs);
 `;
 
-export const NavItem = styled.div`
+export const NavItem = styled.div.withConfig({ shouldForwardProp })`
   display: flex;
   align-items: center;
   gap: var(--spacing-md);
@@ -255,7 +278,7 @@ export const UserDropdown = styled.div`
   z-index: 999999;
 `;
 
-export const DropdownItem = styled.button`
+export const DropdownItem = styled.button.withConfig({ shouldForwardProp })`
   width: 100%;
   background: none;
   border: none;
@@ -342,7 +365,9 @@ export const MobileActions = styled.div`
   gap: var(--spacing-md);
 `;
 
-export const NotificationButton = styled.button`
+export const NotificationButton = styled.button.withConfig({
+  shouldForwardProp,
+})`
   position: relative;
   background: transparent;
   border: none;
@@ -382,7 +407,7 @@ export const NotificationBadge = styled.span`
   border: 2px solid var(--bg-secondary);
 `;
 
-export const MenuButton = styled.button`
+export const MenuButton = styled.button.withConfig({ shouldForwardProp })`
   display: flex;
   flex-direction: column;
   background: none;

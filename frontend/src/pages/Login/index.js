@@ -100,7 +100,12 @@ const Login = () => {
           <LoginSubtitle>Sign in to your account to continue</LoginSubtitle>
         </LoginHeader>
 
-        <LoginForm as={motion.form} onSubmit={handleSubmit}>
+        <LoginForm
+          as={motion.form}
+          onSubmit={handleSubmit}
+          role="form"
+          aria-label="Login form"
+        >
           <AnimatePresence mode="wait">
             {message && (
               <SuccessMessage
@@ -110,6 +115,8 @@ const Login = () => {
                 initial="hidden"
                 animate="show"
                 exit="exit"
+                role="status"
+                aria-live="polite"
               >
                 {message}
               </SuccessMessage>
@@ -122,6 +129,8 @@ const Login = () => {
                 initial="hidden"
                 animate="show"
                 exit="exit"
+                role="alert"
+                aria-live="assertive"
               >
                 {error}
               </ErrorMessage>
@@ -133,10 +142,7 @@ const Login = () => {
             initial="hidden"
             animate="show"
           >
-            <FormGroup
-              as={motion.div}
-              variants={motionVariants.fadeSlideUp}
-            >
+            <FormGroup as={motion.div} variants={motionVariants.fadeSlideUp}>
               <Label htmlFor="email">Email Address</Label>
               <Input
                 as={motion.input}
@@ -149,13 +155,12 @@ const Login = () => {
                 placeholder="Enter your email"
                 required
                 autoComplete="email"
+                aria-required="true"
+                aria-describedby={error ? "login-error" : undefined}
               />
             </FormGroup>
 
-            <FormGroup
-              as={motion.div}
-              variants={motionVariants.fadeSlideUp}
-            >
+            <FormGroup as={motion.div} variants={motionVariants.fadeSlideUp}>
               <Label htmlFor="password">Password</Label>
               <Input
                 as={motion.input}
@@ -168,6 +173,8 @@ const Login = () => {
                 placeholder="Enter your password"
                 required
                 autoComplete="current-password"
+                aria-required="true"
+                aria-describedby={error ? "login-error" : undefined}
               />
             </FormGroup>
 
@@ -178,6 +185,10 @@ const Login = () => {
               disabled={!isFormValid || isSubmitting}
               whileHover={!isSubmitting ? { scale: 1.02, y: -2 } : {}}
               whileTap={!isSubmitting ? { scale: 0.98 } : {}}
+              aria-disabled={!isFormValid || isSubmitting}
+              aria-label={
+                isSubmitting ? "Signing in..." : "Sign in to your account"
+              }
             >
               {isSubmitting ? <LoadingSpinner size="small" /> : "Sign In 🚀"}
             </LoginButton>
@@ -205,11 +216,7 @@ const Login = () => {
         >
           <FooterText>
             Don't have an account?{" "}
-            <FooterLink
-              as={Link}
-              to="/register"
-              style={{ cursor: "pointer" }}
-            >
+            <FooterLink as={Link} to="/register" style={{ cursor: "pointer" }}>
               Sign up here
             </FooterLink>
           </FooterText>

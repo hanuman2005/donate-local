@@ -1,5 +1,28 @@
 import styled from "styled-components";
 
+// Framer Motion props that should not be forwarded to the DOM
+const motionProps = [
+  "initial",
+  "animate",
+  "exit",
+  "variants",
+  "transition",
+  "whileHover",
+  "whileTap",
+  "whileFocus",
+  "whileDrag",
+  "whileInView",
+  "drag",
+  "dragConstraints",
+  "dragElastic",
+  "dragMomentum",
+  "layout",
+  "layoutId",
+  "onAnimationStart",
+  "onAnimationComplete",
+];
+const shouldForwardProp = (prop) => !motionProps.includes(prop);
+
 export const LoginContainer = styled.div`
   display: flex;
   align-items: center;
@@ -104,7 +127,7 @@ export const Input = styled.input`
   }
 `;
 
-export const LoginButton = styled.button`
+export const LoginButton = styled.button.withConfig({ shouldForwardProp })`
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   font-size: 1.1rem;

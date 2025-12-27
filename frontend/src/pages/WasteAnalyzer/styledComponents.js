@@ -1,6 +1,30 @@
 import styled, { keyframes } from "styled-components";
 import { useTheme } from "../../context/ThemeContext";
 import { motion } from "framer-motion";
+
+// Framer Motion props that should not be forwarded to the DOM
+const motionProps = [
+  "initial",
+  "animate",
+  "exit",
+  "variants",
+  "transition",
+  "whileHover",
+  "whileTap",
+  "whileFocus",
+  "whileDrag",
+  "whileInView",
+  "drag",
+  "dragConstraints",
+  "dragElastic",
+  "dragMomentum",
+  "layout",
+  "layoutId",
+  "onAnimationStart",
+  "onAnimationComplete",
+];
+const shouldForwardProp = (prop) => !motionProps.includes(prop);
+
 // =====================
 // Animations
 // =====================
@@ -421,7 +445,7 @@ export const CarouselControls = styled.div`
   margin-top: 1rem;
 `;
 
-export const CarouselDot = styled.button`
+export const CarouselDot = styled.button.withConfig({ shouldForwardProp })`
   width: 12px;
   height: 12px;
   border-radius: 50%;

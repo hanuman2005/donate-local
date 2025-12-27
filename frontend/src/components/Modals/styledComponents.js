@@ -1,7 +1,30 @@
 // ============================================
 // src/components/RatingModal/styledComponents.js - NEW FILE
 // ============================================
-import styled from 'styled-components';
+import styled from "styled-components";
+
+// Framer Motion props that should not be forwarded to the DOM
+const motionProps = [
+  "initial",
+  "animate",
+  "exit",
+  "variants",
+  "transition",
+  "whileHover",
+  "whileTap",
+  "whileFocus",
+  "whileDrag",
+  "whileInView",
+  "drag",
+  "dragConstraints",
+  "dragElastic",
+  "dragMomentum",
+  "layout",
+  "layoutId",
+  "onAnimationStart",
+  "onAnimationComplete",
+];
+const shouldForwardProp = (prop) => !motionProps.includes(prop);
 
 export const Overlay = styled.div`
   position: fixed;
@@ -42,7 +65,7 @@ export const ModalHeader = styled.div`
   }
 `;
 
-export const CloseButton = styled.button`
+export const CloseButton = styled.button.withConfig({ shouldForwardProp })`
   background: rgba(255, 255, 255, 0.2);
   border: none;
   color: white;
@@ -107,17 +130,18 @@ export const StarContainer = styled.div`
   font-size: 3rem;
 `;
 
-export const Star = styled.button`
+export const Star = styled.button.withConfig({ shouldForwardProp })`
   background: none;
   border: none;
   cursor: pointer;
   padding: 0;
   transition: all 0.2s;
   font-size: 3rem;
-  
-  ${props => props.$filled 
-    ? 'filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.5));' 
-    : 'opacity: 0.3;'}
+
+  ${(props) =>
+    props.$filled
+      ? "filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.5));"
+      : "opacity: 0.3;"}
 
   &:hover {
     transform: scale(1.2);
@@ -161,7 +185,7 @@ export const ButtonGroup = styled.div`
   gap: 1rem;
 `;
 
-export const SubmitButton = styled.button`
+export const SubmitButton = styled.button.withConfig({ shouldForwardProp })`
   flex: 1;
   padding: 1rem 2rem;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -183,7 +207,7 @@ export const SubmitButton = styled.button`
   }
 `;
 
-export const CancelButton = styled.button`
+export const CancelButton = styled.button.withConfig({ shouldForwardProp })`
   flex: 1;
   padding: 1rem 2rem;
   background: transparent;

@@ -1,5 +1,28 @@
 // src/components/QRCode/styledComponents.js
-import styled, { keyframes } from 'styled-components';
+import styled, { keyframes } from "styled-components";
+
+// Framer Motion props that should not be forwarded to the DOM
+const motionProps = [
+  "initial",
+  "animate",
+  "exit",
+  "variants",
+  "transition",
+  "whileHover",
+  "whileTap",
+  "whileFocus",
+  "whileDrag",
+  "whileInView",
+  "drag",
+  "dragConstraints",
+  "dragElastic",
+  "dragMomentum",
+  "layout",
+  "layoutId",
+  "onAnimationStart",
+  "onAnimationComplete",
+];
+const shouldForwardProp = (prop) => !motionProps.includes(prop);
 
 const fadeIn = keyframes`
   from {
@@ -69,7 +92,7 @@ export const Description = styled.p`
   }
 `;
 
-export const Button = styled.button`
+export const Button = styled.button.withConfig({ shouldForwardProp })`
   width: 100%;
   padding: 0.875rem 1.5rem;
   margin: 0.5rem 0;
@@ -84,7 +107,9 @@ export const Button = styled.button`
   justify-content: center;
   gap: 0.5rem;
 
-  ${props => props.$primary ? `
+  ${(props) =>
+    props.$primary
+      ? `
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
@@ -93,7 +118,8 @@ export const Button = styled.button`
       transform: translateY(-2px);
       box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
     }
-  ` : `
+  `
+      : `
     background: #f7fafc;
     color: #4a5568;
     border: 2px solid #e2e8f0;
@@ -177,24 +203,24 @@ export const StatusBadge = styled.span`
   text-transform: uppercase;
   letter-spacing: 0.5px;
 
-  ${props => {
-    switch(props.$status) {
-      case 'pending':
+  ${(props) => {
+    switch (props.$status) {
+      case "pending":
         return `
           background: #feebc8;
           color: #c05621;
         `;
-      case 'completed':
+      case "completed":
         return `
           background: #c6f6d5;
           color: #2f855a;
         `;
-      case 'expired':
+      case "expired":
         return `
           background: #fed7d7;
           color: #c53030;
         `;
-      case 'error':
+      case "error":
         return `
           background: #fed7d7;
           color: #c53030;
@@ -211,10 +237,13 @@ export const StatusBadge = styled.span`
 export const ExpiryTimer = styled.span`
   font-weight: 700;
   font-size: 1rem;
-  
-  ${props => props.$expired ? `
+
+  ${(props) =>
+    props.$expired
+      ? `
     color: #e53e3e;
-  ` : `
+  `
+      : `
     color: #38a169;
   `}
 `;

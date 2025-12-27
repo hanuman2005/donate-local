@@ -25,7 +25,7 @@ const FloatingChatbot = () => {
     "How does AI analysis work?",
     "What can I donate?",
     "How does QR verification work?",
-    "Find items near me"
+    "Find items near me",
   ];
 
   // Fallback responses for when API is unavailable
@@ -33,67 +33,122 @@ const FloatingChatbot = () => {
     const msg = userMessage.toLowerCase();
 
     // AI Analysis questions
-    if (msg.includes("ai") || msg.includes("analyze") || msg.includes("analysis")) {
+    if (
+      msg.includes("ai") ||
+      msg.includes("analyze") ||
+      msg.includes("analysis")
+    ) {
       return "🤖 Our AI Analysis feature is amazing!\n\n1. Upload a photo of your unwanted item\n2. AI detects what it is (phone, chair, clothes, etc.)\n3. Get 3 smart suggestions:\n   ✅ REUSE - Repair guides & tips\n   ♻️ RECYCLE - Nearby centers\n   🎁 DONATE - High demand items\n\n4. Choose your option and create a listing if you want to donate!\n\nThis helps you make the most sustainable choice! 🌍";
     }
 
     // What can be donated
-    if (msg.includes("what") && (msg.includes("donate") || msg.includes("list"))) {
+    if (
+      msg.includes("what") &&
+      (msg.includes("donate") || msg.includes("list"))
+    ) {
       return "You can donate almost anything! 📦\n\nPopular categories:\n📱 Electronics (phones, laptops, appliances)\n🪑 Furniture (chairs, tables, sofas)\n👕 Clothing (clothes, shoes, accessories)\n📚 Books & Media\n🍎 Food (packaged & fresh)\n🧸 Toys & Baby Items\n🏠 Household Items\n🌱 Plants & Garden\n🎨 Hobby & Sports gear\n🔧 Tools\n\nIf it's in good condition, someone probably needs it!";
     }
 
     // Donation process
-    if (msg.includes("donate") || msg.includes("create listing") || msg.includes("how to")) {
+    if (
+      msg.includes("donate") ||
+      msg.includes("create listing") ||
+      msg.includes("how to")
+    ) {
       return "To donate an item:\n\n1. 🤖 Use AI Analysis (optional but recommended!)\n   - Upload photo → Get suggestions\n\n2. 📝 Click 'Create Listing'\n   - Choose category\n   - Add title & description\n   - Upload photos\n   - Set pickup location\n\n3. 📍 Your listing goes live!\n\n4. 🔔 Get notified when someone's interested\n\n5. 💬 Chat to coordinate pickup\n\n6. 📱 Exchange using QR verification\n\nIt's that simple!";
     }
 
     // Finding items
-    if (msg.includes("find") || msg.includes("nearby") || msg.includes("search") || msg.includes("browse")) {
+    if (
+      msg.includes("find") ||
+      msg.includes("nearby") ||
+      msg.includes("search") ||
+      msg.includes("browse")
+    ) {
       return "To find items near you:\n\n1. 🗺️ Use the interactive map view\n   - See all nearby donations\n   - Filter by category\n   - Set distance radius (1-100km)\n\n2. 📋 Browse listings page\n   - Sort by distance, date, category\n   - Use search bar for specific items\n\n3. 🔔 Enable notifications\n   - Get alerts for new items nearby\n\n4. Click any listing to view full details!";
     }
 
     // QR Code verification
-    if (msg.includes("qr") || msg.includes("verify") || msg.includes("verification") || msg.includes("scan")) {
+    if (
+      msg.includes("qr") ||
+      msg.includes("verify") ||
+      msg.includes("verification") ||
+      msg.includes("scan")
+    ) {
       return "🔒 QR Code Verification keeps exchanges safe!\n\nHow it works:\n1. After scheduling pickup, both users get QR codes\n\n2. At pickup location:\n   - Recipient scans donor's QR code\n   - Confirms item matches listing\n   - Both verify identity\n\n3. Exchange completes automatically\n\n4. Listing marked as completed\n\nThis prevents fraud and ensures safety! No personal info shared until verified. 📱✅";
     }
 
     // Scheduling
-    if (msg.includes("schedule") || msg.includes("pickup") || msg.includes("time") || msg.includes("when")) {
+    if (
+      msg.includes("schedule") ||
+      msg.includes("pickup") ||
+      msg.includes("time") ||
+      msg.includes("when")
+    ) {
       return "📅 Pickup Scheduling:\n\n1. After someone shows interest, open the chat\n\n2. Click 'Propose Pickup Time'\n\n3. Select date & time from calendar\n\n4. Recipient accepts or suggests alternative\n\n5. Both get confirmation with:\n   - Pickup time\n   - Location details\n   - QR codes for verification\n\n6. Automatic reminders sent!\n\nCoordinate details in chat before meeting.";
     }
 
     // Rating system
-    if (msg.includes("rating") || msg.includes("review") || msg.includes("reputation")) {
+    if (
+      msg.includes("rating") ||
+      msg.includes("review") ||
+      msg.includes("reputation")
+    ) {
       return "⭐ Rating System builds trust!\n\nAfter completing exchange:\n1. Both users rate each other (1-5 stars)\n2. Optional written review\n3. Ratings appear on profiles\n\nHigh ratings = trusted community member!\n\nBenefits:\n- Better matches from AI\n- More responses to your listings\n- Priority notifications\n- Community recognition\n\nBe respectful and reliable to build your reputation!";
     }
 
     // Chat/messaging
-    if (msg.includes("chat") || msg.includes("message") || msg.includes("contact")) {
+    if (
+      msg.includes("chat") ||
+      msg.includes("message") ||
+      msg.includes("contact")
+    ) {
       return "💬 Real-time Chat:\n\n1. Click 'I Want This' on any listing\n\n2. Chat opens automatically\n   - Ask questions about the item\n   - Discuss condition\n   - Coordinate pickup\n\n3. Features:\n   - Instant messaging\n   - Typing indicators\n   - Message history saved\n   - Notifications when they reply\n\n4. Stay anonymous until pickup is scheduled!\n\nBe polite and responsive for best results.";
     }
 
     // Categories
-    if (msg.includes("category") || msg.includes("categories") || msg.includes("type")) {
+    if (
+      msg.includes("category") ||
+      msg.includes("categories") ||
+      msg.includes("type")
+    ) {
       return "📂 Item Categories:\n\n📱 Electronics\n🪑 Furniture\n👕 Clothing & Accessories\n📚 Books & Media\n🍎 Food Items\n🧸 Toys & Baby Items\n🏠 Household & Kitchen\n🌱 Plants & Garden\n🎨 Hobbies & Sports\n🔧 Tools & Equipment\n\nEach category has specific fields to help describe your item accurately!";
     }
 
     // Safety
-    if (msg.includes("safe") || msg.includes("safety") || msg.includes("secure")) {
+    if (
+      msg.includes("safe") ||
+      msg.includes("safety") ||
+      msg.includes("secure")
+    ) {
       return "🔒 Your Safety Matters!\n\nSafety features:\n✅ No personal info until scheduled\n✅ QR code verification\n✅ Rating system filters bad actors\n✅ Report/block functionality\n✅ Public meeting spots recommended\n\nTips:\n- Meet in public places\n- Bring a friend if uncomfortable\n- Check user ratings first\n- Trust your instincts\n- Use QR verification always\n\nStay safe while helping others! 🛡️";
     }
 
     // Profile/account
-    if (msg.includes("profile") || msg.includes("account") || msg.includes("settings")) {
+    if (
+      msg.includes("profile") ||
+      msg.includes("account") ||
+      msg.includes("settings")
+    ) {
       return "👤 Manage Your Profile:\n\n1. Click avatar (top right)\n2. Go to 'Profile'\n\nYou can update:\n- Name & bio\n- Profile picture\n- Location\n- Contact preferences\n- Notification settings\n\nGood profiles get more responses!\n\nTips:\n✨ Add a clear photo\n✨ Write a friendly bio\n✨ Keep info updated\n✨ Build your rating";
     }
 
     // Impact/statistics
-    if (msg.includes("impact") || msg.includes("stats") || msg.includes("analytics") || msg.includes("environment")) {
+    if (
+      msg.includes("impact") ||
+      msg.includes("stats") ||
+      msg.includes("analytics") ||
+      msg.includes("environment")
+    ) {
       return "🌍 Your Impact Matters!\n\nView your dashboard to see:\n📦 Items donated/received\n💚 CO2 emissions prevented\n💰 Money saved by community\n🤝 Successful exchanges\n\nEach donation:\n- Keeps items from landfills\n- Reduces carbon footprint\n- Helps people save money\n- Builds community connections\n\nTogether we're making a difference! ♻️";
     }
 
     // Help/general
-    if (msg.includes("help") || msg.includes("support") || msg.includes("how")) {
+    if (
+      msg.includes("help") ||
+      msg.includes("support") ||
+      msg.includes("how")
+    ) {
       return "I can help you with:\n\n🤖 AI item analysis\n📝 Creating donations\n🔍 Finding items nearby\n💬 Chat & messaging\n📅 Pickup scheduling\n📱 QR verification\n⭐ Rating system\n🔒 Safety tips\n👤 Profile management\n\nJust ask me anything! What would you like to know?";
     }
 
@@ -126,7 +181,7 @@ const FloatingChatbot = () => {
         }),
       });
 
-      if (!response.ok) throw new Error('API unavailable');
+      if (!response.ok) throw new Error("API unavailable");
 
       const data = await response.json();
 
@@ -139,14 +194,14 @@ const FloatingChatbot = () => {
       setMessages((prev) => [...prev, botResponse]);
     } catch (error) {
       console.error("Chat error:", error);
-      
+
       // Use fallback response if API fails
       const botResponse = {
         text: getFallbackResponse(currentInput),
         sender: "bot",
         timestamp: new Date(),
       };
-      
+
       setMessages((prev) => [...prev, botResponse]);
     } finally {
       setIsTyping(false);
@@ -167,6 +222,8 @@ const FloatingChatbot = () => {
         zIndex: 9999,
         fontFamily: "Inter, sans-serif",
       }}
+      role="complementary"
+      aria-label="Chat assistant"
     >
       {/* Chat Window */}
       {isOpen && (
@@ -183,6 +240,9 @@ const FloatingChatbot = () => {
             overflow: "hidden",
             animation: "slideUp 0.3s ease-out",
           }}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Chat with DonateLocal Assistant"
         >
           {/* Header */}
           <div
@@ -207,6 +267,7 @@ const FloatingChatbot = () => {
                   justifyContent: "center",
                   fontSize: "20px",
                 }}
+                aria-hidden="true"
               >
                 🤖
               </div>
@@ -231,6 +292,7 @@ const FloatingChatbot = () => {
                 width: "30px",
                 height: "30px",
               }}
+              aria-label="Close chat"
             >
               ✕
             </button>
@@ -244,6 +306,9 @@ const FloatingChatbot = () => {
               padding: "20px",
               background: "#f8fafc",
             }}
+            role="log"
+            aria-label="Chat messages"
+            aria-live="polite"
           >
             {messages.map((msg, index) => (
               <div
@@ -287,6 +352,8 @@ const FloatingChatbot = () => {
                   justifyContent: "flex-start",
                   marginBottom: "16px",
                 }}
+                role="status"
+                aria-label="Assistant is typing"
               >
                 <div
                   style={{
@@ -347,6 +414,8 @@ const FloatingChatbot = () => {
                 background: "white",
                 borderTop: "1px solid #e2e8f0",
               }}
+              role="group"
+              aria-label="Suggested questions"
             >
               {quickReplies.map((reply, index) => (
                 <button
@@ -373,6 +442,7 @@ const FloatingChatbot = () => {
                     e.target.style.color = "#4a5568";
                     e.target.style.borderColor = "#e2e8f0";
                   }}
+                  aria-label={`Ask: ${reply}`}
                 >
                   {reply}
                 </button>
@@ -389,6 +459,7 @@ const FloatingChatbot = () => {
               display: "flex",
               gap: "8px",
             }}
+            role="form"
           >
             <input
               type="text"
@@ -396,6 +467,7 @@ const FloatingChatbot = () => {
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={(e) => e.key === "Enter" && handleSend()}
               placeholder="Ask me anything..."
+              aria-label="Type your message"
               style={{
                 flex: 1,
                 padding: "12px 16px",
@@ -436,8 +508,10 @@ const FloatingChatbot = () => {
               onMouseLeave={(e) => {
                 e.target.style.transform = "scale(1)";
               }}
+              aria-label="Send message"
+              aria-disabled={!input.trim()}
             >
-              📤
+              <span aria-hidden="true">📤</span>
             </button>
           </div>
         </div>
@@ -470,8 +544,10 @@ const FloatingChatbot = () => {
           e.target.style.transform = "scale(1)";
           e.target.style.boxShadow = "0 8px 25px rgba(102, 126, 234, 0.4)";
         }}
+        aria-label={isOpen ? "Close chat assistant" : "Open chat assistant"}
+        aria-expanded={isOpen}
       >
-        {isOpen ? "✕" : "💬"}
+        <span aria-hidden="true">{isOpen ? "✕" : "💬"}</span>
         {!isOpen && (
           <span
             style={{
@@ -485,6 +561,7 @@ const FloatingChatbot = () => {
               border: "3px solid white",
               animation: "pulse 2s infinite",
             }}
+            aria-hidden="true"
           ></span>
         )}
       </button>

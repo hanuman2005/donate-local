@@ -10,10 +10,12 @@ const {
   getMySchedules,
   getUpcomingSchedules,
   getScheduleById,
+  startPickup,
+  updateDriverLocation,
+  getPickupStatus,
 } = require("../controllers/scheduleController");
 
 const router = express.Router();
-
 
 const confirmScheduleValidation = [
   body("confirmationNotes")
@@ -32,6 +34,13 @@ const cancelScheduleValidation = [
 ];
 
 //Routes
+/**
+ * @route   GET /api/schedules
+ * @desc    Get all schedules for current user
+ * @access  Private
+ */
+router.get("/", auth, getMySchedules);
+
 /**
  * @route   GET /api/schedules/my-schedules
  * @desc    Get all schedules for current user
@@ -73,5 +82,26 @@ router.put("/:id/cancel", auth, cancelScheduleValidation, cancelSchedule);
  * @access  Private (Donor)
  */
 router.put("/:id/complete", auth, completeSchedule);
+
+/**
+ * @route   PUT /api/schedules/:id/start-pickup
+ * @desc    Start a pickup (driver begins navigation)
+ * @access  Private
+ */
+router.put("/:id/start-pickup", auth, startPickup);
+
+/**
+ * @route   PUT /api/schedules/:id/driver-location
+ * @desc    Update driver location during pickup
+ * @access  Private
+ */
+router.put("/:id/driver-location", auth, updateDriverLocation);
+
+/**
+ * @route   GET /api/schedules/:id/pickup-status
+ * @desc    Get current pickup tracking status
+ * @access  Private
+ */
+router.get("/:id/pickup-status", auth, getPickupStatus);
 
 module.exports = router;

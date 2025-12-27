@@ -9,6 +9,10 @@ const {
   login,
   getMe,
   updateProfile,
+  forgotPassword,
+  resetPassword,
+  verifyEmail,
+  resendVerification,
 } = require("../controllers/authController");
 
 const { auth } = require("../middleware/auth");
@@ -94,5 +98,26 @@ router.put(
   ],
   updateProfile
 );
+
+// Password Reset
+router.post(
+  "/forgot-password",
+  [body("email").trim().isEmail().withMessage("Please provide a valid email")],
+  forgotPassword
+);
+
+router.post(
+  "/reset-password/:token",
+  [
+    body("password")
+      .isLength({ min: 6 })
+      .withMessage("Password must be at least 6 characters"),
+  ],
+  resetPassword
+);
+
+// Email Verification
+router.get("/verify-email/:token", verifyEmail);
+router.post("/resend-verification", auth, resendVerification);
 
 module.exports = router;

@@ -7,6 +7,9 @@ import { useNotifications } from "../../context/NotificationContext";
 import ThemeToggle from "../Common/ThemeToggle";
 // import { motionVariants } from "../../animations/motionVariants";
 
+// Create motion-enabled Link component (replaces deprecated motion(Link))
+const MotionLink = motion.create(Link);
+
 import {
   SidebarContainer,
   SidebarLogo,
@@ -64,12 +67,20 @@ const Sidebar = ({ children }) => {
       }
     };
 
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape" && isUserMenuOpen) {
+        setIsUserMenuOpen(false);
+      }
+    };
+
     if (isUserMenuOpen) {
       document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("keydown", handleKeyDown);
     }
 
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
     };
   }, [isUserMenuOpen]);
 
@@ -107,6 +118,8 @@ const Sidebar = ({ children }) => {
   const userNavItems = user
     ? [
         { path: "/dashboard", label: "Dashboard", icon: "📊" },
+        { path: "/schedules", label: "My Schedules", icon: "📅" },
+        { path: "/my-pickups", label: "My Pickups", icon: "🚚" },
         { path: "/waste-analyzer", label: "AI Analysis", icon: "🤖" },
         { path: "/analysis-history", label: "Analysis History", icon: "📜" },
         { path: "/route-optimizer", label: "Route Optimizer", icon: "🚗" },
@@ -135,21 +148,25 @@ const Sidebar = ({ children }) => {
       ]
     : [];
 
-  // Render navigation items
+  // Render navigation items with accessibility
   const renderNavItems = (items) =>
     items.map((item) => (
       <NavItem
         key={item.path}
-        as={motion(Link)}
+        as={MotionLink}
         to={item.path}
         $active={isActive(item.path)}
         whileHover={{ x: 4 }}
         whileTap={{ scale: 0.98 }}
+        aria-label={item.label}
+        aria-current={isActive(item.path) ? "page" : undefined}
       >
-        <NavIcon>{item.icon}</NavIcon>
+        <NavIcon aria-hidden="true">{item.icon}</NavIcon>
         <NavLabel>{item.label}</NavLabel>
         {item.badge && (
-          <NavBadge>{item.badge > 9 ? "9+" : item.badge}</NavBadge>
+          <NavBadge aria-label={`${item.badge} new notifications`}>
+            {item.badge > 9 ? "9+" : item.badge}
+          </NavBadge>
         )}
       </NavItem>
     ));
@@ -161,32 +178,41 @@ const Sidebar = ({ children }) => {
       initial={{ x: -280 }}
       animate={{ x: 0 }}
       transition={{ type: "spring", stiffness: 100, damping: 20 }}
+      aria-label="Main navigation"
     >
       {/* Logo */}
-      <SidebarLogo as={Link} to="/">
-        <LogoIcon>♻️</LogoIcon>
+      <SidebarLogo as={Link} to="/" aria-label="LifeLoop - Go to homepage">
+        <LogoIcon aria-hidden="true">♻️</LogoIcon>
         <LogoText>LifeLoop</LogoText>
       </SidebarLogo>
       {/* Navigation */}
-      <SidebarNav>
+      <SidebarNav role="navigation" aria-label="Primary navigation">
         {/* Public Navigation */}
-        <NavSection>
-          <NavSectionTitle>Menu</NavSectionTitle>
+        <NavSection role="group" aria-labelledby="menu-section">
+          <NavSectionTitle id="menu-section">Menu</NavSectionTitle>
           {renderNavItems(publicNavItems)}
         </NavSection>
 
         {/* User Navigation */}
         {user && (
-          <NavSection $marginTop="1rem">
-            <NavSectionTitle>My Activity</NavSectionTitle>
+          <NavSection
+            $marginTop="1rem"
+            role="group"
+            aria-labelledby="activity-section"
+          >
+            <NavSectionTitle id="activity-section">My Activity</NavSectionTitle>
             {renderNavItems(userNavItems)}
           </NavSection>
         )}
 
         {/* User Actions */}
         {user && (
-          <NavSection $marginTop="1rem">
-            <NavSectionTitle>Actions</NavSectionTitle>
+          <NavSection
+            $marginTop="1rem"
+            role="group"
+            aria-labelledby="actions-section"
+          >
+            <NavSectionTitle id="actions-section">Actions</NavSectionTitle>
             {renderNavItems(userActionsItems)}
           </NavSection>
         )}
@@ -195,7 +221,7 @@ const Sidebar = ({ children }) => {
         {!user && (
           <NavSection $marginTop="1rem">
             <NavItem
-              as={Link}
+              as={MotionLink}
               to="/login"
               whileHover={{ x: 4 }}
               whileTap={{ scale: 0.98 }}
@@ -204,7 +230,7 @@ const Sidebar = ({ children }) => {
               <NavLabel>Login</NavLabel>
             </NavItem>
             <NavItem
-              as={Link}
+              as={MotionLink}
               to="/register"
               whileHover={{ x: 4 }}
               whileTap={{ scale: 0.98 }}
@@ -227,6 +253,8 @@ const Sidebar = ({ children }) => {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 10 }}
                 transition={{ duration: 0.2 }}
+                role="menu"
+                aria-label="User menu"
               >
                 {/* Profile Option */}
                 <DropdownItem
@@ -237,8 +265,10 @@ const Sidebar = ({ children }) => {
                   }}
                   whileHover={{ x: 4 }}
                   whileTap={{ scale: 0.98 }}
+                  role="menuitem"
+                  aria-label="View your profile"
                 >
-                  <span>👤</span>
+                  <span aria-hidden="true">👤</span>
                   View Profile
                 </DropdownItem>
 
@@ -251,8 +281,10 @@ const Sidebar = ({ children }) => {
                   }}
                   whileHover={{ x: 4 }}
                   whileTap={{ scale: 0.98 }}
+                  role="menuitem"
+                  aria-label="Go to dashboard"
                 >
-                  <span>📊</span>
+                  <span aria-hidden="true">📊</span>
                   Dashboard
                 </DropdownItem>
 
@@ -265,8 +297,10 @@ const Sidebar = ({ children }) => {
                   }}
                   whileHover={{ x: 4 }}
                   whileTap={{ scale: 0.98 }}
+                  role="menuitem"
+                  aria-label="View your impact statistics"
                 >
-                  <span>🌟</span>
+                  <span aria-hidden="true">🌟</span>
                   My Impact
                 </DropdownItem>
 
@@ -276,6 +310,7 @@ const Sidebar = ({ children }) => {
                     borderTop: "1px solid var(--border-color)",
                     margin: "0.5rem 0",
                   }}
+                  role="separator"
                 />
 
                 {/* Logout Option */}
@@ -285,8 +320,10 @@ const Sidebar = ({ children }) => {
                   className="danger"
                   whileHover={{ x: 4 }}
                   whileTap={{ scale: 0.98 }}
+                  role="menuitem"
+                  aria-label="Log out of your account"
                 >
-                  <span>🚪</span>
+                  <span aria-hidden="true">🚪</span>
                   Logout
                 </DropdownItem>
               </UserDropdown>
@@ -299,7 +336,18 @@ const Sidebar = ({ children }) => {
               console.log("Toggling menu:", !isUserMenuOpen); // Debug log
               setIsUserMenuOpen(!isUserMenuOpen);
             }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                setIsUserMenuOpen(!isUserMenuOpen);
+              }
+            }}
             style={{ cursor: "pointer" }} // Ensure it looks clickable
+            role="button"
+            tabIndex={0}
+            aria-expanded={isUserMenuOpen}
+            aria-haspopup="menu"
+            aria-label={`User menu for ${user.firstName} ${user.lastName}`}
           >
             <UserAvatar>
               {user.avatar ? (
@@ -340,10 +388,10 @@ const Sidebar = ({ children }) => {
   // Mobile Header & Menu
   const MobileNav = () => (
     <>
-      <MobileHeader>
+      <MobileHeader role="banner">
         <MobileHeaderContent>
-          <MobileLogo as={Link} to="/">
-            <span>♻️</span>
+          <MobileLogo as={Link} to="/" aria-label="LifeLoop - Go to homepage">
+            <span aria-hidden="true">♻️</span>
             <LogoText>DonateLocal</LogoText>
           </MobileLogo>
 
@@ -355,10 +403,13 @@ const Sidebar = ({ children }) => {
                 as={motion.button}
                 onClick={() => navigate("/notifications")}
                 whileTap={{ scale: 0.9 }}
+                aria-label={`Notifications${
+                  unreadCount > 0 ? `, ${unreadCount} unread` : ""
+                }`}
               >
-                🔔
+                <span aria-hidden="true">🔔</span>
                 {unreadCount > 0 && (
-                  <NotificationBadge>
+                  <NotificationBadge aria-hidden="true">
                     {unreadCount > 9 ? "9+" : unreadCount}
                   </NotificationBadge>
                 )}
@@ -369,23 +420,29 @@ const Sidebar = ({ children }) => {
               as={motion.button}
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               whileTap={{ scale: 0.9 }}
+              aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
+              aria-expanded={isMobileMenuOpen}
+              aria-controls="mobile-menu"
             >
               <motion.span
                 animate={{
                   rotate: isMobileMenuOpen ? 45 : 0,
                   y: isMobileMenuOpen ? 6 : 0,
                 }}
+                aria-hidden="true"
               />
               <motion.span
                 animate={{
                   opacity: isMobileMenuOpen ? 0 : 1,
                 }}
+                aria-hidden="true"
               />
               <motion.span
                 animate={{
                   rotate: isMobileMenuOpen ? -45 : 0,
                   y: isMobileMenuOpen ? -6 : 0,
                 }}
+                aria-hidden="true"
               />
             </MenuButton>
           </MobileActions>
@@ -401,61 +458,98 @@ const Sidebar = ({ children }) => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsMobileMenuOpen(false)}
+              aria-hidden="true"
             />
 
             <MobileMenu
-              as={motion.div}
+              as={motion.nav}
               initial={{ x: -280 }}
               animate={{ x: 0 }}
               exit={{ x: -280 }}
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              id="mobile-menu"
+              aria-label="Mobile navigation"
+              role="navigation"
             >
               <SidebarNav>
-                <NavSection>
-                  <NavSectionTitle>Menu</NavSectionTitle>
+                <NavSection role="group" aria-labelledby="mobile-menu-section">
+                  <NavSectionTitle id="mobile-menu-section">
+                    Menu
+                  </NavSectionTitle>
                   {renderNavItems(publicNavItems)}
                 </NavSection>
 
                 {user && (
-                  <NavSection $marginTop="1rem">
-                    <NavSectionTitle>My Activity</NavSectionTitle>
+                  <NavSection
+                    $marginTop="1rem"
+                    role="group"
+                    aria-labelledby="mobile-activity-section"
+                  >
+                    <NavSectionTitle id="mobile-activity-section">
+                      My Activity
+                    </NavSectionTitle>
                     {renderNavItems(userNavItems)}
                   </NavSection>
                 )}
 
                 {user && (
-                  <NavSection $marginTop="1rem">
-                    <NavSectionTitle>Actions</NavSectionTitle>
+                  <NavSection
+                    $marginTop="1rem"
+                    role="group"
+                    aria-labelledby="mobile-actions-section"
+                  >
+                    <NavSectionTitle id="mobile-actions-section">
+                      Actions
+                    </NavSectionTitle>
                     {renderNavItems(userActionsItems)}
                   </NavSection>
                 )}
 
                 {!user && (
                   <NavSection $marginTop="1rem">
-                    <NavItem as={Link} to="/login">
-                      <NavIcon>🔑</NavIcon>
+                    <NavItem
+                      as={Link}
+                      to="/login"
+                      aria-label="Login to your account"
+                    >
+                      <NavIcon aria-hidden="true">🔑</NavIcon>
                       <NavLabel>Login</NavLabel>
                     </NavItem>
-                    <NavItem as={Link} to="/register">
-                      <NavIcon>✨</NavIcon>
+                    <NavItem
+                      as={Link}
+                      to="/register"
+                      aria-label="Create new account"
+                    >
+                      <NavIcon aria-hidden="true">✨</NavIcon>
                       <NavLabel>Sign Up</NavLabel>
                     </NavItem>
                   </NavSection>
                 )}
 
                 {user && (
-                  <NavSection $marginTop="1rem">
-                    <NavSectionTitle>Account</NavSectionTitle>
-                    <NavItem as={Link} to="/profile">
-                      <NavIcon>👤</NavIcon>
+                  <NavSection
+                    $marginTop="1rem"
+                    role="group"
+                    aria-labelledby="mobile-account-section"
+                  >
+                    <NavSectionTitle id="mobile-account-section">
+                      Account
+                    </NavSectionTitle>
+                    <NavItem
+                      as={Link}
+                      to="/profile"
+                      aria-label="View your profile"
+                    >
+                      <NavIcon aria-hidden="true">👤</NavIcon>
                       <NavLabel>Profile</NavLabel>
                     </NavItem>
                     <NavItem
                       as="button"
                       onClick={handleLogout}
                       style={{ color: "#ef4444" }}
+                      aria-label="Log out of your account"
                     >
-                      <NavIcon>🚪</NavIcon>
+                      <NavIcon aria-hidden="true">🚪</NavIcon>
                       <NavLabel>Logout</NavLabel>
                     </NavItem>
                   </NavSection>

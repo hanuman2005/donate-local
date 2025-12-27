@@ -166,7 +166,12 @@ const Register = () => {
           </RegisterSubtitle>
         </RegisterHeader>
 
-        <RegisterForm as={motion.form} onSubmit={handleSubmit}>
+        <RegisterForm
+          as={motion.form}
+          onSubmit={handleSubmit}
+          role="form"
+          aria-label="Registration form"
+        >
           <AnimatePresence mode="wait">
             {error && (
               <ErrorMessage
@@ -176,6 +181,8 @@ const Register = () => {
                 initial="hidden"
                 animate="show"
                 exit="exit"
+                role="alert"
+                aria-live="assertive"
               >
                 {error}
               </ErrorMessage>
@@ -188,10 +195,7 @@ const Register = () => {
             animate="show"
           >
             {/* Name Row */}
-            <FormRow
-              as={motion.div}
-              variants={motionVariants.fadeSlideUp}
-            >
+            <FormRow as={motion.div} variants={motionVariants.fadeSlideUp}>
               <FormGroup>
                 <Label htmlFor="firstName">First Name</Label>
                 <Input
@@ -205,6 +209,11 @@ const Register = () => {
                   placeholder="Enter first name"
                   required
                   autoComplete="given-name"
+                  aria-required="true"
+                  aria-invalid={!!validationErrors.firstName}
+                  aria-describedby={
+                    validationErrors.firstName ? "firstName-error" : undefined
+                  }
                 />
                 <AnimatePresence>
                   {validationErrors.firstName && (
@@ -214,6 +223,8 @@ const Register = () => {
                       initial="hidden"
                       animate="show"
                       exit="exit"
+                      id="firstName-error"
+                      role="alert"
                     >
                       {validationErrors.firstName}
                     </ErrorMessage>
@@ -234,6 +245,11 @@ const Register = () => {
                   placeholder="Enter last name"
                   required
                   autoComplete="family-name"
+                  aria-required="true"
+                  aria-invalid={!!validationErrors.lastName}
+                  aria-describedby={
+                    validationErrors.lastName ? "lastName-error" : undefined
+                  }
                 />
                 <AnimatePresence>
                   {validationErrors.lastName && (
@@ -243,6 +259,8 @@ const Register = () => {
                       initial="hidden"
                       animate="show"
                       exit="exit"
+                      id="lastName-error"
+                      role="alert"
                     >
                       {validationErrors.lastName}
                     </ErrorMessage>
@@ -252,10 +270,7 @@ const Register = () => {
             </FormRow>
 
             {/* Email */}
-            <FormGroup
-              as={motion.div}
-              variants={motionVariants.fadeSlideUp}
-            >
+            <FormGroup as={motion.div} variants={motionVariants.fadeSlideUp}>
               <Label htmlFor="email">Email Address</Label>
               <Input
                 as={motion.input}
@@ -268,6 +283,11 @@ const Register = () => {
                 placeholder="Enter your email"
                 required
                 autoComplete="email"
+                aria-required="true"
+                aria-invalid={!!validationErrors.email}
+                aria-describedby={
+                  validationErrors.email ? "email-error" : undefined
+                }
               />
               <AnimatePresence>
                 {validationErrors.email && (
@@ -277,6 +297,8 @@ const Register = () => {
                     initial="hidden"
                     animate="show"
                     exit="exit"
+                    id="email-error"
+                    role="alert"
                   >
                     {validationErrors.email}
                   </ErrorMessage>
@@ -285,10 +307,7 @@ const Register = () => {
             </FormGroup>
 
             {/* Password Row */}
-            <FormRow
-              as={motion.div}
-              variants={motionVariants.fadeSlideUp}
-            >
+            <FormRow as={motion.div} variants={motionVariants.fadeSlideUp}>
               <FormGroup>
                 <Label htmlFor="password">Password</Label>
                 <Input
@@ -349,10 +368,7 @@ const Register = () => {
             </FormRow>
 
             {/* Phone */}
-            <FormGroup
-              as={motion.div}
-              variants={motionVariants.fadeSlideUp}
-            >
+            <FormGroup as={motion.div} variants={motionVariants.fadeSlideUp}>
               <Label htmlFor="phone">Phone Number</Label>
               <Input
                 as={motion.input}
@@ -382,10 +398,7 @@ const Register = () => {
             </FormGroup>
 
             {/* User Type */}
-            <FormGroup
-              as={motion.div}
-              variants={motionVariants.fadeSlideUp}
-            >
+            <FormGroup as={motion.div} variants={motionVariants.fadeSlideUp}>
               <Label htmlFor="userType">Account Type</Label>
               <Select
                 as={motion.select}
@@ -403,10 +416,7 @@ const Register = () => {
             </FormGroup>
 
             {/* Address */}
-            <FormGroup
-              as={motion.div}
-              variants={motionVariants.fadeSlideUp}
-            >
+            <FormGroup as={motion.div} variants={motionVariants.fadeSlideUp}>
               <Label htmlFor="address">Street Address</Label>
               <Input
                 as={motion.input}

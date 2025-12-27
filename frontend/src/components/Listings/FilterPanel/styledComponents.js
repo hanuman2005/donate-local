@@ -1,6 +1,29 @@
 // src/components/FiltersPanel/styledComponents.js - ENHANCED
 import styled from "styled-components";
 
+// Framer Motion props that should not be forwarded to the DOM
+const motionProps = [
+  "initial",
+  "animate",
+  "exit",
+  "variants",
+  "transition",
+  "whileHover",
+  "whileTap",
+  "whileFocus",
+  "whileDrag",
+  "whileInView",
+  "drag",
+  "dragConstraints",
+  "dragElastic",
+  "dragMomentum",
+  "layout",
+  "layoutId",
+  "onAnimationStart",
+  "onAnimationComplete",
+];
+const shouldForwardProp = (prop) => !motionProps.includes(prop);
+
 export const FiltersWrapper = styled.div`
   max-width: 1400px;
   margin: 0 auto 3rem auto;
@@ -23,13 +46,17 @@ export const FiltersContainer = styled.div`
   overflow: hidden;
 
   &::before {
-    content: '';
+    content: "";
     position: absolute;
     top: 0;
     right: 0;
     width: 300px;
     height: 300px;
-    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    background: radial-gradient(
+      circle,
+      rgba(255, 255, 255, 0.1) 0%,
+      transparent 70%
+    );
     border-radius: 50%;
     transform: translate(30%, -30%);
   }
@@ -75,8 +102,13 @@ export const FilterIcon = styled.span`
   animation: pulse 2s ease-in-out infinite;
 
   @keyframes pulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.1); }
+    0%,
+    100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.1);
+    }
   }
 `;
 
@@ -124,7 +156,7 @@ export const SearchInput = styled.input`
   }
 `;
 
-export const SearchButton = styled.button`
+export const SearchButton = styled.button.withConfig({ shouldForwardProp })`
   position: absolute;
   right: 0.5rem;
   top: 50%;
@@ -165,7 +197,7 @@ export const SearchHistoryDropdown = styled.div`
   z-index: 100;
 `;
 
-export const HistoryItem = styled.button`
+export const HistoryItem = styled.button.withConfig({ shouldForwardProp })`
   width: 100%;
   padding: 1rem;
   border: none;
@@ -187,7 +219,9 @@ export const HistoryItem = styled.button`
   }
 `;
 
-export const ClearHistoryButton = styled.button`
+export const ClearHistoryButton = styled.button.withConfig({
+  shouldForwardProp,
+})`
   background: none;
   border: none;
   color: #e53e3e;
@@ -212,12 +246,14 @@ export const MultiSelectContainer = styled.div`
   z-index: 1;
 `;
 
-export const CategoryTag = styled.button`
+export const CategoryTag = styled.button.withConfig({ shouldForwardProp })`
   padding: 0.6rem 1rem;
   border-radius: 10px;
-  border: 2px solid ${props => props.$selected ? 'white' : 'rgba(255, 255, 255, 0.3)'};
-  background: ${props => props.$selected ? 'white' : 'rgba(255, 255, 255, 0.15)'};
-  color: ${props => props.$selected ? '#667eea' : 'white'};
+  border: 2px solid
+    ${(props) => (props.$selected ? "white" : "rgba(255, 255, 255, 0.3)")};
+  background: ${(props) =>
+    props.$selected ? "white" : "rgba(255, 255, 255, 0.15)"};
+  color: ${(props) => (props.$selected ? "#667eea" : "white")};
   font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
@@ -225,14 +261,15 @@ export const CategoryTag = styled.button`
   backdrop-filter: blur(10px);
 
   &:hover {
-    background: ${props => props.$selected ? 'white' : 'rgba(255, 255, 255, 0.25)'};
+    background: ${(props) =>
+      props.$selected ? "white" : "rgba(255, 255, 255, 0.25)"};
     border-color: white;
     transform: translateY(-2px);
   }
 `;
 
 // ✅ NEW: Advanced Toggle
-export const AdvancedToggle = styled.button`
+export const AdvancedToggle = styled.button.withConfig({ shouldForwardProp })`
   padding: 0.75rem 1.5rem;
   background: rgba(255, 255, 255, 0.2);
   border: 2px solid rgba(255, 255, 255, 0.3);
@@ -251,7 +288,7 @@ export const AdvancedToggle = styled.button`
   }
 `;
 
-export const SaveSearchButton = styled.button`
+export const SaveSearchButton = styled.button.withConfig({ shouldForwardProp })`
   padding: 0.75rem 1.5rem;
   background: rgba(72, 187, 120, 0.2);
   border: 2px solid rgba(72, 187, 120, 0.4);
@@ -260,7 +297,7 @@ export const SaveSearchButton = styled.button`
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  
+
   &:hover {
     background: rgba(72, 187, 120, 0.3);
     transform: translateY(-2px);
@@ -363,7 +400,7 @@ export const ButtonGroup = styled.div`
   }
 `;
 
-export const Button = styled.button`
+export const Button = styled.button.withConfig({ shouldForwardProp })`
   padding: 0.875rem 2rem;
   border-radius: 12px;
   font-size: 1rem;

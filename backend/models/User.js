@@ -144,6 +144,23 @@ const userSchema = new mongoose.Schema(
         issuedAt: { type: Date, default: Date.now },
       },
     ],
+
+    // Password Reset
+    passwordResetToken: String,
+    passwordResetExpires: Date,
+
+    // Email Verification
+    emailVerifyToken: String,
+    emailVerifyExpires: Date,
+
+    // Email Preferences
+    emailPreferences: {
+      marketing: { type: Boolean, default: true },
+      donations: { type: Boolean, default: true },
+      messages: { type: Boolean, default: true },
+      reminders: { type: Boolean, default: true },
+      weeklyDigest: { type: Boolean, default: true },
+    },
   },
   {
     timestamps: true,

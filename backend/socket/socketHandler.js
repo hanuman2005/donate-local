@@ -22,7 +22,7 @@ const socketHandler = (io) => {
 
       // ✅ FIXED: Handle both userId and id from token
       const userId = decoded.userId || decoded.id;
-      
+
       if (!userId) {
         console.error("❌ No userId in decoded token");
         return next(new Error("Invalid token format"));
@@ -42,7 +42,7 @@ const socketHandler = (io) => {
 
       socket.userId = user._id.toString();
       socket.user = user;
-      
+
       console.log("✅ Socket authenticated for:", user.email);
       next();
     } catch (error) {
@@ -186,7 +186,9 @@ const socketHandler = (io) => {
           messageId: newMessage._id,
         });
 
-        console.log(`✅ Message sent in chat ${chatId} by ${socket.user.firstName}`);
+        console.log(
+          `✅ Message sent in chat ${chatId} by ${socket.user.firstName}`
+        );
       } catch (error) {
         console.error("❌ Socket sendMessage error:", error);
         socket.emit("error", { message: "Failed to send message" });
@@ -263,6 +265,76 @@ const socketHandler = (io) => {
         console.log(`✅ Listing update broadcasted: ${type}`);
       } catch (error) {
         console.error("❌ listingUpdate error:", error);
+      }
+    });
+
+    // =====================================
+    // PICKUP TRACKING - Real-time location
+    // =====================================
+
+    // Join tracking room for a schedule
+    socket.on("join-tracking", (scheduleId) => {
+      try {
+        if (!scheduleId) return;
+        socket.join(`tracking_${scheduleId}`);
+        console.log(
+          `✅ User ${socket.user.firstName} joined tracking for schedule ${scheduleId}`
+        );
+      } catch (error) {
+        console.error("❌ join-tracking error:", error);
+      }
+    });
+
+    // Leave tracking room
+    socket.on("leave-tracking", (scheduleId) => {
+      try {
+        if (!scheduleId) return;
+        socket.leave(`tracking_${scheduleId}`);
+        console.log(
+          `✅ User ${socket.user.firstName} left tracking for schedule ${scheduleId}`
+        );
+      } catch (error) {
+        console.error("❌ leave-tracking error:", error);
+      }
+    });
+
+    // Driver updates their location
+    socket.on("update-driver-location", (data) => {
+      try {
+        const { scheduleId, location } = data;
+        if (!scheduleId || !location) return;
+
+        // Broadcast to everyone watching this schedule
+        io.to(`tracking_${scheduleId}`).emit("driver-location-update", {
+          scheduleId,
+          location,
+          timestamp: new Date(),
+        });
+
+        console.log(`✅ Driver location updated for schedule ${scheduleId}`);
+      } catch (error) {
+        console.error("❌ update-driver-location error:", error);
+      }
+    });
+
+    // Driver has arrived
+    socket.on("driver-arrived", (data) => {
+      try {
+        const { scheduleId } = data;
+        if (!scheduleId) return;
+
+        io.to(`tracking_${scheduleId}`).emit("pickup-status-update", {
+          scheduleId,
+          status: "arrived",
+          message: "Driver has arrived!",
+          timestamp: new Date(),
+        });
+
+        console.log(
+          `✅ Driver arrived notification sent for schedule ${scheduleId}`
+        );
+      } catch (error) {
+        console.error("❌ driver-arrived error:", error);
       }
     });
 

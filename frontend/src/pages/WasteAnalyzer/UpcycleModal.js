@@ -1,6 +1,29 @@
-import React from 'react';
-import styled from 'styled-components';
-import { motion, AnimatePresence } from 'framer-motion';
+import React from "react";
+import styled from "styled-components";
+import { motion, AnimatePresence } from "framer-motion";
+
+// Framer Motion props that should not be forwarded to the DOM
+const motionProps = [
+  "initial",
+  "animate",
+  "exit",
+  "variants",
+  "transition",
+  "whileHover",
+  "whileTap",
+  "whileFocus",
+  "whileDrag",
+  "whileInView",
+  "drag",
+  "dragConstraints",
+  "dragElastic",
+  "dragMomentum",
+  "layout",
+  "layoutId",
+  "onAnimationStart",
+  "onAnimationComplete",
+];
+const shouldForwardProp = (prop) => !motionProps.includes(prop);
 
 const UpcycleModal = ({ isOpen, onClose, ideas }) => {
   if (!isOpen) return null;
@@ -43,7 +66,7 @@ const UpcycleModal = ({ isOpen, onClose, ideas }) => {
                     <Icon>⏱️</Icon> {idea.timeMin} minutes
                   </DetailItem>
                   <DetailItem>
-                    <Icon>🔧</Icon> {idea.materials.join(', ')}
+                    <Icon>🔧</Icon> {idea.materials.join(", ")}
                   </DetailItem>
                 </Details>
 
@@ -103,7 +126,7 @@ const Title = styled.h2`
   margin: 0;
 `;
 
-const CloseButton = styled.button`
+const CloseButton = styled.button.withConfig({ shouldForwardProp })`
   background: rgba(255, 255, 255, 0.2);
   border: none;
   color: white;
@@ -156,10 +179,10 @@ const DifficultyBadge = styled.span`
   border-radius: var(--radius-full);
   font-size: 0.85rem;
   font-weight: 600;
-  background: ${props => {
-    if (props.$difficulty === 'easy') return 'var(--success)';
-    if (props.$difficulty === 'medium') return 'var(--warning)';
-    return 'var(--error)';
+  background: ${(props) => {
+    if (props.$difficulty === "easy") return "var(--success)";
+    if (props.$difficulty === "medium") return "var(--warning)";
+    return "var(--error)";
   }};
   color: white;
 `;

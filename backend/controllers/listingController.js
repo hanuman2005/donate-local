@@ -5,8 +5,10 @@ const Listing = require("../models/Listing");
 const User = require("../models/User");
 const cloudinary = require("../config/cloudinary");
 const notificationHelper = require("../utils/notificationHelper");
+const emailService = require("../services/emailService");
+const contentModeration = require("../services/contentModerationService");
 
-// ✅ Create listing with REAL-TIME NOTIFICATIONS
+// ✅ Create listing with REAL-TIME NOTIFICATIONS and CONTENT MODERATION
 const createListing = async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -31,6 +33,21 @@ const createListing = async (req, res) => {
       urgency,
     } = req.body;
 
+    // 🛡️ Content Moderation Check
+    const moderationResult = contentModeration.moderateContent(
+      title,
+      description
+    );
+
+    if (moderationResult.autoRejected) {
+      return res.status(400).json({
+        success: false,
+        message: "Content rejected due to policy violations",
+        moderationIssues: moderationResult.issues,
+        moderationScore: moderationResult.score,
+      });
+    }
+
     let images = [];
     if (req.files && req.files.length > 0) {
       images = req.files.map((file) => file.path);
@@ -39,8 +56,8 @@ const createListing = async (req, res) => {
     const defaultCoordinates = [0, 0];
 
     const listing = new Listing({
-      title,
-      description,
+      title: moderationResult.cleanedTitle || title,
+      description: moderationResult.cleanedDescription || description,
       category,
       quantity: parseFloat(quantity),
       unit: unit || "items",
@@ -55,6 +72,10 @@ const createListing = async (req, res) => {
       expiryDate: expiryDate ? new Date(expiryDate) : undefined,
       additionalNotes,
       urgency: urgency || 1,
+      // Store moderation data
+      moderationScore: moderationResult.score,
+      moderationFlags: moderationResult.issues,
+      status: moderationResult.requiresReview ? "pending_review" : "available",
     });
 
     await listing.save();
@@ -64,23 +85,37 @@ const createListing = async (req, res) => {
       $inc: { listingsCount: 1 },
     });
 
-    // 🔔 Broadcast notification to all users
-    try {
-      const notificationCount = await notificationHelper.broadcastNewListing(
-        listing,
-        req.user,
-        req.io
+    // 🔔 Only broadcast if not flagged for review
+    if (!moderationResult.requiresReview) {
+      try {
+        const notificationCount = await notificationHelper.broadcastNewListing(
+          listing,
+          req.user,
+          req.io
+        );
+        console.log(
+          `✅ Sent ${notificationCount} notifications for new listing`
+        );
+      } catch (notifError) {
+        console.error("⚠️ Notification error (non-critical):", notifError);
+      }
+    } else {
+      console.log(
+        `⚠️ Listing ${listing._id} flagged for review, notifications held`
       );
-      console.log(`✅ Sent ${notificationCount} notifications for new listing`);
-    } catch (notifError) {
-      console.error("⚠️ Notification error (non-critical):", notifError);
-      // Don't fail the request if notifications fail
     }
 
     return res.status(201).json({
       success: true,
-      message: "Listing created successfully",
+      message: moderationResult.requiresReview
+        ? "Listing created and pending review"
+        : "Listing created successfully",
       listing,
+      moderation: {
+        score: moderationResult.score,
+        requiresReview: moderationResult.requiresReview,
+        flagged: moderationResult.flagged,
+      },
     });
   } catch (error) {
     console.error("Create listing error:", error);
@@ -529,6 +564,9 @@ const completeListing = async (req, res) => {
     listing.completedAt = new Date();
     await listing.save();
 
+    // Get donor info
+    const donor = await User.findById(listing.donor);
+
     // 🔔 Notify recipient
     if (listing.assignedTo) {
       await notificationHelper.onListingCompleted(
@@ -536,6 +574,23 @@ const completeListing = async (req, res) => {
         listing.assignedTo,
         req.io
       );
+
+      // Send donation confirmation emails
+      const recipient = await User.findById(listing.assignedTo);
+      if (donor && recipient) {
+        // Email to donor
+        emailService
+          .sendDonationConfirmationEmail(donor, recipient, listing)
+          .catch((err) => {
+            console.error("Failed to send donor confirmation email:", err);
+          });
+        // Email to recipient
+        emailService
+          .sendItemReceivedEmail(recipient, donor, listing)
+          .catch((err) => {
+            console.error("Failed to send recipient email:", err);
+          });
+      }
     }
 
     res.json({

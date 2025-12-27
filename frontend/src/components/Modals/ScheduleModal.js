@@ -9,6 +9,29 @@ import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { scheduleAPI } from "../../services/api";
 
+// Framer Motion props that should not be forwarded to the DOM
+const motionProps = [
+  "initial",
+  "animate",
+  "exit",
+  "variants",
+  "transition",
+  "whileHover",
+  "whileTap",
+  "whileFocus",
+  "whileDrag",
+  "whileInView",
+  "drag",
+  "dragConstraints",
+  "dragElastic",
+  "dragMomentum",
+  "layout",
+  "layoutId",
+  "onAnimationStart",
+  "onAnimationComplete",
+];
+const shouldForwardProp = (prop) => !motionProps.includes(prop);
+
 // Fix Leaflet default marker icon
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -143,7 +166,7 @@ const SearchIcon = styled.span`
   font-size: 1.2rem;
 `;
 
-const SearchButton = styled.button`
+const SearchButton = styled.button.withConfig({ shouldForwardProp })`
   position: absolute;
   right: 0.5rem;
   top: 50%;
@@ -269,7 +292,7 @@ const InfoBox = styled.div`
   }
 `;
 
-const CurrentLocationButton = styled.button`
+const CurrentLocationButton = styled.button.withConfig({ shouldForwardProp })`
   display: flex;
   align-items: center;
   gap: 0.5rem;

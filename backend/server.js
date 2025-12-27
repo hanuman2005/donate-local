@@ -23,11 +23,11 @@ const ratingRoutes = require("./routes/ratings");
 const aiMatchingRoutes = require("./routes/aiMatching");
 const scheduleRoutes = require("./routes/schedules");
 const reportRoutes = require("./routes/reports");
-const wasteAnalysisRoutes = require('./routes/wasteAnalysis');
-const chatbotRoutes = require('./routes/chatbot');
-const routeOptimizationRoutes = require('./routes/routeOptimization');
-const queueRoutes = require('./routes/queue');
-
+const wasteAnalysisRoutes = require("./routes/wasteAnalysis");
+const chatbotRoutes = require("./routes/chatbot");
+const routeOptimizationRoutes = require("./routes/routeOptimization");
+const queueRoutes = require("./routes/queue");
+const adminRoutes = require("./routes/admin");
 
 // Import socket handler
 const socketHandler = require("./socket/socketHandler");
@@ -37,14 +37,32 @@ const errorHandler = require("./middleware/errorHandler");
 
 const { initScheduleCronJobs } = require("./utils/scheduleCron");
 // ⏱️ Auto-start queue expiration scheduler
-const { setIO: setQueueIO } = require('./utils/queueCronJob');
+const { setIO: setQueueIO } = require("./utils/queueCronJob");
+// 📧 Email service
+const { initializeTransporter, verifyConnection } = require("./config/email");
 
 const app = express();
 const server = http.createServer(app);
 
 // ✅ Configure CORS properly
+const allowedOrigins = [
+  "http://localhost:3000",
+  "http://localhost:3001",
+  "http://localhost:3002",
+  process.env.CLIENT_URL,
+].filter(Boolean);
+
 const corsOptions = {
-  origin: process.env.CLIENT_URL || "http://localhost:3000",
+  origin: function (origin, callback) {
+    // Allow requests with no origin (mobile apps, curl, etc.)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.log("⚠️ CORS blocked origin:", origin);
+      callback(null, true); // Allow all origins in development
+    }
+  },
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
@@ -132,14 +150,14 @@ app.use("/api/impact", impactRoutes);
 app.use("/api/ratings", ratingRoutes);
 app.use("/api", aiMatchingRoutes);
 app.use("/api/schedules", scheduleRoutes);
-app.use('/api/reports', reportRoutes);
-app.use('/api/waste-analysis', wasteAnalysisRoutes);
-app.use('/api/chatbot', chatbotRoutes);
-app.use('/api/routes', routeOptimizationRoutes);
-app.use('/api/health', require('./routes/health'));
-app.use('/api/ai', require('./routes/ai'));
-app.use('/api/queue', queueRoutes);
-
+app.use("/api/reports", reportRoutes);
+app.use("/api/waste-analysis", wasteAnalysisRoutes);
+app.use("/api/chatbot", chatbotRoutes);
+app.use("/api/routes", routeOptimizationRoutes);
+app.use("/api/health", require("./routes/health"));
+app.use("/api/ai", require("./routes/ai"));
+app.use("/api/queue", queueRoutes);
+app.use("/api/admin", adminRoutes);
 
 // Error handling middleware
 app.use(errorHandler);
@@ -191,7 +209,7 @@ async function connectDB() {
     retryCount = 0; // Reset retry count on success
 
     // Start server after successful DB connection
-    server.listen(PORT, () => {
+    server.listen(PORT, async () => {
       console.log("");
       console.log("╔═══════════════════════════════════════════╗");
       console.log("║     🚀 DONATE LOCAL SERVER RUNNING       ║");
@@ -201,6 +219,11 @@ async function connectDB() {
       console.log(`✅ Environment:   ${process.env.NODE_ENV || "development"}`);
       console.log(`✅ CORS:          ${corsOptions.origin}`);
       console.log(`✅ Socket.IO:     Enabled`);
+
+      // Initialize email service
+      await initializeTransporter();
+      await verifyConnection();
+
       console.log("");
       console.log("📍 API Endpoints:");
       console.log(`   • Auth:         /api/auth`);

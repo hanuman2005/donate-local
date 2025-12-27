@@ -2,6 +2,29 @@
 
 import styled from "styled-components";
 
+// Framer Motion props that should not be forwarded to the DOM
+const motionProps = [
+  "initial",
+  "animate",
+  "exit",
+  "variants",
+  "transition",
+  "whileHover",
+  "whileTap",
+  "whileFocus",
+  "whileDrag",
+  "whileInView",
+  "drag",
+  "dragConstraints",
+  "dragElastic",
+  "dragMomentum",
+  "layout",
+  "layoutId",
+  "onAnimationStart",
+  "onAnimationComplete",
+];
+const shouldForwardProp = (prop) => !motionProps.includes(prop);
+
 export const CreateListingContainer = styled.div`
   background: var(--bg-primary);
   color: var(--text-primary);
@@ -296,7 +319,9 @@ export const ImageItem = styled.div`
   }
 `;
 
-export const RemoveImageButton = styled.button`
+export const RemoveImageButton = styled.button.withConfig({
+  shouldForwardProp,
+})`
   position: absolute;
   top: 8px;
   right: 8px;
@@ -341,7 +366,7 @@ export const ButtonRow = styled.div`
   }
 `;
 
-export const SubmitButton = styled.button`
+export const SubmitButton = styled.button.withConfig({ shouldForwardProp })`
   background: var(--gradient-primary);
   color: white;
   font-size: 1.1rem;
@@ -375,7 +400,7 @@ export const SubmitButton = styled.button`
   }
 `;
 
-export const CancelButton = styled.button`
+export const CancelButton = styled.button.withConfig({ shouldForwardProp })`
   background: var(--bg-secondary);
   color: var(--text-secondary);
   font-size: 1.1rem;

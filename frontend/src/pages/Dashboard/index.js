@@ -299,6 +299,23 @@ const Dashboard = () => {
                 <>
                   <ActionBtn
                     as={motion.button}
+                    $primary
+                    onClick={() => navigate("/listings")}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <span>🔍</span> Browse Items
+                  </ActionBtn>
+                  <ActionBtn
+                    as={motion.button}
+                    onClick={() => navigate("/schedules")}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <span>📅</span> My Schedules
+                  </ActionBtn>
+                  <ActionBtn
+                    as={motion.button}
                     onClick={() => navigate("/my-pickups")}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
@@ -320,8 +337,40 @@ const Dashboard = () => {
         </WelcomeCard>
         {/* Quick Action Cards */}
         <QuickActionsGrid>
+          {/* Schedules Card - For all users */}
           <QuickActionCard
             $gradient="#667eea, #764ba2"
+            onClick={() => navigate("/schedules")}
+            whileHover={{ scale: 1.05, y: -5 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <div className="icon">📅</div>
+            <div>
+              <h3>My Schedules</h3>
+              <p>View and manage pickup appointments</p>
+            </div>
+          </QuickActionCard>
+
+          {/* Pickups Card - For all users */}
+          <QuickActionCard
+            $gradient="#f093fb, #f5576c"
+            onClick={() => navigate("/my-pickups")}
+            whileHover={{ scale: 1.05, y: -5 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <div className="icon">📦</div>
+            <div>
+              <h3>My Pickups</h3>
+              <p>
+                {isDonor
+                  ? "Track your donations"
+                  : "Track items you're receiving"}
+              </p>
+            </div>
+          </QuickActionCard>
+
+          <QuickActionCard
+            $gradient="#43e97b, #38f9d7"
             onClick={() => navigate("/waste-analyzer")}
             whileHover={{ scale: 1.05, y: -5 }}
             whileTap={{ scale: 0.95 }}
@@ -334,7 +383,7 @@ const Dashboard = () => {
           </QuickActionCard>
 
           <QuickActionCard
-            $gradient="#f093fb, #f5576c"
+            $gradient="#fa709a, #fee140"
             onClick={() => navigate("/impact/personal")}
             whileHover={{ scale: 1.05, y: -5 }}
             whileTap={{ scale: 0.95 }}
@@ -347,7 +396,7 @@ const Dashboard = () => {
           </QuickActionCard>
 
           <QuickActionCard
-            $gradient="#43e97b, #38f9d7"
+            $gradient="#11998e, #38ef7d"
             onClick={() => navigate("/listings")}
             whileHover={{ scale: 1.05, y: -5 }}
             whileTap={{ scale: 0.95 }}
@@ -360,7 +409,7 @@ const Dashboard = () => {
           </QuickActionCard>
 
           <QuickActionCard
-            $gradient="#fa709a, #fee140"
+            $gradient="#ee0979, #ff6a00"
             onClick={() => navigate("/chat")}
             whileHover={{ scale: 1.05, y: -5 }}
             whileTap={{ scale: 0.95 }}

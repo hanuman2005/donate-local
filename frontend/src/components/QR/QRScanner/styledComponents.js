@@ -1,5 +1,28 @@
 // src/components/QRScanner/styledComponents.js
-import styled, { keyframes } from 'styled-components';
+import styled, { keyframes } from "styled-components";
+
+// Framer Motion props that should not be forwarded to the DOM
+const motionProps = [
+  "initial",
+  "animate",
+  "exit",
+  "variants",
+  "transition",
+  "whileHover",
+  "whileTap",
+  "whileFocus",
+  "whileDrag",
+  "whileInView",
+  "drag",
+  "dragConstraints",
+  "dragElastic",
+  "dragMomentum",
+  "layout",
+  "layoutId",
+  "onAnimationStart",
+  "onAnimationComplete",
+];
+const shouldForwardProp = (prop) => !motionProps.includes(prop);
 
 const scan = keyframes`
   0% { top: 0; }
@@ -71,13 +94,11 @@ export const ScanOverlay = styled.div`
   height: 70%;
   border: 3px solid #667eea;
   border-radius: 16px;
-  box-shadow: 
-    0 0 0 9999px rgba(0, 0, 0, 0.5),
-    0 0 20px rgba(102, 126, 234, 0.5);
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5), 0 0 20px rgba(102, 126, 234, 0.5);
 
   &::before,
   &::after {
-    content: '';
+    content: "";
     position: absolute;
     width: 20px;
     height: 20px;
@@ -103,18 +124,19 @@ export const ScanLine = styled.div`
   position: absolute;
   width: 100%;
   height: 3px;
-  background: linear-gradient(90deg, 
-    transparent, 
-    #667eea 30%, 
-    #764ba2 50%, 
-    #667eea 70%, 
+  background: linear-gradient(
+    90deg,
+    transparent,
+    #667eea 30%,
+    #764ba2 50%,
+    #667eea 70%,
     transparent
   );
   box-shadow: 0 0 10px rgba(102, 126, 234, 0.8);
   animation: ${scan} 2s linear infinite;
 `;
 
-export const Button = styled.button`
+export const Button = styled.button.withConfig({ shouldForwardProp })`
   width: 100%;
   padding: 1rem 2rem;
   margin-top: 1rem;
@@ -129,7 +151,9 @@ export const Button = styled.button`
   justify-content: center;
   gap: 0.5rem;
 
-  ${props => props.$primary ? `
+  ${(props) =>
+    props.$primary
+      ? `
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
@@ -138,7 +162,8 @@ export const Button = styled.button`
       transform: translateY(-2px);
       box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
     }
-  ` : `
+  `
+      : `
     background: #f7fafc;
     color: #4a5568;
     border: 2px solid #e2e8f0;
@@ -168,21 +193,21 @@ export const Message = styled.div`
   line-height: 1.6;
   animation: ${fadeIn} 0.3s ease;
 
-  ${props => {
-    switch(props.type) {
-      case 'error':
+  ${(props) => {
+    switch (props.type) {
+      case "error":
         return `
           background: #fed7d7;
           color: #c53030;
           border: 2px solid #fc8181;
         `;
-      case 'success':
+      case "success":
         return `
           background: #c6f6d5;
           color: #2f855a;
           border: 2px solid #9ae6b4;
         `;
-      case 'warning':
+      case "warning":
         return `
           background: #feebc8;
           color: #c05621;
@@ -251,7 +276,7 @@ export const LoadingDots = styled.span`
   display: inline-block;
 
   &::after {
-    content: '...';
+    content: "...";
     display: inline-block;
     animation: ${dotPulse} 1.4s infinite;
   }

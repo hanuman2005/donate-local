@@ -4,6 +4,29 @@ import { useNavigate } from "react-router-dom";
 import { useSocket } from "../../context/SocketContext";
 import styled, { keyframes } from "styled-components";
 
+// Framer Motion props that should not be forwarded to the DOM
+const motionProps = [
+  "initial",
+  "animate",
+  "exit",
+  "variants",
+  "transition",
+  "whileHover",
+  "whileTap",
+  "whileFocus",
+  "whileDrag",
+  "whileInView",
+  "drag",
+  "dragConstraints",
+  "dragElastic",
+  "dragMomentum",
+  "layout",
+  "layoutId",
+  "onAnimationStart",
+  "onAnimationComplete",
+];
+const shouldForwardProp = (prop) => !motionProps.includes(prop);
+
 const slideDown = keyframes`
   from { transform: translate(-50%, -120%); opacity: 0; }
   to { transform: translate(-50%, 0); opacity: 1; }
@@ -50,7 +73,7 @@ const Message = styled.div`
   opacity: 0.9;
 `;
 
-const CloseButton = styled.button`
+const CloseButton = styled.button.withConfig({ shouldForwardProp })`
   background: rgba(255, 255, 255, 0.2);
   border: none;
   color: white;

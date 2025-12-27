@@ -1,6 +1,29 @@
 // src/pages/Listings/styledComponents.js - COMPLETE FILE FOR SIDEBAR LAYOUT
 import styled from "styled-components";
 
+// Framer Motion props that should not be forwarded to the DOM
+const motionProps = [
+  "initial",
+  "animate",
+  "exit",
+  "variants",
+  "transition",
+  "whileHover",
+  "whileTap",
+  "whileFocus",
+  "whileDrag",
+  "whileInView",
+  "drag",
+  "dragConstraints",
+  "dragElastic",
+  "dragMomentum",
+  "layout",
+  "layoutId",
+  "onAnimationStart",
+  "onAnimationComplete",
+];
+const shouldForwardProp = (prop) => !motionProps.includes(prop);
+
 export const ListingsContainer = styled.div`
   background: var(--bg-primary);
   color: var(--text-primary);
@@ -70,7 +93,7 @@ export const ViewToggle = styled.div`
   }
 `;
 
-export const ToggleButton = styled.button`
+export const ToggleButton = styled.button.withConfig({ shouldForwardProp })`
   padding: 0.75rem 1.5rem;
   border: none;
   border-radius: var(--radius-md);
@@ -78,15 +101,13 @@ export const ToggleButton = styled.button`
   font-weight: 600;
   cursor: pointer;
   transition: all var(--transition-base);
-  background: ${props => props.$active 
-    ? 'var(--gradient-primary)' 
-    : 'transparent'};
-  color: ${props => props.$active ? 'white' : 'var(--text-secondary)'};
+  background: ${(props) =>
+    props.$active ? "var(--gradient-primary)" : "transparent"};
+  color: ${(props) => (props.$active ? "white" : "var(--text-secondary)")};
 
   &:hover {
-    background: ${props => props.$active 
-      ? 'var(--gradient-primary)' 
-      : 'var(--bg-hover)'};
+    background: ${(props) =>
+      props.$active ? "var(--gradient-primary)" : "var(--bg-hover)"};
   }
 
   @media (max-width: 768px) {
@@ -169,7 +190,7 @@ export const EmptySubtext = styled.div`
   line-height: 1.6;
 `;
 
-export const RetryButton = styled.button`
+export const RetryButton = styled.button.withConfig({ shouldForwardProp })`
   margin-top: 1.5rem;
   padding: 0.75rem 2rem;
   background: var(--gradient-primary);
@@ -225,31 +246,26 @@ export const PaginationControls = styled.div`
   }
 `;
 
-export const PageButton = styled.button`
+export const PageButton = styled.button.withConfig({ shouldForwardProp })`
   padding: 0.75rem 2rem;
-  background: ${props => props.disabled 
-    ? 'var(--bg-secondary)' 
-    : 'var(--gradient-primary)'};
-  color: ${props => props.disabled ? 'var(--text-secondary)' : 'white'};
+  background: ${(props) =>
+    props.disabled ? "var(--bg-secondary)" : "var(--gradient-primary)"};
+  color: ${(props) => (props.disabled ? "var(--text-secondary)" : "white")};
   border: none;
   border-radius: var(--radius-lg);
   font-weight: 600;
   font-size: 1rem;
-  cursor: ${props => props.disabled ? 'not-allowed' : 'pointer'};
+  cursor: ${(props) => (props.disabled ? "not-allowed" : "pointer")};
   transition: all var(--transition-base);
-  box-shadow: ${props => props.disabled 
-    ? 'none' 
-    : 'var(--shadow-md)'};
+  box-shadow: ${(props) => (props.disabled ? "none" : "var(--shadow-md)")};
 
   &:hover {
-    transform: ${props => props.disabled ? 'none' : 'translateY(-2px)'};
-    box-shadow: ${props => props.disabled 
-      ? 'none' 
-      : 'var(--shadow-xl)'};
+    transform: ${(props) => (props.disabled ? "none" : "translateY(-2px)")};
+    box-shadow: ${(props) => (props.disabled ? "none" : "var(--shadow-xl)")};
   }
 
   &:active {
-    transform: ${props => props.disabled ? 'none' : 'translateY(0)'};
+    transform: ${(props) => (props.disabled ? "none" : "translateY(0)")};
   }
 
   @media (max-width: 768px) {

@@ -4,7 +4,30 @@ import React from "react";
 import styled from "styled-components";
 import { useTheme } from "../../context/ThemeContext";
 
-const ToggleButton = styled.button`
+// Framer Motion props that should not be forwarded to the DOM
+const motionProps = [
+  "initial",
+  "animate",
+  "exit",
+  "variants",
+  "transition",
+  "whileHover",
+  "whileTap",
+  "whileFocus",
+  "whileDrag",
+  "whileInView",
+  "drag",
+  "dragConstraints",
+  "dragElastic",
+  "dragMomentum",
+  "layout",
+  "layoutId",
+  "onAnimationStart",
+  "onAnimationComplete",
+];
+const shouldForwardProp = (prop) => !motionProps.includes(prop);
+
+const ToggleButton = styled.button.withConfig({ shouldForwardProp })`
   position: relative;
   width: 60px;
   height: 30px;

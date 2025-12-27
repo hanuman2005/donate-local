@@ -1,11 +1,40 @@
 // src/pages/RouteOptimizer/index.js
-import React, { useState, useEffect } from 'react';
-import styled from 'styled-components';
-import { motion } from 'framer-motion';
-import { toast } from 'react-toastify';
-import { routeAPI } from '../../services/api';
-import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
+import React, { useState, useEffect } from "react";
+import styled from "styled-components";
+import { motion } from "framer-motion";
+import { toast } from "react-toastify";
+import { routeAPI } from "../../services/api";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Popup,
+  Polyline,
+} from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+
+// Framer Motion props that should not be forwarded to the DOM
+const motionProps = [
+  "initial",
+  "animate",
+  "exit",
+  "variants",
+  "transition",
+  "whileHover",
+  "whileTap",
+  "whileFocus",
+  "whileDrag",
+  "whileInView",
+  "drag",
+  "dragConstraints",
+  "dragElastic",
+  "dragMomentum",
+  "layout",
+  "layoutId",
+  "onAnimationStart",
+  "onAnimationComplete",
+];
+const shouldForwardProp = (prop) => !motionProps.includes(prop);
 
 const PageContainer = styled.div`
   min-height: 100vh;
@@ -43,7 +72,7 @@ const Card = styled(motion.div)`
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
 `;
 
-const Button = styled.button`
+const Button = styled.button.withConfig({ shouldForwardProp })`
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   padding: 1rem 2rem;
@@ -155,7 +184,7 @@ const RouteOptimizer = () => {
   const [depot, setDepot] = useState({
     lat: 16.5062, // Default: Bhimavaram
     lon: 81.5217,
-    name: 'NGO Depot'
+    name: "NGO Depot",
   });
 
   useEffect(() => {
@@ -166,19 +195,19 @@ const RouteOptimizer = () => {
     try {
       const response = await routeAPI.getMyAssignedPickups();
       setPickups(response.data.pickups || []);
-      
+
       if (response.data.pickups?.length > 0) {
         toast.success(`Found ${response.data.pickups.length} assigned pickups`);
       }
     } catch (error) {
-      console.error('Error fetching pickups:', error);
-      toast.error('Failed to fetch assigned pickups');
+      console.error("Error fetching pickups:", error);
+      toast.error("Failed to fetch assigned pickups");
     }
   };
 
   const handleOptimize = async () => {
     if (pickups.length === 0) {
-      toast.warning('No pickups to optimize');
+      toast.warning("No pickups to optimize");
       return;
     }
 
@@ -187,16 +216,16 @@ const RouteOptimizer = () => {
     try {
       const response = await routeAPI.optimizeRoutes({
         depot,
-        pickupIds: pickups.map(p => p.id),
-        vehicleType: 'medium_car',
-        maxPickupsPerRoute: 10
+        pickupIds: pickups.map((p) => p.id),
+        vehicleType: "medium_car",
+        maxPickupsPerRoute: 10,
       });
 
       setOptimizedRoutes(response.data);
-      toast.success('✅ Routes optimized successfully!');
+      toast.success("✅ Routes optimized successfully!");
     } catch (error) {
-      console.error('Optimization error:', error);
-      toast.error('Failed to optimize routes');
+      console.error("Optimization error:", error);
+      toast.error("Failed to optimize routes");
     } finally {
       setLoading(false);
     }
@@ -212,44 +241,67 @@ const RouteOptimizer = () => {
 
         <Card>
           <h2>Assigned Pickups: {pickups.length}</h2>
-          <Button onClick={handleOptimize} disabled={loading || pickups.length === 0}>
-            {loading ? '🔄 Optimizing...' : '🤖 Optimize Routes with AI'}
+          <Button
+            onClick={handleOptimize}
+            disabled={loading || pickups.length === 0}
+          >
+            {loading ? "🔄 Optimizing..." : "🤖 Optimize Routes with AI"}
           </Button>
 
           {optimizedRoutes && (
             <>
               <StatsGrid>
                 <StatCard>
-                  <div className="value">{optimizedRoutes.summary.totalRoutes}</div>
+                  <div className="value">
+                    {optimizedRoutes.summary.totalRoutes}
+                  </div>
                   <div className="label">Optimized Routes</div>
                 </StatCard>
                 <StatCard>
-                  <div className="value">{optimizedRoutes.summary.totalDistance}km</div>
+                  <div className="value">
+                    {optimizedRoutes.summary.totalDistance}km
+                  </div>
                   <div className="label">Total Distance</div>
                 </StatCard>
                 <StatCard>
-                  <div className="value">{optimizedRoutes.summary.totalCO2}kg</div>
+                  <div className="value">
+                    {optimizedRoutes.summary.totalCO2}kg
+                  </div>
                   <div className="label">CO₂ Emissions</div>
                 </StatCard>
                 <StatCard>
-                  <div className="value">{optimizedRoutes.summary.estimatedTotalTime}min</div>
+                  <div className="value">
+                    {optimizedRoutes.summary.estimatedTotalTime}min
+                  </div>
                   <div className="label">Estimated Time</div>
                 </StatCard>
               </StatsGrid>
 
-              <Card style={{ background: 'linear-gradient(135deg, #48bb78 0%, #38a169 100%)', color: 'white' }}>
+              <Card
+                style={{
+                  background:
+                    "linear-gradient(135deg, #48bb78 0%, #38a169 100%)",
+                  color: "white",
+                }}
+              >
                 <h3>🌍 Environmental Savings</h3>
                 <StatsGrid>
                   <div>
-                    <div className="value">{optimizedRoutes.summary.optimization.distanceSavedKm}km</div>
+                    <div className="value">
+                      {optimizedRoutes.summary.optimization.distanceSavedKm}km
+                    </div>
                     <div className="label">Distance Saved</div>
                   </div>
                   <div>
-                    <div className="value">{optimizedRoutes.summary.optimization.co2SavedKg}kg</div>
+                    <div className="value">
+                      {optimizedRoutes.summary.optimization.co2SavedKg}kg
+                    </div>
                     <div className="label">CO₂ Saved</div>
                   </div>
                   <div>
-                    <div className="value">{optimizedRoutes.summary.optimization.percentageSaved}%</div>
+                    <div className="value">
+                      {optimizedRoutes.summary.optimization.percentageSaved}%
+                    </div>
                     <div className="label">Efficiency Gain</div>
                   </div>
                 </StatsGrid>
@@ -274,14 +326,17 @@ const RouteOptimizer = () => {
                     </div>
                     <div className="info-item">
                       <div className="label">CO₂</div>
-                      <div className="value">{route.emissions.co2EmittedKg}kg</div>
+                      <div className="value">
+                        {route.emissions.co2EmittedKg}kg
+                      </div>
                     </div>
                   </div>
 
                   <div className="pickups-list">
                     {route.pickups.map((pickup, i) => (
                       <div key={i} className="pickup-item">
-                        {i + 1}. {pickup.donorName} - {pickup.itemTitle} ({pickup.quantity} {pickup.unit || 'items'})
+                        {i + 1}. {pickup.donorName} - {pickup.itemTitle} (
+                        {pickup.quantity} {pickup.unit || "items"})
                       </div>
                     ))}
                   </div>

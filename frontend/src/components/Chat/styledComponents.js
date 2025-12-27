@@ -1,5 +1,28 @@
 import styled from "styled-components";
 
+// Framer Motion props that should not be forwarded to the DOM
+const motionProps = [
+  "initial",
+  "animate",
+  "exit",
+  "variants",
+  "transition",
+  "whileHover",
+  "whileTap",
+  "whileFocus",
+  "whileDrag",
+  "whileInView",
+  "drag",
+  "dragConstraints",
+  "dragElastic",
+  "dragMomentum",
+  "layout",
+  "layoutId",
+  "onAnimationStart",
+  "onAnimationComplete",
+];
+const shouldForwardProp = (prop) => !motionProps.includes(prop);
+
 export const ChatContainer = styled.div`
   display: grid;
   grid-template-columns: ${(props) => (props.$compact ? "1fr" : "350px 1fr")};
@@ -210,7 +233,7 @@ export const ChatHeader = styled.div`
   flex-shrink: 0;
 `;
 
-export const BackButton = styled.button`
+export const BackButton = styled.button.withConfig({ shouldForwardProp })`
   display: none;
   background: transparent;
   border: none;
@@ -447,7 +470,7 @@ export const MessageInput = styled.textarea`
   }
 `;
 
-export const IconButton = styled.button`
+export const IconButton = styled.button.withConfig({ shouldForwardProp })`
   background: transparent;
   border: none;
   font-size: 1.3rem;
@@ -467,7 +490,7 @@ export const IconButton = styled.button`
   }
 `;
 
-export const SendButton = styled.button`
+export const SendButton = styled.button.withConfig({ shouldForwardProp })`
   width: 48px;
   height: 48px;
   border-radius: 50%;

@@ -1,4 +1,11 @@
-import React, { createContext, useContext, useEffect, useRef, useState } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  useCallback,
+} from "react";
 import io from "socket.io-client";
 import { toast } from "react-toastify";
 import { useAuth } from "./AuthContext";
@@ -20,26 +27,41 @@ export const SocketProvider = ({ children }) => {
   const [onlineUsers, setOnlineUsers] = useState([]);
   const [notifications, setNotifications] = useState([]);
   const [isConnected, setIsConnected] = useState(false);
+  const [reconnectAttempt, setReconnectAttempt] = useState(0);
   const { user } = useAuth();
 
   const socketRef = useRef(null);
+  const reconnectToastId = useRef(null);
+
+  // Manual reconnect function for user-triggered reconnection
+  const reconnect = useCallback(() => {
+    if (socketRef.current) {
+      socketRef.current.connect();
+      toast.info("Attempting to reconnect...");
+    }
+  }, []);
 
   useEffect(() => {
     if (user) {
       const token = localStorage.getItem("token");
-      
+
       // Get socket URL with fallback
-      const socketUrl = process.env.REACT_APP_SOCKET_URL || 'http://localhost:5000';
-      
+      const socketUrl =
+        process.env.REACT_APP_SOCKET_URL || "http://localhost:5000";
+
       if (!process.env.REACT_APP_SOCKET_URL) {
-        console.warn('REACT_APP_SOCKET_URL not set, using default: http://localhost:5000');
+        console.warn(
+          "REACT_APP_SOCKET_URL not set, using default: http://localhost:5000"
+        );
       }
 
       const newSocket = io(socketUrl, {
         auth: { token },
         reconnection: true,
-        reconnectionAttempts: 5,
+        reconnectionAttempts: 10, // Increased from 5
         reconnectionDelay: 1000,
+        reconnectionDelayMax: 10000, // Max delay of 10 seconds
+        timeout: 20000, // Connection timeout
       });
 
       socketRef.current = newSocket;
@@ -47,16 +69,62 @@ export const SocketProvider = ({ children }) => {
       newSocket.on("connect", () => {
         console.log("✅ Connected to socket server");
         setIsConnected(true);
+        setReconnectAttempt(0);
+
+        // Dismiss reconnecting toast if any
+        if (reconnectToastId.current) {
+          toast.dismiss(reconnectToastId.current);
+          reconnectToastId.current = null;
+          toast.success("Reconnected to server!");
+        }
       });
 
-      newSocket.on("disconnect", () => {
-        console.log("❌ Disconnected from socket server");
+      newSocket.on("disconnect", (reason) => {
+        console.log("❌ Disconnected from socket server:", reason);
         setIsConnected(false);
+
+        // Only show toast for unexpected disconnections
+        if (reason === "io server disconnect" || reason === "transport close") {
+          reconnectToastId.current = toast.warning(
+            "Connection lost. Reconnecting...",
+            {
+              autoClose: false,
+              closeButton: false,
+            }
+          );
+        }
+      });
+
+      newSocket.on("reconnect_attempt", (attemptNumber) => {
+        setReconnectAttempt(attemptNumber);
+        console.log(`Reconnection attempt ${attemptNumber}`);
+      });
+
+      newSocket.on("reconnect", (attemptNumber) => {
+        console.log(`Reconnected after ${attemptNumber} attempts`);
+        toast.success("Connection restored!");
+      });
+
+      newSocket.on("reconnect_failed", () => {
+        console.error("Failed to reconnect after all attempts");
+        if (reconnectToastId.current) {
+          toast.dismiss(reconnectToastId.current);
+        }
+        toast.error(
+          "Unable to reconnect. Please refresh the page or try again later.",
+          {
+            autoClose: false,
+            closeButton: true,
+          }
+        );
       });
 
       newSocket.on("connect_error", (error) => {
         console.error("Socket connection error:", error);
-        toast.error("Unable to connect to chat server");
+        // Only show error toast if not already reconnecting
+        if (reconnectAttempt === 0) {
+          toast.error("Unable to connect to chat server");
+        }
       });
 
       newSocket.on("userOnline", (data) => {
@@ -91,6 +159,9 @@ export const SocketProvider = ({ children }) => {
         newSocket.off("connect");
         newSocket.off("disconnect");
         newSocket.off("connect_error");
+        newSocket.off("reconnect_attempt");
+        newSocket.off("reconnect");
+        newSocket.off("reconnect_failed");
         newSocket.off("userOnline");
         newSocket.off("userOffline");
         newSocket.off("newNotification");
@@ -160,6 +231,7 @@ export const SocketProvider = ({ children }) => {
   const value = {
     socket: socketRef.current,
     isConnected,
+    reconnectAttempt,
     onlineUsers,
     notifications,
     joinChat,
@@ -168,6 +240,7 @@ export const SocketProvider = ({ children }) => {
     markAsRead,
     emitTyping,
     clearNotifications,
+    reconnect, // Expose reconnect function for manual retry
   };
 
   return (

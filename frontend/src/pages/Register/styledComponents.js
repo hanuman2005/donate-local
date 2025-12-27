@@ -1,5 +1,28 @@
 import styled from "styled-components";
 
+// Framer Motion props that should not be forwarded to the DOM
+const motionProps = [
+  "initial",
+  "animate",
+  "exit",
+  "variants",
+  "transition",
+  "whileHover",
+  "whileTap",
+  "whileFocus",
+  "whileDrag",
+  "whileInView",
+  "drag",
+  "dragConstraints",
+  "dragElastic",
+  "dragMomentum",
+  "layout",
+  "layoutId",
+  "onAnimationStart",
+  "onAnimationComplete",
+];
+const shouldForwardProp = (prop) => !motionProps.includes(prop);
+
 export const RegisterContainer = styled.div`
   min-height: 100vh;
   display: flex;
@@ -130,7 +153,7 @@ export const Select = styled.select`
   }
 `;
 
-export const RegisterButton = styled.button`
+export const RegisterButton = styled.button.withConfig({ shouldForwardProp })`
   background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
   color: white;
   font-size: 1.1rem;

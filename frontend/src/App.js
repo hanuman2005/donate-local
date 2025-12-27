@@ -1,5 +1,5 @@
-import AdminDashboard from "./pages/AdminDashboard";
 // src/App.js
+import AdminDashboard from "./pages/AdminDashboard";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import { ToastContainer } from "react-toastify";
@@ -10,11 +10,14 @@ import LoadingSpinner from "./components/Common/LoadingSpinner";
 import ProtectedRoute from "./components/Auth/ProtectedRoute";
 import FloatingChatbot from "./components/Common/FloatingChatbot";
 import LiveNotificationBanner from "./components/Dashboard/LiveNotificationBanner";
+import SkipLink from "./components/Common/SkipLink";
 
 // Public Pages
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import Listings from "./pages/Listings";
 import ListingDetails from "./pages/ListingDetails";
 import SchedulesPage from "./pages/Schedules";
@@ -47,148 +50,173 @@ function App() {
 
   return (
     <>
+      {/* Skip Link for Keyboard Navigation */}
+      <SkipLink />
+
       {/* ✅ WRAP Routes inside Sidebar */}
       <Sidebar>
         <LiveNotificationBanner />
 
-        <Routes>
-          {/* ========== PUBLIC ROUTES ========== */}
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/contact" element={<ContactModal />} />
+        <main id="main-content" role="main" tabIndex="-1">
+          <Routes>
+            {/* ========== PUBLIC ROUTES ========== */}
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password/:token" element={<ResetPassword />} />
+            <Route path="/contact" element={<ContactModal />} />
 
-          {/* Listings */}
-          <Route path="/listings" element={<Listings />} />
-          <Route path="/listings/:id" element={<ListingDetails />} />
+            {/* Listings */}
+            <Route path="/listings" element={<Listings />} />
+            <Route path="/listings/:id" element={<ListingDetails />} />
 
-          {/* Public Impact Stats */}
-          <Route path="/impact/community" element={<CommunityStats />} />
+            {/* Public Impact Stats */}
+            <Route path="/impact/community" element={<CommunityStats />} />
 
-          {/* ========== PROTECTED ROUTES ========== */}
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/create-listing"
-            element={
-              <ProtectedRoute>
-                <CreateListing />
-              </ProtectedRoute>
-            }
-          />
+            {/* ========== PROTECTED ROUTES ========== */}
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/create-listing"
+              element={
+                <ProtectedRoute>
+                  <CreateListing />
+                </ProtectedRoute>
+              }
+            />
 
-          {/* Profile */}
-          <Route path="/profile/:userId" element={<Profile />} />
-          <Route
-            path="/profile"
-            element={
-              <ProtectedRoute>
-                <Profile />
-              </ProtectedRoute>
-            }
-          />
+            {/* Profile */}
+            <Route path="/profile/:userId" element={<Profile />} />
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <Profile />
+                </ProtectedRoute>
+              }
+            />
 
-          <Route
-            path="/notifications"
-            element={
-              <ProtectedRoute>
-                <Notifications />
-              </ProtectedRoute>
-            }
-          />
+            <Route
+              path="/notifications"
+              element={
+                <ProtectedRoute>
+                  <Notifications />
+                </ProtectedRoute>
+              }
+            />
 
-          {/* Schedules */}
-          <Route
-            path="/schedules"
-            element={
-              <ProtectedRoute>
-                <SchedulesPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/schedules/:id"
-            element={
-              <ProtectedRoute>
-                <ScheduleDetails />
-              </ProtectedRoute>
-            }
-          />
+            {/* Schedules */}
+            <Route
+              path="/schedules"
+              element={
+                <ProtectedRoute>
+                  <SchedulesPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/schedules/:id"
+              element={
+                <ProtectedRoute>
+                  <ScheduleDetails />
+                </ProtectedRoute>
+              }
+            />
 
-          {/* AI Features */}
-          <Route
-            path="/waste-analyzer"
-            element={
-              <ProtectedRoute>
-                <WasteAnalyzer />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/analysis-history"
-            element={
-              <ProtectedRoute>
-                <AnalysisHistory />
-              </ProtectedRoute>
-            }
-          />
-          <Route path="/route-optimizer" element={<RouteOptimizer />} />
-          <Route path="/digital-twin" element={<DigitalTwin />} />
+            {/* AI Features */}
+            <Route
+              path="/waste-analyzer"
+              element={
+                <ProtectedRoute>
+                  <WasteAnalyzer />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/analysis-history"
+              element={
+                <ProtectedRoute>
+                  <AnalysisHistory />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="/route-optimizer" element={<RouteOptimizer />} />
+            <Route path="/digital-twin" element={<DigitalTwin />} />
 
-          {/* Chat Routes */}
-          <Route
-            path="/chat"
-            element={
-              <ProtectedRoute>
-                <Chat />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/chat/:chatId"
-            element={
-              <ProtectedRoute>
-                <Chat />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/my-pickups"
-            element={
-              <ProtectedRoute>
-                <MyPickups />
-              </ProtectedRoute>
-            }
-          />
-          {/* Check-in (QR Verification) */}
-          <Route
-            path="/check-in"
-            element={
-              <ProtectedRoute>
-                <CheckIn />
-              </ProtectedRoute>
-            }
-          />
+            {/* Chat Routes */}
+            <Route
+              path="/chat"
+              element={
+                <ProtectedRoute>
+                  <Chat />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/chat/:chatId"
+              element={
+                <ProtectedRoute>
+                  <Chat />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/my-pickups"
+              element={
+                <ProtectedRoute>
+                  <MyPickups />
+                </ProtectedRoute>
+              }
+            />
+            {/* Check-in (QR Verification) */}
+            <Route
+              path="/check-in"
+              element={
+                <ProtectedRoute>
+                  <CheckIn />
+                </ProtectedRoute>
+              }
+            />
 
-          {/* Personal Impact */}
-          <Route
-            path="/impact/personal"
-            element={
-              <ProtectedRoute>
-                <PersonalImpact />
-              </ProtectedRoute>
-            }
-          />
+            {/* Personal Impact */}
+            <Route
+              path="/impact/personal"
+              element={
+                <ProtectedRoute>
+                  <PersonalImpact />
+                </ProtectedRoute>
+              }
+            />
 
-          {/* ========== CATCH-ALL ROUTE ========== */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+            {/* Admin Dashboard */}
+            <Route
+              path="/admin"
+              element={
+                <ProtectedRoute>
+                  <AdminDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin-dashboard"
+              element={
+                <ProtectedRoute>
+                  <AdminDashboard />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* ========== CATCH-ALL ROUTE ========== */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </main>
       </Sidebar>
 
       {/* FloatingChatbot outside Sidebar so it appears on all pages */}

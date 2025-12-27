@@ -8,6 +8,29 @@ import LoadingSpinner from "../../components/Common/LoadingSpinner";
 import { toast } from "react-toastify";
 import QRGenerator from "../../components/QR/QRCode";
 
+// Framer Motion props that should not be forwarded to the DOM
+const motionProps = [
+  "initial",
+  "animate",
+  "exit",
+  "variants",
+  "transition",
+  "whileHover",
+  "whileTap",
+  "whileFocus",
+  "whileDrag",
+  "whileInView",
+  "drag",
+  "dragConstraints",
+  "dragElastic",
+  "dragMomentum",
+  "layout",
+  "layoutId",
+  "onAnimationStart",
+  "onAnimationComplete",
+];
+const shouldForwardProp = (prop) => !motionProps.includes(prop);
+
 const Container = styled.div`
   max-width: 1200px;
   margin: 0 auto;
@@ -72,7 +95,7 @@ const Value = styled.span`
   font-weight: 600;
 `;
 
-const Button = styled.button`
+const Button = styled.button.withConfig({ shouldForwardProp })`
   width: 100%;
   padding: 0.75rem;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
