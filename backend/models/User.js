@@ -161,6 +161,15 @@ const userSchema = new mongoose.Schema(
       reminders: { type: Boolean, default: true },
       weeklyDigest: { type: Boolean, default: true },
     },
+
+    // SMS Preferences
+    phoneVerified: { type: Boolean, default: false },
+    smsPreferences: {
+      enabled: { type: Boolean, default: false },
+      pickupReminders: { type: Boolean, default: true },
+      newMatches: { type: Boolean, default: false },
+      scheduleConfirmations: { type: Boolean, default: true },
+    },
   },
   {
     timestamps: true,

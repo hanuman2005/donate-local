@@ -31,6 +31,20 @@ import {
   SearchHistoryDropdown,
   HistoryItem,
   ClearHistoryButton,
+  DateRangeContainer,
+  DateInputGroup,
+  DateLabel,
+  DateInput,
+  SavedSearchesContainer,
+  SavedSearchesHeader,
+  SavedSearchesTitle,
+  SaveSearchButton,
+  SavedSearchList,
+  SavedSearchItem,
+  DeleteSavedSearch,
+  AlertToggle,
+  AlertCheckbox,
+  AlertLabel,
 } from "./styledComponents";
 
 const FiltersPanel = ({ onResults, autoSearch = false, userLocation }) => {
@@ -42,16 +56,24 @@ const FiltersPanel = ({ onResults, autoSearch = false, userLocation }) => {
   const [expiryBefore, setExpiryBefore] = useState("");
   const [sortBy, setSortBy] = useState("newest");
   const [maxDistance, setMaxDistance] = useState(5000);
-  
+
   // Quantity range
   const [minQuantity, setMinQuantity] = useState("");
   const [maxQuantity, setMaxQuantity] = useState("");
-  
+
+  // Date range (when item was posted)
+  const [postedAfter, setPostedAfter] = useState("");
+  const [postedBefore, setPostedBefore] = useState("");
+
+  // Saved searches
+  const [savedSearches, setSavedSearches] = useState([]);
+  const [searchAlertEnabled, setSearchAlertEnabled] = useState(false);
+
   // Location
   const [lat, setLat] = useState(userLocation?.lat || null);
   const [lng, setLng] = useState(userLocation?.lng || null);
   const [locationError, setLocationError] = useState(null);
-  
+
   // UI state
   const [isSearching, setIsSearching] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -79,7 +101,61 @@ const FiltersPanel = ({ onResults, autoSearch = false, userLocation }) => {
     if (saved) {
       setSearchHistory(JSON.parse(saved));
     }
+    // Load saved searches
+    const savedSearchesData = localStorage.getItem("savedSearches");
+    if (savedSearchesData) {
+      setSavedSearches(JSON.parse(savedSearchesData));
+    }
   }, []);
+
+  // Save current search to saved searches
+  const saveCurrentSearch = () => {
+    const currentFilters = {
+      id: Date.now(),
+      name: searchKeyword || `Search ${new Date().toLocaleDateString()}`,
+      keyword: searchKeyword,
+      categories: selectedCategories,
+      urgency,
+      condition,
+      expiryBefore,
+      postedAfter,
+      postedBefore,
+      minQuantity,
+      maxQuantity,
+      sortBy,
+      maxDistance,
+      alertEnabled: searchAlertEnabled,
+      createdAt: new Date().toISOString(),
+    };
+
+    const updated = [currentFilters, ...savedSearches.slice(0, 9)]; // Keep max 10
+    setSavedSearches(updated);
+    localStorage.setItem("savedSearches", JSON.stringify(updated));
+  };
+
+  // Load a saved search
+  const loadSavedSearch = (search) => {
+    setSearchKeyword(search.keyword || "");
+    setSelectedCategories(search.categories || []);
+    setUrgency(search.urgency || "");
+    setCondition(search.condition || "");
+    setExpiryBefore(search.expiryBefore || "");
+    setPostedAfter(search.postedAfter || "");
+    setPostedBefore(search.postedBefore || "");
+    setMinQuantity(search.minQuantity || "");
+    setMaxQuantity(search.maxQuantity || "");
+    setSortBy(search.sortBy || "newest");
+    setMaxDistance(search.maxDistance || 5000);
+    setSearchAlertEnabled(search.alertEnabled || false);
+  };
+
+  // Delete a saved search
+  const deleteSavedSearch = (id, e) => {
+    e.stopPropagation();
+    const updated = savedSearches.filter((s) => s.id !== id);
+    setSavedSearches(updated);
+    localStorage.setItem("savedSearches", JSON.stringify(updated));
+  };
 
   // Get user location
   useEffect(() => {
@@ -122,9 +198,9 @@ const FiltersPanel = ({ onResults, autoSearch = false, userLocation }) => {
 
   // Toggle category selection
   const toggleCategory = (categoryValue) => {
-    setSelectedCategories(prev => 
+    setSelectedCategories((prev) =>
       prev.includes(categoryValue)
-        ? prev.filter(c => c !== categoryValue)
+        ? prev.filter((c) => c !== categoryValue)
         : [...prev, categoryValue]
     );
   };
@@ -159,6 +235,10 @@ const FiltersPanel = ({ onResults, autoSearch = false, userLocation }) => {
       if (minQuantity) params.minQuantity = minQuantity;
       if (maxQuantity) params.maxQuantity = maxQuantity;
 
+      // Date range filters
+      if (postedAfter) params.postedAfter = postedAfter;
+      if (postedBefore) params.postedBefore = postedBefore;
+
       // Location-based
       if (lat && lng) {
         params.lat = lat;
@@ -170,14 +250,16 @@ const FiltersPanel = ({ onResults, autoSearch = false, userLocation }) => {
 
       const res = await listingsAPI.search(params);
       const results = res.data.listings || [];
-      
+
       console.log("✅ Search results:", results.length);
       onResults(results, false);
 
       // Save to search history
       saveToHistory(params);
-      
-      toast.success(`Found ${results.length} listing${results.length !== 1 ? 's' : ''}!`);
+
+      toast.success(
+        `Found ${results.length} listing${results.length !== 1 ? "s" : ""}!`
+      );
     } catch (error) {
       console.error("❌ Search failed:", error);
       onResults([], true);
@@ -199,7 +281,8 @@ const FiltersPanel = ({ onResults, autoSearch = false, userLocation }) => {
       };
 
       if (searchKeyword.trim()) params.search = searchKeyword.trim();
-      if (selectedCategories.length > 0) params.categories = selectedCategories.join(",");
+      if (selectedCategories.length > 0)
+        params.categories = selectedCategories.join(",");
       if (urgency) params.urgency = urgency;
       if (condition) params.condition = condition;
       if (expiryBefore) params.expiryBefore = expiryBefore;
@@ -208,11 +291,13 @@ const FiltersPanel = ({ onResults, autoSearch = false, userLocation }) => {
 
       const res = await listingsAPI.search(params);
       const results = res.data.listings || [];
-      
+
       onResults(results, false);
       saveToHistory(params);
-      
-      toast.success(`Found ${results.length} listing${results.length !== 1 ? 's' : ''}!`);
+
+      toast.success(
+        `Found ${results.length} listing${results.length !== 1 ? "s" : ""}!`
+      );
     } catch (error) {
       console.error("Search failed:", error);
       onResults([], true);
@@ -265,6 +350,9 @@ const FiltersPanel = ({ onResults, autoSearch = false, userLocation }) => {
     setMaxDistance(5000);
     setMinQuantity("");
     setMaxQuantity("");
+    setPostedAfter("");
+    setPostedBefore("");
+    setSearchAlertEnabled(false);
     hasSearchedRef.current = false;
     handleSearch();
   };
@@ -285,6 +373,8 @@ const FiltersPanel = ({ onResults, autoSearch = false, userLocation }) => {
     expiryBefore && 1,
     minQuantity && 1,
     maxQuantity && 1,
+    postedAfter && 1,
+    postedBefore && 1,
   ].filter(Boolean).length;
 
   return (
@@ -352,9 +442,20 @@ const FiltersPanel = ({ onResults, autoSearch = false, userLocation }) => {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
               >
-                <div style={{ display: "flex", justifyContent: "space-between", padding: "0.5rem", borderBottom: "1px solid #e2e8f0" }}>
-                  <span style={{ fontWeight: "600", fontSize: "0.9rem" }}>Recent Searches</span>
-                  <ClearHistoryButton onClick={clearHistory}>Clear</ClearHistoryButton>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    padding: "0.5rem",
+                    borderBottom: "1px solid #e2e8f0",
+                  }}
+                >
+                  <span style={{ fontWeight: "600", fontSize: "0.9rem" }}>
+                    Recent Searches
+                  </span>
+                  <ClearHistoryButton onClick={clearHistory}>
+                    Clear
+                  </ClearHistoryButton>
                 </div>
                 {searchHistory.map((entry) => (
                   <HistoryItem
@@ -363,7 +464,8 @@ const FiltersPanel = ({ onResults, autoSearch = false, userLocation }) => {
                   >
                     <span>🔍 {entry.keyword || "All items"}</span>
                     <span style={{ fontSize: "0.8rem", color: "#718096" }}>
-                      {entry.categories.length > 0 && `${entry.categories.length} categories`}
+                      {entry.categories.length > 0 &&
+                        `${entry.categories.length} categories`}
                     </span>
                   </HistoryItem>
                 ))}
@@ -413,9 +515,17 @@ const FiltersPanel = ({ onResults, autoSearch = false, userLocation }) => {
               transition={{ duration: 0.3 }}
             >
               {/* Condition */}
-              <FilterGroup as={motion.div} variants={motionVariants.fadeSlideUp}>
-                <Label><span>✨</span> Condition</Label>
-                <Select value={condition} onChange={(e) => setCondition(e.target.value)}>
+              <FilterGroup
+                as={motion.div}
+                variants={motionVariants.fadeSlideUp}
+              >
+                <Label>
+                  <span>✨</span> Condition
+                </Label>
+                <Select
+                  value={condition}
+                  onChange={(e) => setCondition(e.target.value)}
+                >
                   <option value="">Any Condition</option>
                   <option value="new">🆕 Brand New</option>
                   <option value="like-new">✨ Like New</option>
@@ -425,9 +535,17 @@ const FiltersPanel = ({ onResults, autoSearch = false, userLocation }) => {
               </FilterGroup>
 
               {/* Urgency */}
-              <FilterGroup as={motion.div} variants={motionVariants.fadeSlideUp}>
-                <Label><span>⚡</span> Urgency</Label>
-                <Select value={urgency} onChange={(e) => setUrgency(e.target.value)}>
+              <FilterGroup
+                as={motion.div}
+                variants={motionVariants.fadeSlideUp}
+              >
+                <Label>
+                  <span>⚡</span> Urgency
+                </Label>
+                <Select
+                  value={urgency}
+                  onChange={(e) => setUrgency(e.target.value)}
+                >
                   <option value="">Any Urgency</option>
                   <option value="3">🔴 High (Expires Soon)</option>
                   <option value="2">🟡 Medium</option>
@@ -436,8 +554,13 @@ const FiltersPanel = ({ onResults, autoSearch = false, userLocation }) => {
               </FilterGroup>
 
               {/* Expiry Date */}
-              <FilterGroup as={motion.div} variants={motionVariants.fadeSlideUp}>
-                <Label><span>📅</span> Expiry Before</Label>
+              <FilterGroup
+                as={motion.div}
+                variants={motionVariants.fadeSlideUp}
+              >
+                <Label>
+                  <span>📅</span> Expiry Before
+                </Label>
                 <Input
                   type="date"
                   value={expiryBefore}
@@ -447,8 +570,13 @@ const FiltersPanel = ({ onResults, autoSearch = false, userLocation }) => {
               </FilterGroup>
 
               {/* Quantity Range */}
-              <FilterGroup as={motion.div} variants={motionVariants.fadeSlideUp}>
-                <Label><span>📦</span> Quantity Range</Label>
+              <FilterGroup
+                as={motion.div}
+                variants={motionVariants.fadeSlideUp}
+              >
+                <Label>
+                  <span>📦</span> Quantity Range
+                </Label>
                 <div style={{ display: "flex", gap: "0.5rem" }}>
                   <Input
                     type="number"
@@ -467,13 +595,126 @@ const FiltersPanel = ({ onResults, autoSearch = false, userLocation }) => {
                   />
                 </div>
               </FilterGroup>
+
+              {/* Date Range - When Posted */}
+              <FilterGroup
+                as={motion.div}
+                variants={motionVariants.fadeSlideUp}
+              >
+                <Label>
+                  <span>🗓️</span> Posted Date Range
+                </Label>
+                <DateRangeContainer>
+                  <DateInputGroup>
+                    <DateLabel>From</DateLabel>
+                    <DateInput
+                      type="date"
+                      value={postedAfter}
+                      onChange={(e) => setPostedAfter(e.target.value)}
+                      max={new Date().toISOString().split("T")[0]}
+                    />
+                  </DateInputGroup>
+                  <DateInputGroup>
+                    <DateLabel>To</DateLabel>
+                    <DateInput
+                      type="date"
+                      value={postedBefore}
+                      onChange={(e) => setPostedBefore(e.target.value)}
+                      max={new Date().toISOString().split("T")[0]}
+                    />
+                  </DateInputGroup>
+                </DateRangeContainer>
+              </FilterGroup>
             </motion.div>
           )}
         </AnimatePresence>
 
+        {/* ========== SAVED SEARCHES ========== */}
+        <SavedSearchesContainer
+          as={motion.div}
+          variants={motionVariants.fadeSlideUp}
+        >
+          <SavedSearchesHeader>
+            <SavedSearchesTitle>💾 Saved Searches</SavedSearchesTitle>
+            <SaveSearchButton
+              onClick={saveCurrentSearch}
+              disabled={!searchKeyword && selectedCategories.length === 0}
+              title={
+                !searchKeyword && selectedCategories.length === 0
+                  ? "Add a keyword or select categories to save"
+                  : "Save current search"
+              }
+            >
+              + Save Current
+            </SaveSearchButton>
+          </SavedSearchesHeader>
+
+          {savedSearches.length > 0 ? (
+            <SavedSearchList>
+              {savedSearches.map((search) => (
+                <SavedSearchItem
+                  key={search.id}
+                  as={motion.div}
+                  onClick={() => loadSavedSearch(search)}
+                  whileHover={{ scale: 1.02, x: 5 }}
+                >
+                  <div style={{ flex: 1 }}>
+                    <strong>{search.name}</strong>
+                    {search.categories?.length > 0 && (
+                      <span
+                        style={{
+                          fontSize: "0.75rem",
+                          color: "#718096",
+                          marginLeft: "0.5rem",
+                        }}
+                      >
+                        ({search.categories.length} categories)
+                      </span>
+                    )}
+                    {search.alertEnabled && (
+                      <span style={{ marginLeft: "0.5rem" }}>🔔</span>
+                    )}
+                  </div>
+                  <DeleteSavedSearch
+                    onClick={(e) => deleteSavedSearch(search.id, e)}
+                    title="Delete saved search"
+                  >
+                    ✕
+                  </DeleteSavedSearch>
+                </SavedSearchItem>
+              ))}
+            </SavedSearchList>
+          ) : (
+            <p
+              style={{
+                fontSize: "0.85rem",
+                color: "#718096",
+                textAlign: "center",
+                padding: "1rem",
+              }}
+            >
+              No saved searches yet. Save your first search!
+            </p>
+          )}
+
+          <AlertToggle>
+            <AlertCheckbox
+              type="checkbox"
+              checked={searchAlertEnabled}
+              onChange={(e) => setSearchAlertEnabled(e.target.checked)}
+              id="search-alert"
+            />
+            <AlertLabel htmlFor="search-alert">
+              🔔 Alert me when new items match this search
+            </AlertLabel>
+          </AlertToggle>
+        </SavedSearchesContainer>
+
         {/* ========== SORT BY ========== */}
         <FilterGroup as={motion.div} variants={motionVariants.fadeSlideUp}>
-          <Label><span>🔄</span> Sort By</Label>
+          <Label>
+            <span>🔄</span> Sort By
+          </Label>
           <Select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
             <option value="newest">🆕 Newest First</option>
             <option value="oldest">⏰ Oldest First</option>
@@ -486,7 +727,9 @@ const FiltersPanel = ({ onResults, autoSearch = false, userLocation }) => {
         {/* ========== DISTANCE FILTER ========== */}
         {lat && lng && (
           <FilterGroup as={motion.div} variants={motionVariants.fadeSlideUp}>
-            <Label><span>📏</span> Max Distance ({maxDistance / 1000} km)</Label>
+            <Label>
+              <span>📏</span> Max Distance ({maxDistance / 1000} km)
+            </Label>
             <Input
               type="range"
               value={maxDistance / 1000}
@@ -503,7 +746,11 @@ const FiltersPanel = ({ onResults, autoSearch = false, userLocation }) => {
         )}
 
         {locationError && !lat && !lng && (
-          <LocationInfo as={motion.div} $error variants={motionVariants.fadeSlideUp}>
+          <LocationInfo
+            as={motion.div}
+            $error
+            variants={motionVariants.fadeSlideUp}
+          >
             <LocationIcon>⚠️</LocationIcon>
             <LocationText>{locationError}</LocationText>
           </LocationInfo>

@@ -479,3 +479,144 @@ export const LocationIcon = styled.span`
 export const LocationText = styled.span`
   flex: 1;
 `;
+
+// ✅ NEW: Date Range Picker
+export const DateRangeContainer = styled.div`
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+`;
+
+export const DateInputGroup = styled.div`
+  flex: 1;
+  min-width: 140px;
+`;
+
+export const DateLabel = styled.label`
+  display: block;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 0.25rem;
+  font-weight: 600;
+`;
+
+export const DateInput = styled.input`
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  font-size: 0.9rem;
+  transition: all 0.3s;
+
+  &:focus {
+    outline: none;
+    border-color: white;
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+  &::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    cursor: pointer;
+  }
+`;
+
+// ✅ NEW: Saved Searches
+export const SavedSearchesContainer = styled.div`
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 1rem;
+  position: relative;
+  z-index: 1;
+`;
+
+export const SavedSearchesHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+`;
+
+export const SavedSearchesTitle = styled.h4`
+  color: white;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+`;
+
+
+export const SavedSearchList = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+`;
+
+export const SavedSearchItem = styled.div.withConfig({ shouldForwardProp })`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  font-size: 0.8rem;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.25);
+  }
+`;
+
+export const DeleteSavedSearch = styled.button.withConfig({
+  shouldForwardProp,
+})`
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  transition: color 0.2s;
+
+  &:hover {
+    color: #ff6b6b;
+  }
+`;
+
+// ✅ NEW: Search Alerts Toggle
+export const AlertToggle = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: rgba(72, 187, 120, 0.2);
+  border: 2px solid rgba(72, 187, 120, 0.4);
+  border-radius: 10px;
+  color: white;
+`;
+
+export const AlertCheckbox = styled.input`
+  width: 18px;
+  height: 18px;
+  accent-color: #48bb78;
+  cursor: pointer;
+`;
+
+export const AlertLabel = styled.label`
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  flex: 1;
+`;

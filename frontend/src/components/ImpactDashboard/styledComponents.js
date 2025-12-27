@@ -13,6 +13,16 @@ export const Container = styled(motion.div)`
 export const Header = styled(motion.div)`
   text-align: center;
   margin-bottom: 3rem;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: center;
+  }
 `;
 
 export const Title = styled.h1`
@@ -20,11 +30,22 @@ export const Title = styled.h1`
   font-size: 2.5rem;
   margin-bottom: 0.5rem;
   font-weight: 800;
+  text-align: left;
+
+  @media (max-width: 768px) {
+    text-align: center;
+    font-size: 2rem;
+  }
 `;
 
 export const Subtitle = styled.p`
   color: var(--text-secondary);
   font-size: 1.2rem;
+  text-align: left;
+
+  @media (max-width: 768px) {
+    text-align: center;
+  }
 `;
 
 export const CardsGrid = styled(motion.div)`

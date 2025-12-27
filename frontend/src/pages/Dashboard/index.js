@@ -2,8 +2,10 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "react-toastify";
 import { useAuth } from "../../context/AuthContext";
 import { listingsAPI } from "../../services/api";
+import { exportDonationsToCSV, downloadJSON } from "../../utils/exportUtils";
 
 import {
   DashboardWrapper,
@@ -507,15 +509,56 @@ const Dashboard = () => {
                 <h2>
                   <span>📦</span> Recent Items
                 </h2>
-                {recentItems.length > 0 && (
-                  <ViewAllBtn
-                    as={motion.button}
-                    onClick={handleViewAllItems}
-                    whileHover={{ scale: 1.05 }}
-                  >
-                    View All →
-                  </ViewAllBtn>
-                )}
+                <div
+                  style={{
+                    display: "flex",
+                    gap: "0.5rem",
+                    alignItems: "center",
+                  }}
+                >
+                  {recentItems.length > 0 && (
+                    <>
+                      <motion.button
+                        onClick={() => {
+                          try {
+                            exportDonationsToCSV(
+                              recentItems,
+                              `donations-${
+                                new Date().toISOString().split("T")[0]
+                              }`
+                            );
+                            toast.success("Donations exported to CSV!");
+                          } catch (err) {
+                            toast.error("Export failed");
+                          }
+                        }}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        style={{
+                          background:
+                            "linear-gradient(135deg, #48bb78 0%, #38a169 100%)",
+                          border: "none",
+                          borderRadius: "6px",
+                          padding: "0.4rem 0.8rem",
+                          color: "white",
+                          fontSize: "0.8rem",
+                          fontWeight: 600,
+                          cursor: "pointer",
+                        }}
+                        title="Export to CSV"
+                      >
+                        📊 Export
+                      </motion.button>
+                      <ViewAllBtn
+                        as={motion.button}
+                        onClick={handleViewAllItems}
+                        whileHover={{ scale: 1.05 }}
+                      >
+                        View All →
+                      </ViewAllBtn>
+                    </>
+                  )}
+                </div>
               </CardHeader>
 
               {recentItems.length > 0 ? (

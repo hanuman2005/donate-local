@@ -158,6 +158,7 @@ app.use("/api/health", require("./routes/health"));
 app.use("/api/ai", require("./routes/ai"));
 app.use("/api/queue", queueRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/sms", require("./routes/sms"));
 
 // Error handling middleware
 app.use(errorHandler);

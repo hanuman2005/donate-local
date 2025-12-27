@@ -693,6 +693,8 @@ const searchListings = async (req, res) => {
       expiryBefore,
       minQuantity, // ← NEW: Quantity range
       maxQuantity, // ← NEW: Quantity range
+      postedAfter, // ← NEW: Date range filter
+      postedBefore, // ← NEW: Date range filter
       sortBy,
       lat,
       lng,
@@ -733,6 +735,20 @@ const searchListings = async (req, res) => {
     // ✅ Expiry Date Filter
     if (expiryBefore) {
       query.expiryDate = { $lte: new Date(expiryBefore) };
+    }
+
+    // ✅ Date Range Filter (when posted)
+    if (postedAfter || postedBefore) {
+      query.createdAt = {};
+      if (postedAfter) {
+        query.createdAt.$gte = new Date(postedAfter);
+      }
+      if (postedBefore) {
+        // Add one day to include the entire end date
+        const endDate = new Date(postedBefore);
+        endDate.setDate(endDate.getDate() + 1);
+        query.createdAt.$lte = endDate;
+      }
     }
 
     // ✅ Quantity Range Filter

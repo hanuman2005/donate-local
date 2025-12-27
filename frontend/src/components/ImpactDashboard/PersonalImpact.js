@@ -7,6 +7,11 @@ import { motionVariants } from "../../animations/motionVariants";
 import ImpactCard from "./ImpactCard";
 import { impactAPI } from "../../services/api";
 import { toast } from "react-toastify";
+import { useAuth } from "../../context/AuthContext";
+import {
+  downloadImpactReportPDF,
+  exportImpactToCSV,
+} from "../../utils/exportUtils";
 import {
   Container,
   Header,
@@ -40,6 +45,7 @@ const PersonalImpact = () => {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
+  const { user } = useAuth();
 
   useEffect(() => {
     fetchImpactData();
@@ -134,6 +140,49 @@ const PersonalImpact = () => {
   const isDonor = userType === "donor" || userType === "both";
   const isRecipient = userType === "recipient";
 
+  // Export handlers
+  const handleExportPDF = () => {
+    try {
+      const impactData = {
+        totalDonations: impact.totalDonationsCount || 0,
+        totalPickups: impact.totalPickupsCount || 0,
+        totalWeight: impact.totalWastePreventedKg || 0,
+        co2Saved: impact.totalCO2SavedKg || 0,
+        waterSaved: impact.totalWaterSavedL || 0,
+        treesEquivalent: impact.treesEquivalent || 0,
+        mealsProvided: impact.totalMealsProvided || 0,
+        peopleHelped: impact.peopleHelped || 0,
+        wasteReduced: impact.totalWastePreventedKg || 0,
+      };
+      downloadImpactReportPDF(impactData, user);
+      toast.success("Impact report ready for printing/download");
+    } catch (err) {
+      toast.error("Failed to generate PDF report");
+    }
+  };
+
+  const handleExportCSV = () => {
+    try {
+      const impactData = {
+        totalDonations: impact.totalDonationsCount || 0,
+        totalPickups: impact.totalPickupsCount || 0,
+        totalWeight: impact.totalWastePreventedKg || 0,
+        co2Saved: impact.totalCO2SavedKg || 0,
+        waterSaved: impact.totalWaterSavedL || 0,
+        treesEquivalent: impact.treesEquivalent || 0,
+        mealsProvided: impact.totalMealsProvided || 0,
+        peopleHelped: impact.peopleHelped || 0,
+      };
+      exportImpactToCSV(
+        impactData,
+        `impact-report-${new Date().toISOString().split("T")[0]}`
+      );
+      toast.success("CSV report downloaded!");
+    } catch (err) {
+      toast.error("Failed to export CSV");
+    }
+  };
+
   return (
     <Container
       variants={motionVariants.pageTransition}
@@ -146,14 +195,62 @@ const PersonalImpact = () => {
         initial="hidden"
         animate="show"
       >
-        <Title>Your Environmental Impact 🌍</Title>
-        <Subtitle>
-          {isDonor
-            ? "Making a difference, one donation at a time"
-            : isRecipient
-            ? "See your positive impact from items received!"
-            : "Making a difference in your community"}
-        </Subtitle>
+        <div style={{ flex: 1 }}>
+          <Title>Your Environmental Impact 🌍</Title>
+          <Subtitle>
+            {isDonor
+              ? "Making a difference, one donation at a time"
+              : isRecipient
+              ? "See your positive impact from items received!"
+              : "Making a difference in your community"}
+          </Subtitle>
+        </div>
+        <div
+          style={{ display: "flex", gap: "0.5rem", alignItems: "flex-start" }}
+        >
+          <motion.button
+            onClick={handleExportCSV}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            style={{
+              padding: "0.5rem 1rem",
+              background: "linear-gradient(135deg, #48bb78 0%, #38a169 100%)",
+              color: "white",
+              border: "none",
+              borderRadius: "8px",
+              cursor: "pointer",
+              fontSize: "0.85rem",
+              fontWeight: 600,
+              display: "flex",
+              alignItems: "center",
+              gap: "0.3rem",
+            }}
+            title="Export to CSV"
+          >
+            📊 CSV
+          </motion.button>
+          <motion.button
+            onClick={handleExportPDF}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            style={{
+              padding: "0.5rem 1rem",
+              background: "linear-gradient(135deg, #4299e1 0%, #3182ce 100%)",
+              color: "white",
+              border: "none",
+              borderRadius: "8px",
+              cursor: "pointer",
+              fontSize: "0.85rem",
+              fontWeight: 600,
+              display: "flex",
+              alignItems: "center",
+              gap: "0.3rem",
+            }}
+            title="Export to PDF"
+          >
+            📄 PDF
+          </motion.button>
+        </div>
       </Header>
 
       <CardsGrid

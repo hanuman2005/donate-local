@@ -1,10 +1,11 @@
 // src/components/ScheduleCard/index.js
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import styled from "styled-components";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-toastify";
 import { scheduleAPI } from "../../services/api";
 import { useNavigate } from "react-router-dom";
+import { getCalendarLinks } from "../../utils/calendarUtils";
 
 const formatLocation = (pickupLocation) => {
   if (!pickupLocation) return "Not specified";
@@ -230,11 +231,83 @@ const Input = styled.input`
   }
 `;
 
+const CalendarDropdown = styled.div`
+  position: relative;
+  display: inline-block;
+`;
+
+const CalendarButton = styled(motion.button)`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+
+  &:hover {
+    opacity: 0.9;
+  }
+`;
+
+const CalendarMenu = styled(motion.div)`
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 0.5rem;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  min-width: 200px;
+  z-index: 100;
+`;
+
+const CalendarMenuItem = styled.a`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  color: #4a5568;
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: background 0.2s;
+  cursor: pointer;
+
+  &:hover {
+    background: #f7fafc;
+  }
+
+  span:first-child {
+    font-size: 1.1rem;
+  }
+`;
+
 const ScheduleCard = ({ schedule, userRole, onUpdate }) => {
   const [loading, setLoading] = useState(false);
   const [confirmNotes, setConfirmNotes] = useState("");
   const [showConfirmInput, setShowConfirmInput] = useState(false);
+  const [showCalendarMenu, setShowCalendarMenu] = useState(false);
+  const calendarRef = useRef(null);
   const navigate = useNavigate();
+
+  // Close calendar menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (calendarRef.current && !calendarRef.current.contains(event.target)) {
+        setShowCalendarMenu(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const calendarLinks = getCalendarLinks(schedule);
 
   const getStatusColor = () => {
     switch (schedule.status) {
@@ -336,13 +409,79 @@ const ScheduleCard = ({ schedule, userRole, onUpdate }) => {
             {schedule.listing?.category || "Unknown"}
           </span>
         </ListingInfo>
-        <StatusBadge $status={schedule.status}>
-          {schedule.status === "proposed" && "⏳ Pending"}
-          {schedule.status === "confirmed" && "✅ Confirmed"}
-          {schedule.status === "completed" && "🎉 Completed"}
-          {schedule.status === "cancelled" && "❌ Cancelled"}
-          {schedule.status === "expired" && "⏰ Expired"}
-        </StatusBadge>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+          {/* Add to Calendar Button */}
+          {(schedule.status === "confirmed" ||
+            schedule.status === "proposed") && (
+            <CalendarDropdown ref={calendarRef}>
+              <CalendarButton
+                onClick={() => setShowCalendarMenu(!showCalendarMenu)}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                📅 Add to Calendar
+              </CalendarButton>
+              <AnimatePresence>
+                {showCalendarMenu && (
+                  <CalendarMenu
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <CalendarMenuItem
+                      href={calendarLinks.google}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => setShowCalendarMenu(false)}
+                    >
+                      <span>📆</span> Google Calendar
+                    </CalendarMenuItem>
+                    <CalendarMenuItem
+                      href={calendarLinks.outlook}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => setShowCalendarMenu(false)}
+                    >
+                      <span>📧</span> Outlook
+                    </CalendarMenuItem>
+                    <CalendarMenuItem
+                      href={calendarLinks.yahoo}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => setShowCalendarMenu(false)}
+                    >
+                      <span>🟣</span> Yahoo Calendar
+                    </CalendarMenuItem>
+                    <CalendarMenuItem
+                      as="button"
+                      onClick={() => {
+                        calendarLinks.downloadIcs();
+                        setShowCalendarMenu(false);
+                        toast.success("📥 Calendar file downloaded!");
+                      }}
+                      style={{
+                        width: "100%",
+                        border: "none",
+                        background: "transparent",
+                        textAlign: "left",
+                      }}
+                    >
+                      <span>⬇️</span> Download .ics
+                    </CalendarMenuItem>
+                  </CalendarMenu>
+                )}
+              </AnimatePresence>
+            </CalendarDropdown>
+          )}
+          <StatusBadge $status={schedule.status}>
+            {schedule.status === "proposed" && "⏳ Pending"}
+            {schedule.status === "confirmed" && "✅ Confirmed"}
+            {schedule.status === "completed" && "🎉 Completed"}
+            {schedule.status === "cancelled" && "❌ Cancelled"}
+            {schedule.status === "expired" && "⏰ Expired"}
+          </StatusBadge>
+        </div>
       </Header>
 
       <DateTime>
