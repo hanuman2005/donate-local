@@ -25,7 +25,7 @@ const shouldForwardProp = (prop) => !motionProps.includes(prop);
 
 export const ProfileContainer = styled.div`
   min-height: calc(100vh - 80px);
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  background: var(--bg-primary);
   padding: 2rem;
   margin-top: 80px;
 `;
@@ -33,15 +33,15 @@ export const ProfileContainer = styled.div`
 export const ProfileCard = styled.div`
   max-width: 1200px;
   margin: 0 auto;
-  background: white;
-  border-radius: 24px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
   overflow: hidden;
 `;
 
 export const CoverPhoto = styled.div`
   height: 250px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--gradient-primary);
   position: relative;
   display: flex;
   align-items: center;
@@ -85,16 +85,16 @@ export const Avatar = styled.div`
   width: 160px;
   height: 160px;
   border-radius: 50%;
-  border: 6px solid white;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: 6px solid var(--bg-card);
+  background: var(--gradient-primary);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 4rem;
   font-weight: 800;
-  color: white;
+  color: var(--text-button);
   overflow: hidden;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow-lg);
   position: relative;
 
   img {
@@ -110,13 +110,13 @@ export const AvatarUpload = styled.label`
   right: 10px;
   width: 40px;
   height: 40px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--gradient-primary);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow-md);
   transition: all 0.3s;
   font-size: 1.2rem;
 
@@ -138,13 +138,13 @@ export const ProfileInfo = styled.div`
 export const ProfileName = styled.h1`
   font-size: 2.5rem;
   font-weight: 800;
-  color: #2d3748;
+  color: var(--text-primary);
   margin: 0 0 0.5rem 0;
 `;
 
 export const ProfileEmail = styled.p`
   font-size: 1rem;
-  color: #718096;
+  color: var(--text-secondary);
   margin: 0 0 1rem 0;
   display: flex;
   align-items: center;
@@ -157,7 +157,7 @@ export const ProfileEmail = styled.p`
 
 export const ProfileBio = styled.p`
   font-size: 1rem;
-  color: #4a5568;
+  color: var(--text-tertiary);
   line-height: 1.6;
   margin: 0.5rem 0 1.5rem 0;
 `;

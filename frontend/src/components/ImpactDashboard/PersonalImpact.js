@@ -104,8 +104,8 @@ const PersonalImpact = () => {
             style={{
               marginTop: "1rem",
               padding: "0.75rem 1.5rem",
-              background: "#667eea",
-              color: "white",
+              background: "var(--gradient-primary)",
+              color: "var(--text-on-primary)",
               border: "none",
               borderRadius: "8px",
               cursor: "pointer",
@@ -214,8 +214,8 @@ const PersonalImpact = () => {
             whileTap={{ scale: 0.95 }}
             style={{
               padding: "0.5rem 1rem",
-              background: "linear-gradient(135deg, #48bb78 0%, #38a169 100%)",
-              color: "white",
+              background: "var(--gradient-success)",
+              color: "var(--text-on-primary)",
               border: "none",
               borderRadius: "8px",
               cursor: "pointer",
@@ -235,8 +235,8 @@ const PersonalImpact = () => {
             whileTap={{ scale: 0.95 }}
             style={{
               padding: "0.5rem 1rem",
-              background: "linear-gradient(135deg, #4299e1 0%, #3182ce 100%)",
-              color: "white",
+              background: "var(--gradient-primary)",
+              color: "var(--text-on-primary)",
               border: "none",
               borderRadius: "8px",
               cursor: "pointer",
@@ -270,7 +270,7 @@ const PersonalImpact = () => {
             }
             decimals={1}
             suffix=" kg"
-            gradient="linear-gradient(135deg, #48bb78 0%, #38a169 100%)"
+            gradient="var(--gradient-success)"
           />
         </motion.div>
 
@@ -286,7 +286,7 @@ const PersonalImpact = () => {
             }
             decimals={1}
             suffix=" kg"
-            gradient="linear-gradient(135deg, #4299e1 0%, #3182ce 100%)"
+            gradient="var(--gradient-primary)"
           />
         </motion.div>
 
@@ -297,7 +297,7 @@ const PersonalImpact = () => {
               value={impact.totalMealsProvided || 0}
               label="Items Shared"
               subtitle="Helping our community"
-              gradient="linear-gradient(135deg, #ed8936 0%, #dd6b20 100%)"
+              gradient="var(--gradient-warning)"
             />
           </motion.div>
         )}
@@ -310,7 +310,7 @@ const PersonalImpact = () => {
               }
               label="Items Received"
               subtitle="Support you've received"
-              gradient="linear-gradient(135deg, #ed8936 0%, #dd6b20 100%)"
+              gradient="var(--gradient-warning)"
             />
           </motion.div>
         )}
@@ -323,7 +323,7 @@ const PersonalImpact = () => {
             subtitle="Liters conserved"
             decimals={0}
             suffix=" L"
-            gradient="linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+            gradient="var(--gradient-secondary)"
           />
         </motion.div>
       </CardsGrid>
@@ -391,7 +391,7 @@ const PersonalImpact = () => {
               <NextMilestone variants={motionVariants.fadeSlideUp}>
                 <div
                   style={{
-                    color: "#2d3748",
+                    color: "var(--text-primary)",
                     fontWeight: 600,
                     marginBottom: "0.5rem",
                   }}
@@ -400,7 +400,7 @@ const PersonalImpact = () => {
                 </div>
                 <div
                   style={{
-                    color: "#718096",
+                    color: "var(--text-secondary)",
                     fontSize: "0.9rem",
                     marginBottom: "0.5rem",
                   }}
@@ -456,7 +456,7 @@ const PersonalImpact = () => {
                 initial="hidden"
                 animate="show"
                 transition={{ delay: index * 0.05 }}
-                whileHover={{ x: 5, backgroundColor: "#edf2f7" }}
+                whileHover={{ x: 5, backgroundColor: "var(--bg-secondary)" }}
               >
                 <ActivityIcon
                   animate={{ rotate: [0, 10, -10, 0] }}

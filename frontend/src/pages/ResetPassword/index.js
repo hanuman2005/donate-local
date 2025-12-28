@@ -53,20 +53,16 @@ const ResetPassword = () => {
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      background: isDark
-        ? "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)"
-        : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+      background: "var(--gradient-primary)",
       padding: "1rem",
     },
     card: {
-      background: isDark ? "#1e293b" : "#ffffff",
-      borderRadius: "16px",
+      background: "var(--bg-card)",
+      borderRadius: "var(--radius-lg)",
       padding: "2.5rem",
       width: "100%",
       maxWidth: "420px",
-      boxShadow: isDark
-        ? "0 25px 50px rgba(0, 0, 0, 0.5)"
-        : "0 25px 50px rgba(0, 0, 0, 0.15)",
+      boxShadow: "var(--shadow-xl)",
     },
     header: {
       textAlign: "center",
@@ -75,7 +71,7 @@ const ResetPassword = () => {
     icon: {
       width: "64px",
       height: "64px",
-      background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+      background: "var(--gradient-primary)",
       borderRadius: "16px",
       display: "flex",
       alignItems: "center",

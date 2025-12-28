@@ -1,9 +1,32 @@
-// src/pages/Schedules/ScheduleDetails.js
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { scheduleAPI } from "../../services/api";
 import { toast } from "react-toastify";
 import styled from "styled-components";
+
+// Styled button for navigation
+const StyledButton = styled.button`
+  margin-top: 1.5rem;
+  padding: 0.75rem 2rem;
+  background: var(--gradient-primary);
+  color: var(--text-button);
+  border: none;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  box-shadow: var(--shadow-md);
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+  &:hover,
+  &:focus {
+    background: var(--gradient-secondary);
+    transform: translateY(-2px) scale(1.03);
+    outline: none;
+  }
+  &:active {
+    transform: scale(0.98);
+  }
+`;
 
 const Container = styled.div`
   max-width: 600px;
@@ -39,33 +62,33 @@ const StatusBadge = styled.span`
   background: ${({ $status }) => {
     switch ($status) {
       case "proposed":
-        return "#fef3c7";
+        return "var(--badge-proposed-bg)";
       case "confirmed":
-        return "#d1fae5";
+        return "var(--badge-confirmed-bg)";
       case "completed":
-        return "#dbeafe";
+        return "var(--badge-completed-bg)";
       case "cancelled":
-        return "#fee2e2";
+        return "var(--badge-cancelled-bg)";
       case "expired":
-        return "#f3f4f6";
+        return "var(--badge-expired-bg)";
       default:
-        return "#e5e7eb";
+        return "var(--badge-default-bg)";
     }
   }};
   color: ${({ $status }) => {
     switch ($status) {
       case "proposed":
-        return "#92400e";
+        return "var(--badge-proposed-text)";
       case "confirmed":
-        return "#065f46";
+        return "var(--badge-confirmed-text)";
       case "completed":
-        return "#1e40af";
+        return "var(--badge-completed-text)";
       case "cancelled":
-        return "#991b1b";
+        return "var(--badge-cancelled-text)";
       case "expired":
-        return "#6b7280";
+        return "var(--badge-expired-text)";
       default:
-        return "#4b5563";
+        return "var(--badge-default-text)";
     }
   }};
 `;
@@ -151,7 +174,9 @@ const ScheduleDetails = () => {
           </p>
         )}
       </Info>
-      <button onClick={() => navigate("/schedules")}>Back to Schedules</button>
+      <StyledButton onClick={() => navigate("/schedules")}>
+        Back to Schedules
+      </StyledButton>
     </Container>
   );
 };

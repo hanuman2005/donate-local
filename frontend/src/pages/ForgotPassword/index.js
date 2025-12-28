@@ -34,20 +34,16 @@ const ForgotPassword = () => {
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      background: isDark
-        ? "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)"
-        : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+      background: "var(--gradient-primary)",
       padding: "1rem",
     },
     card: {
-      background: isDark ? "#1e293b" : "#ffffff",
-      borderRadius: "16px",
+      background: "var(--bg-card)",
+      borderRadius: "var(--radius-lg)",
       padding: "2.5rem",
       width: "100%",
       maxWidth: "420px",
-      boxShadow: isDark
-        ? "0 25px 50px rgba(0, 0, 0, 0.5)"
-        : "0 25px 50px rgba(0, 0, 0, 0.15)",
+      boxShadow: "var(--shadow-xl)",
     },
     header: {
       textAlign: "center",
@@ -56,7 +52,7 @@ const ForgotPassword = () => {
     icon: {
       width: "64px",
       height: "64px",
-      background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+      background: "var(--gradient-primary)",
       borderRadius: "16px",
       display: "flex",
       alignItems: "center",
@@ -67,11 +63,11 @@ const ForgotPassword = () => {
     title: {
       fontSize: "1.75rem",
       fontWeight: "700",
-      color: isDark ? "#f1f5f9" : "#1f2937",
+      color: "var(--text-primary)",
       marginBottom: "0.5rem",
     },
     subtitle: {
-      color: isDark ? "#94a3b8" : "#6b7280",
+      color: "var(--text-secondary)",
       fontSize: "0.95rem",
     },
     form: {

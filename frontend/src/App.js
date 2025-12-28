@@ -7,9 +7,9 @@ import "react-toastify/dist/ReactToastify.css";
 
 import Sidebar from "./components/Sidebar";
 import LoadingSpinner from "./components/Common/LoadingSpinner";
-import ProtectedRoute from "./components/Auth/ProtectedRoute";
+import ProtectedRoute from "./components/ProtectedRoute";
 import FloatingChatbot from "./components/Common/FloatingChatbot";
-import LiveNotificationBanner from "./components/Dashboard/LiveNotificationBanner";
+import LiveNotificationBanner from "./components/LiveNotificationBanner";
 import SkipLink from "./components/Common/SkipLink";
 
 // Public Pages
@@ -36,7 +36,7 @@ import DigitalTwin from "./pages/DigitalTwin";
 import Chat from "./components/Chat";
 
 // Impact Pages
-import CheckIn from "./components/QR/checkIn";
+import QRScanner from "./components/QR/QRScanner";
 import PersonalImpact from "./components/ImpactDashboard/PersonalImpact";
 import CommunityStats from "./components/ImpactDashboard/CommunityStats";
 import ScheduleDetails from "./pages/Schedules/ScheduleDetails";
@@ -180,7 +180,7 @@ function App() {
               path="/check-in"
               element={
                 <ProtectedRoute>
-                  <CheckIn />
+                  <QRScanner />
                 </ProtectedRoute>
               }
             />

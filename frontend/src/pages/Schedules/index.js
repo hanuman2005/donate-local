@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { scheduleAPI } from "../../services/api";
 import { toast } from "react-toastify";
 import ScheduleCard from "../../components/Schedule/ScheduleCard";
-import { TrackingModal } from "../../components/Tracking";
+import TrackingModal from "../../components/Tracking/TrackingModal.js";
 import { useAuth } from "../../context/AuthContext";
 import { useTheme } from "../../context/ThemeContext";
 
@@ -291,29 +291,29 @@ const StatusBadge = styled.span`
   background: ${(props) => {
     switch (props.$status) {
       case "confirmed":
-        return "rgba(72, 187, 120, 0.15)";
+        return "var(--badge-confirmed-bg)";
       case "proposed":
-        return "rgba(237, 137, 54, 0.15)";
+        return "var(--badge-proposed-bg)";
       case "completed":
-        return "rgba(102, 126, 234, 0.15)";
+        return "var(--badge-completed-bg)";
       case "cancelled":
-        return "rgba(245, 101, 101, 0.15)";
+        return "var(--badge-cancelled-bg)";
       default:
-        return "var(--bg-secondary)";
+        return "var(--badge-default-bg)";
     }
   }};
   color: ${(props) => {
     switch (props.$status) {
       case "confirmed":
-        return "#38a169";
+        return "var(--badge-confirmed-text)";
       case "proposed":
-        return "#dd6b20";
+        return "var(--badge-proposed-text)";
       case "completed":
-        return "#667eea";
+        return "var(--badge-completed-text)";
       case "cancelled":
-        return "#e53e3e";
+        return "var(--badge-cancelled-text)";
       default:
-        return "var(--text-secondary)";
+        return "var(--badge-default-text)";
     }
   }};
 `;
@@ -333,17 +333,17 @@ const ActionButton = styled(motion.button)`
   transition: all 0.3s;
   background: ${(props) =>
     props.$primary
-      ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+      ? "var(--gradient-primary)"
       : props.$success
-      ? "linear-gradient(135deg, #48bb78 0%, #38a169 100%)"
+      ? "var(--gradient-success)"
       : props.$danger
-      ? "rgba(245, 101, 101, 0.1)"
+      ? "var(--badge-cancelled-bg)"
       : "var(--bg-secondary)"};
   color: ${(props) =>
     props.$primary || props.$success
-      ? "white"
+      ? "var(--text-button)"
       : props.$danger
-      ? "#e53e3e"
+      ? "var(--badge-cancelled-text)"
       : "var(--text-primary)"};
 
   &:hover {
@@ -585,9 +585,7 @@ const SchedulesPage = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <StatIcon $gradient="linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%)">
-            📋
-          </StatIcon>
+          <StatIcon $gradient="var(--staticon-total-gradient)">📋</StatIcon>
           <StatContent>
             <StatValue>{stats.total}</StatValue>
             <StatLabel>Total Schedules</StatLabel>
@@ -599,9 +597,7 @@ const SchedulesPage = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <StatIcon $gradient="linear-gradient(135deg, rgba(237, 137, 54, 0.2) 0%, rgba(246, 173, 85, 0.2) 100%)">
-            ⏳
-          </StatIcon>
+          <StatIcon $gradient="var(--staticon-pending-gradient)">⏳</StatIcon>
           <StatContent>
             <StatValue>{stats.pending}</StatValue>
             <StatLabel>Pending</StatLabel>
@@ -613,9 +609,7 @@ const SchedulesPage = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <StatIcon $gradient="linear-gradient(135deg, rgba(72, 187, 120, 0.2) 0%, rgba(104, 211, 145, 0.2) 100%)">
-            ✅
-          </StatIcon>
+          <StatIcon $gradient="var(--staticon-confirmed-gradient)">✅</StatIcon>
           <StatContent>
             <StatValue>{stats.confirmed}</StatValue>
             <StatLabel>Confirmed</StatLabel>
@@ -627,9 +621,7 @@ const SchedulesPage = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
         >
-          <StatIcon $gradient="linear-gradient(135deg, rgba(159, 122, 234, 0.2) 0%, rgba(183, 148, 244, 0.2) 100%)">
-            🎉
-          </StatIcon>
+          <StatIcon $gradient="var(--staticon-completed-gradient)">🎉</StatIcon>
           <StatContent>
             <StatValue>{stats.completed}</StatValue>
             <StatLabel>Completed</StatLabel>

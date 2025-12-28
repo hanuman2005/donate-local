@@ -554,7 +554,6 @@ export const SavedSearchesTitle = styled.h4`
   gap: 0.5rem;
 `;
 
-
 export const SavedSearchList = styled.div`
   display: flex;
   flex-wrap: wrap;

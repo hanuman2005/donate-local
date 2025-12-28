@@ -86,20 +86,20 @@ const DetailRow = styled.div`
 `;
 
 const Label = styled.span`
-  color: #718096;
+  color: var(--text-secondary);
   font-weight: 500;
 `;
 
 const Value = styled.span`
-  color: #2d3748;
+  color: var(--text-primary);
   font-weight: 600;
 `;
 
 const Button = styled.button.withConfig({ shouldForwardProp })`
   width: 100%;
   padding: 0.75rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: var(--gradient-primary);
+  color: var(--text-button);
   border: none;
   border-radius: 10px;
   font-weight: 600;
@@ -113,26 +113,26 @@ const Button = styled.button.withConfig({ shouldForwardProp })`
 `;
 
 const SecondaryButton = styled(Button)`
-  background: #f7fafc;
-  color: #4a5568;
-  border: 2px solid #e2e8f0;
+  background: var(--bg-secondary);
+  color: var(--text-tertiary);
+  border: 2px solid var(--border-color);
 `;
 
 const QRSection = styled.div`
   margin-top: 1.5rem;
   padding: 1.5rem;
-  background: #f7fafc;
-  border-radius: 12px;
-  border: 2px dashed #cbd5e1;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  border: 2px dashed var(--border-dashed);
 `;
 
 const EmptyState = styled.div`
   text-align: center;
   padding: 4rem 2rem;
-  color: #718096;
+  color: var(--text-secondary);
 
   h2 {
-    color: #2d3748;
+    color: var(--text-primary);
     margin-bottom: 1rem;
   }
 `;
@@ -261,7 +261,7 @@ const MyPickups = () => {
                 style={{
                   marginTop: "1rem",
                   padding: "0.75rem",
-                  background: "#fef3c7",
+                  background: "var(--badge-pending-bg)",
                   borderRadius: "8px",
                   fontSize: "0.9rem",
                 }}
@@ -288,7 +288,7 @@ const MyPickups = () => {
                 <h4
                   style={{
                     textAlign: "center",
-                    color: "#2d3748",
+                    color: "var(--text-primary)",
                     marginBottom: "1rem",
                   }}
                 >
@@ -303,7 +303,7 @@ const MyPickups = () => {
                 <p
                   style={{
                     textAlign: "center",
-                    color: "#718096",
+                    color: "var(--text-secondary)",
                     fontSize: "0.85rem",
                     marginTop: "1rem",
                   }}

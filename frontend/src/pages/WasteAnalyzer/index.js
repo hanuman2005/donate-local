@@ -103,7 +103,13 @@ const WasteAnalyzer = () => {
 
   // Create confetti effect
   const createConfetti = () => {
-    const colors = ["#667eea", "#764ba2", "#48bb78", "#ed8936", "#f093fb"];
+    const colors = [
+      "var(--primary)",
+      "var(--primary-dark)",
+      "var(--success-bg)",
+      "var(--warning)",
+      "var(--accent)",
+    ];
     const confettiElements = [];
     for (let i = 0; i < 50; i++) {
       confettiElements.push(

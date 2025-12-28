@@ -1,7 +1,7 @@
 // src/components/LiveNotificationBanner/index.jsx - OPTIONAL
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useSocket } from "../../context/SocketContext";
+import { useSocket } from "../context/SocketContext";
 import styled, { keyframes } from "styled-components";
 
 // Framer Motion props that should not be forwarded to the DOM

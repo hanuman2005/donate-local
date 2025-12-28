@@ -31,7 +31,8 @@ const ToggleButton = styled.button.withConfig({ shouldForwardProp })`
   position: relative;
   width: 60px;
   height: 30px;
-  background: ${(props) => (props.$isDark ? "#334155" : "#e2e8f0")};
+  background: ${(props) =>
+    props.$isDark ? "var(--toggle-bg-dark)" : "var(--toggle-bg-light)"};
   border: none;
   border-radius: 15px;
   cursor: pointer;
@@ -41,11 +42,14 @@ const ToggleButton = styled.button.withConfig({ shouldForwardProp })`
   padding: 3px;
 
   &:hover {
-    background: ${(props) => (props.$isDark ? "#475569" : "#cbd5e0")};
+    background: ${(props) =>
+      props.$isDark
+        ? "var(--toggle-bg-dark-hover)"
+        : "var(--toggle-bg-light-hover)"};
   }
 
   &:focus {
-    outline: 2px solid #f093fb;
+    outline: 2px solid var(--primary);
     outline-offset: 2px;
   }
 `;
@@ -53,7 +57,7 @@ const ToggleButton = styled.button.withConfig({ shouldForwardProp })`
 const ToggleCircle = styled.div`
   width: 24px;
   height: 24px;
-  background: white;
+  background: var(--toggle-circle-bg);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -61,7 +65,7 @@ const ToggleCircle = styled.div`
   font-size: 14px;
   transition: transform 0.3s ease;
   transform: translateX(${(props) => (props.$isDark ? "30px" : "0px")});
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow-toggle-circle);
 `;
 
 const ThemeToggle = ({ showLabel = false }) => {
@@ -73,7 +77,7 @@ const ThemeToggle = ({ showLabel = false }) => {
         <span
           style={{
             fontSize: "0.9rem",
-            color: isDark ? "#cbd5e1" : "#718096",
+            color: isDark ? "var(--text-secondary)" : "var(--text-primary)",
             fontWeight: 500,
           }}
         >

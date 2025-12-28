@@ -7,8 +7,8 @@ import PickupTracker from "./PickupTracker";
 const Overlay = styled(motion.div)`
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(4px);
+  background: var(--overlay-bg, rgba(30, 41, 59, 0.85));
+  backdrop-filter: blur(6px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -31,9 +31,9 @@ const CloseButton = styled.button`
   top: 1rem;
   right: 1rem;
   z-index: 10;
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--primary);
   border: none;
-  color: white;
+  color: var(--text-inverse);
   width: 36px;
   height: 36px;
   border-radius: 50%;
@@ -45,7 +45,7 @@ const CloseButton = styled.button`
   transition: all 0.3s;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.3);
+    background: var(--primary-dark);
     transform: scale(1.1);
   }
 `;

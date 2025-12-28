@@ -37,13 +37,13 @@ const AdminDashboard = () => {
   const styles = {
     container: {
       minHeight: "100vh",
-      background: isDark ? "#0f172a" : "#f3f4f6",
+      background: "var(--bg-primary)",
     },
     header: {
-      background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+      background: "var(--gradient-primary)",
       padding: "1.5rem 2rem",
-      color: "#fff",
-      boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
+      color: "var(--text-button)",
+      boxShadow: "var(--shadow-md)",
     },
     headerContent: {
       maxWidth: "1400px",
@@ -65,7 +65,7 @@ const AdminDashboard = () => {
       marginTop: "0.25rem",
     },
     adminBadge: {
-      background: "rgba(255,255,255,0.2)",
+      background: "var(--badge-admin-bg)",
       padding: "0.5rem 1rem",
       borderRadius: "9999px",
       fontSize: "0.875rem",
@@ -74,8 +74,8 @@ const AdminDashboard = () => {
       gap: "0.5rem",
     },
     nav: {
-      background: isDark ? "#1e293b" : "#fff",
-      borderBottom: `1px solid ${isDark ? "#334155" : "#e5e7eb"}`,
+      background: "var(--bg-card)",
+      borderBottom: "1px solid var(--border-color)",
       position: "sticky",
       top: 0,
       zIndex: 100,
@@ -95,15 +95,15 @@ const AdminDashboard = () => {
       cursor: "pointer",
       fontSize: "0.875rem",
       fontWeight: "500",
-      color: isDark ? "#94a3b8" : "#6b7280",
+      color: "var(--text-secondary)",
       borderBottom: "3px solid transparent",
       transition: "all 0.2s",
       whiteSpace: "nowrap",
     },
     tabActive: {
-      color: "#667eea",
-      borderBottomColor: "#667eea",
-      background: isDark ? "#1e3a5f" : "#f0f9ff",
+      color: "var(--primary)",
+      borderBottomColor: "var(--primary)",
+      background: "var(--bg-tab-active)",
     },
     main: {
       maxWidth: "1400px",
@@ -111,11 +111,9 @@ const AdminDashboard = () => {
       padding: "1.5rem",
     },
     content: {
-      background: isDark ? "#1e293b" : "#fff",
-      borderRadius: "12px",
-      boxShadow: isDark
-        ? "0 1px 3px rgba(0,0,0,0.3)"
-        : "0 1px 3px rgba(0,0,0,0.1)",
+      background: "var(--bg-card)",
+      borderRadius: "var(--radius-lg)",
+      boxShadow: "var(--shadow-md)",
       minHeight: "500px",
     },
   };
@@ -126,7 +124,7 @@ const AdminDashboard = () => {
         style={{
           padding: "3rem",
           textAlign: "center",
-          color: isDark ? "#f1f5f9" : "#1f2937",
+          color: "var(--text-primary)",
         }}
       >
         Loading...

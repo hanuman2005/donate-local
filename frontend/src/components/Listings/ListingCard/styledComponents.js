@@ -63,12 +63,12 @@ export const CardImage = styled.img`
 export const ImagePlaceholder = styled.div`
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+  background: var(--gradient-primary);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: #a0aec0;
+  color: var(--text-inverse);
 
   span {
     font-size: 3rem;
@@ -85,29 +85,29 @@ export const StatusBadge = styled.div`
   position: absolute;
   top: 12px;
   left: 12px;
-  background: ${(props) => props.color || "#48bb78"};
-  color: white;
+  background: var(--success);
+  color: var(--text-inverse);
   padding: 4px 8px;
   border-radius: 12px;
   font-size: 0.75rem;
   font-weight: 600;
   text-transform: uppercase;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow-md);
 `;
 
 export const CategoryBadge = styled.div`
   position: absolute;
   top: 12px;
   right: 12px;
-  background: rgba(255, 255, 255, 0.9);
-  color: #4a5568;
+  background: var(--bg-card);
+  color: var(--primary);
   padding: 4px 8px;
   border-radius: 12px;
   font-size: 0.75rem;
   font-weight: 600;
   text-transform: capitalize;
   backdrop-filter: blur(10px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-sm);
 `;
 
 export const CardContent = styled.div`

@@ -326,8 +326,8 @@ export const ResultHeader = styled.div`
     position: absolute;
     width: 10px;
     height: 10px;
-    background: ${({ theme }) => theme.colors.info};
-    animation: ${confetti} 3s ease-out forwards;
+    background: var(--danger-bg);
+    color: var(--text-inverse);
   }
 `;
 

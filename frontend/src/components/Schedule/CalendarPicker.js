@@ -81,14 +81,13 @@ const DayCell = styled(motion.button)`
   border: none;
   border-radius: 10px;
   background: ${(props) => {
-    if (props.$selected)
-      return "linear-gradient(135deg, #667eea 0%, #764ba2 100%)";
-    if (props.$today) return "rgba(102, 126, 234, 0.15)";
-    if (props.$hasSlots) return "rgba(72, 187, 120, 0.1)";
+    if (props.$selected) return "var(--gradient-primary)";
+    if (props.$today) return "var(--bg-today)";
+    if (props.$hasSlots) return "var(--bg-available)";
     return "transparent";
   }};
   color: ${(props) => {
-    if (props.$selected) return "white";
+    if (props.$selected) return "var(--text-on-primary)";
     if (props.$disabled) return "var(--text-muted)";
     if (props.$otherMonth) return "var(--text-muted)";
     return "var(--text-primary)";
@@ -101,9 +100,7 @@ const DayCell = styled(motion.button)`
 
   &:hover:not(:disabled) {
     background: ${(props) =>
-      props.$selected
-        ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
-        : "rgba(102, 126, 234, 0.2)"};
+      props.$selected ? "var(--gradient-primary)" : "var(--bg-hover)"};
   }
 
   &:disabled {
@@ -119,17 +116,14 @@ const SlotIndicator = styled.div`
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: ${(props) => (props.$available ? "#48bb78" : "#ed8936")};
+  background: ${(props) =>
+    props.$available ? "var(--success)" : "var(--warning)"};
 `;
 
 const SelectedDateInfo = styled.div`
   margin-top: 1rem;
   padding: 1rem;
-  background: linear-gradient(
-    135deg,
-    rgba(102, 126, 234, 0.1) 0%,
-    rgba(118, 75, 162, 0.1) 100%
-  );
+  background: var(--gradient-secondary);
   border-radius: 12px;
   text-align: center;
 `;

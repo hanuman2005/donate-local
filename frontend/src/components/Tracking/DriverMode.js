@@ -28,8 +28,8 @@ const Container = styled.div`
 `;
 
 const Header = styled.div`
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: var(--gradient-primary);
+  color: var(--text-inverse);
   padding: 1.25rem 1.5rem;
 `;
 
@@ -58,12 +58,13 @@ const StatusButton = styled.button`
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s;
-  background: ${(props) => (props.$active ? "white" : "transparent")};
-  color: ${(props) => (props.$active ? "#667eea" : "rgba(255, 255, 255, 0.8)")};
+  background: ${(props) => (props.$active ? "var(--bg-card)" : "transparent")};
+  color: ${(props) =>
+    props.$active ? "var(--primary)" : "var(--text-inverse)"};
 
   &:hover {
     background: ${(props) =>
-      props.$active ? "white" : "rgba(255, 255, 255, 0.1)"};
+      props.$active ? "var(--bg-card)" : "var(--bg-hover)"};
   }
 `;
 
@@ -126,7 +127,7 @@ const QueueTitle = styled.h3`
 const PickupCount = styled.span`
   padding: 0.25rem 0.75rem;
   background: var(--primary);
-  color: white;
+  color: var(--text-inverse);
   border-radius: 20px;
   font-size: 0.75rem;
   font-weight: 600;
@@ -155,10 +156,9 @@ const PickupNumber = styled.div`
   height: 40px;
   border-radius: 10px;
   background: ${(props) =>
-    props.$active
-      ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
-      : "var(--bg-secondary)"};
-  color: ${(props) => (props.$active ? "white" : "var(--text-primary)")};
+    props.$active ? "var(--gradient-primary)" : "var(--bg-secondary)"};
+  color: ${(props) =>
+    props.$active ? "var(--text-inverse)" : "var(--text-primary)"};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -204,12 +204,14 @@ const ActionButton = styled(motion.button)`
   transition: all 0.3s;
   background: ${(props) =>
     props.$primary
-      ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+      ? "var(--gradient-primary)"
       : props.$success
-      ? "linear-gradient(135deg, #48bb78 0%, #38a169 100%)"
+      ? "var(--success-bg)"
       : "var(--bg-secondary)"};
   color: ${(props) =>
-    props.$primary || props.$success ? "white" : "var(--text-primary)"};
+    props.$primary || props.$success
+      ? "var(--text-inverse)"
+      : "var(--text-primary)"};
 
   &:disabled {
     opacity: 0.5;
@@ -218,12 +220,8 @@ const ActionButton = styled(motion.button)`
 `;
 
 const CurrentPickupBanner = styled(motion.div)`
-  background: linear-gradient(
-    135deg,
-    rgba(72, 187, 120, 0.15) 0%,
-    rgba(56, 161, 105, 0.15) 100%
-  );
-  border: 2px solid rgba(72, 187, 120, 0.3);
+  background: var(--success-bg);
+  border: 2px solid var(--success-bg);
   border-radius: 16px;
   margin: 1rem;
   padding: 1rem;
@@ -238,7 +236,7 @@ const BannerHeader = styled.div`
 
 const BannerTitle = styled.div`
   font-weight: 700;
-  color: #38a169;
+  color: var(--success-bg);
   display: flex;
   align-items: center;
   gap: 0.5rem;

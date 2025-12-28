@@ -4,6 +4,7 @@ import styled from "styled-components";
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
 import { routeAPI } from "../../services/api";
+
 import {
   MapContainer,
   TileLayer,
@@ -12,6 +13,7 @@ import {
   Polyline,
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
+import L from "leaflet";
 
 // Framer Motion props that should not be forwarded to the DOM
 const motionProps = [
@@ -38,7 +40,7 @@ const shouldForwardProp = (prop) => !motionProps.includes(prop);
 
 const PageContainer = styled.div`
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--gradient-primary);
   padding: 8rem 2rem 4rem;
 `;
 
@@ -65,16 +67,16 @@ const Header = styled.div`
 `;
 
 const Card = styled(motion.div)`
-  background: white;
-  border-radius: 24px;
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
   padding: 2rem;
   margin-bottom: 2rem;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow-xl);
 `;
 
 const Button = styled.button.withConfig({ shouldForwardProp })`
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: var(--gradient-primary);
+  color: var(--text-button);
   padding: 1rem 2rem;
   border: none;
   border-radius: 12px;
@@ -85,7 +87,7 @@ const Button = styled.button.withConfig({ shouldForwardProp })`
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+    box-shadow: var(--shadow-lg);
   }
 
   &:disabled {
@@ -102,7 +104,7 @@ const StatsGrid = styled.div`
 `;
 
 const StatCard = styled.div`
-  background: linear-gradient(135deg, #f7fafc, #edf2f7);
+  background: var(--bg-statcard);
   padding: 1.5rem;
   border-radius: 16px;
   text-align: center;
@@ -110,26 +112,26 @@ const StatCard = styled.div`
   .value {
     font-size: 2.5rem;
     font-weight: 900;
-    color: #667eea;
+    color: var(--primary);
     margin-bottom: 0.5rem;
   }
 
   .label {
-    color: #64748b;
+    color: var(--text-secondary);
     font-size: 0.95rem;
     font-weight: 600;
   }
 `;
 
 const RouteCard = styled.div`
-  background: #f7fafc;
-  border-radius: 16px;
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
   padding: 1.5rem;
   margin-bottom: 1rem;
-  border-left: 4px solid #667eea;
+  border-left: 4px solid var(--primary);
 
   h3 {
-    color: #1e293b;
+    color: var(--text-primary);
     margin: 0 0 1rem 0;
     font-size: 1.25rem;
   }
@@ -144,14 +146,14 @@ const RouteCard = styled.div`
   .info-item {
     .label {
       font-size: 0.85rem;
-      color: #64748b;
+      color: var(--text-secondary);
       margin-bottom: 0.3rem;
     }
 
     .value {
       font-size: 1.1rem;
       font-weight: 700;
-      color: #1e293b;
+      color: var(--text-primary);
     }
   }
 
@@ -177,6 +179,19 @@ const MapWrapper = styled.div`
   margin-top: 2rem;
 `;
 
+const routeColors = [
+  "#4299e1",
+  "#48bb78",
+  "#ed8936",
+  "#9f7aea",
+  "#f56565",
+  "#38a169",
+  "#ecc94b",
+  "#805ad5",
+  "#d53f8c",
+  "#2b6cb0",
+];
+
 const RouteOptimizer = () => {
   const [pickups, setPickups] = useState([]);
   const [optimizedRoutes, setOptimizedRoutes] = useState(null);
@@ -186,6 +201,7 @@ const RouteOptimizer = () => {
     lon: 81.5217,
     name: "NGO Depot",
   });
+  const [selectedRouteIdx, setSelectedRouteIdx] = useState(null);
 
   useEffect(() => {
     fetchPickups();
@@ -309,7 +325,22 @@ const RouteOptimizer = () => {
 
               <h2>Optimized Routes</h2>
               {optimizedRoutes.routes.map((route, index) => (
-                <RouteCard key={index}>
+                <RouteCard
+                  key={index}
+                  style={{
+                    borderLeft: `4px solid ${
+                      routeColors[index % routeColors.length]
+                    }`,
+                    boxShadow:
+                      selectedRouteIdx === index
+                        ? "0 0 0 3px #4299e1"
+                        : undefined,
+                    cursor: "pointer",
+                  }}
+                  onClick={() => setSelectedRouteIdx(index)}
+                  tabIndex={0}
+                  aria-label={`Show Route ${route.routeNumber} on map`}
+                >
                   <h3>Route {route.routeNumber}</h3>
                   <div className="route-info">
                     <div className="info-item">
@@ -342,6 +373,95 @@ const RouteOptimizer = () => {
                   </div>
                 </RouteCard>
               ))}
+
+              {/* Map showing all routes, highlight selected */}
+              <MapWrapper>
+                <MapContainer
+                  center={[depot.lat, depot.lon]}
+                  zoom={12}
+                  style={{
+                    height: "100%",
+                    width: "100%",
+                    borderRadius: "12px",
+                  }}
+                  scrollWheelZoom={true}
+                >
+                  <TileLayer
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  />
+                  {/* Depot marker */}
+                  <Marker
+                    position={[depot.lat, depot.lon]}
+                    icon={L.divIcon({
+                      html: '<div style="background:#4299e1;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;font-size:18px;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.2);">🏢</div>',
+                      className: "depot-marker",
+                      iconSize: [28, 28],
+                      iconAnchor: [14, 14],
+                    })}
+                  >
+                    <Popup>Depot: {depot.name}</Popup>
+                  </Marker>
+                  {/* Draw all routes as polylines, highlight selected */}
+                  {optimizedRoutes.routes.map((route, idx) => {
+                    // Build polyline: depot -> pickups (in order) -> depot (optional)
+                    const points = [
+                      [depot.lat, depot.lon],
+                      ...route.pickups.map((p) => [
+                        p.location.lat,
+                        p.location.lon,
+                      ]),
+                      // Optionally, return to depot:
+                      //[depot.lat, depot.lon]
+                    ];
+                    return (
+                      <Polyline
+                        key={idx}
+                        positions={points}
+                        pathOptions={{
+                          color: routeColors[idx % routeColors.length],
+                          weight:
+                            selectedRouteIdx === null ||
+                            selectedRouteIdx === idx
+                              ? 7
+                              : 3,
+                          opacity:
+                            selectedRouteIdx === null ||
+                            selectedRouteIdx === idx
+                              ? 0.9
+                              : 0.3,
+                          dashArray: selectedRouteIdx === idx ? null : "6 12",
+                        }}
+                      />
+                    );
+                  })}
+                  {/* Pickup markers for selected route */}
+                  {selectedRouteIdx !== null &&
+                    optimizedRoutes.routes[selectedRouteIdx].pickups.map(
+                      (pickup, i) => (
+                        <Marker
+                          key={i}
+                          position={[pickup.location.lat, pickup.location.lon]}
+                          icon={L.divIcon({
+                            html: `<div style="background:#48bb78;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:15px;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.2);">${
+                              i + 1
+                            }</div>`,
+                            className: "pickup-marker",
+                            iconSize: [24, 24],
+                            iconAnchor: [12, 12],
+                          })}
+                        >
+                          <Popup>
+                            <strong>{pickup.donorName}</strong>
+                            <br />
+                            {pickup.itemTitle} ({pickup.quantity}{" "}
+                            {pickup.unit || "items"})
+                          </Popup>
+                        </Marker>
+                      )
+                    )}
+                </MapContainer>
+              </MapWrapper>
             </>
           )}
         </Card>

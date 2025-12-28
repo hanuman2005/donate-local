@@ -94,8 +94,8 @@ export const Title = styled.h1`
 `;
 
 export const UnreadBadge = styled.span`
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: var(--gradient-primary);
+  color: var(--text-button);
   padding: 0.35rem 0.875rem;
   border-radius: 20px;
   font-size: 0.9rem;
@@ -131,7 +131,7 @@ export const MarkAllButton = styled.button.withConfig({ shouldForwardProp })`
     color: white;
     border-color: var(--primary);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+    box-shadow: var(--shadow-lg);
   }
 
   @media (max-width: 768px) {
@@ -160,9 +160,7 @@ export const FilterContainer = styled.div`
 export const FilterButton = styled.button.withConfig({ shouldForwardProp })`
   padding: 0.75rem 1.5rem;
   background: ${(props) =>
-    props.$active
-      ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
-      : "var(--bg-card)"};
+    props.$active ? "var(--gradient-primary)" : "var(--bg-card)"};
   color: ${(props) => (props.$active ? "white" : "var(--text-primary)")};
   border: 2px solid
     ${(props) => (props.$active ? "transparent" : "var(--border-color)")};
@@ -175,7 +173,7 @@ export const FilterButton = styled.button.withConfig({ shouldForwardProp })`
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow-md);
   }
 
   @media (max-width: 768px) {
@@ -226,7 +224,7 @@ export const DateGroup = styled.div`
 export const DateLabel = styled.div`
   font-size: 0.9rem;
   font-weight: 700;
-  color: #667eea;
+  color: var(--primary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: 1rem;
@@ -261,7 +259,7 @@ export const NotificationCard = styled.div`
 
   &:hover {
     transform: translateX(5px);
-    box-shadow: 0 8px 30px rgba(102, 126, 234, 0.2);
+    box-shadow: var(--shadow-lg);
     opacity: 1;
   }
 
@@ -272,7 +270,7 @@ export const NotificationCard = styled.div`
     left: 0;
     width: 4px;
     height: 100%;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: var(--gradient-primary);
     opacity: ${(props) => (props.$read ? 0 : 1)};
   }
 
@@ -294,11 +292,11 @@ export const NotificationIcon = styled.div`
   border-radius: 12px;
   background: ${(props) => {
     const colors = {
-      message: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-      interest: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
-      assignment: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
-      completion: "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)",
-      system: "linear-gradient(135deg, #fa709a 0%, #fee140 100%)",
+      message: "var(--notification-message-gradient)",
+      interest: "var(--notification-interest-gradient)",
+      assignment: "var(--notification-assignment-gradient)",
+      completion: "var(--notification-completion-gradient)",
+      system: "var(--notification-system-gradient)",
     };
     return colors[props.type] || colors.system;
   }};
@@ -360,7 +358,7 @@ export const NotificationTitle = styled.h3`
 
 export const NotificationTime = styled.span`
   font-size: 0.85rem;
-  color: #a0aec0;
+  color: var(--text-tertiary);
   white-space: nowrap;
   flex-shrink: 0;
 
@@ -404,10 +402,9 @@ export const NotificationActions = styled.div`
 export const ActionButton = styled.button.withConfig({ shouldForwardProp })`
   padding: 0.5rem 1rem;
   background: ${(props) =>
-    props.$primary
-      ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
-      : "#f7fafc"};
-  color: ${(props) => (props.$primary ? "white" : "#4a5568")};
+    props.$primary ? "var(--gradient-primary)" : "#f7fafc"};
+  color: ${(props) =>
+    props.$primary ? "var(--text-button)" : "var(--text-tertiary)"};
   border: none;
   border-radius: 8px;
   font-size: 0.85rem;
@@ -418,7 +415,7 @@ export const ActionButton = styled.button.withConfig({ shouldForwardProp })`
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: var(--shadow-md);
   }
 
   @media (max-width: 768px) {
@@ -523,8 +520,8 @@ export const LoadingContainer = styled.div`
 export const Spinner = styled.div`
   width: 50px;
   height: 50px;
-  border: 4px solid #e2e8f0;
-  border-top-color: #667eea;
+  border: 4px solid var(--border-color);
+  border-top-color: var(--primary);
   border-radius: 50%;
   animation: spin 1s linear infinite;
 

@@ -1,6 +1,6 @@
-// src/components/CheckIn/index.jsx - CLEANED UP
+// src/components/QR/QRScanner.js - RENAMED FROM checkIn.js
 import React, { useState } from "react";
-import { useNavigate } from 'react-router-dom'; // ← Removed unused useLocation
+import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { motion, AnimatePresence } from "framer-motion";
 import { Scanner } from "@yudiel/react-qr-scanner";
@@ -77,7 +77,7 @@ const HistoryItem = styled(motion.div)`
 // COMPONENT
 // ============================================
 
-const CheckIn = () => {
+const QRScanner = () => {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(null);
   const [checkInHistory, setCheckInHistory] = useState([]);
@@ -156,19 +156,20 @@ const CheckIn = () => {
           <>
             <motion.div
               style={{
-                textAlign: 'center',
-                marginBottom: '2rem',
-                padding: '1.5rem',
-                background: '#f7fafc',
-                borderRadius: '12px'
+                textAlign: "center",
+                marginBottom: "2rem",
+                padding: "1.5rem",
+                background: "#f7fafc",
+                borderRadius: "12px",
               }}
             >
-              <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📱</div>
-              <h3 style={{ color: '#2d3748', marginBottom: '0.5rem' }}>
+              <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>📱</div>
+              <h3 style={{ color: "#2d3748", marginBottom: "0.5rem" }}>
                 Ready to Verify Pickup?
               </h3>
-              <p style={{ color: '#718096', marginBottom: 0 }}>
-                Ask the donor to show their QR code, then tap the button below to scan.
+              <p style={{ color: "#718096", marginBottom: 0 }}>
+                Ask the donor to show their QR code, then tap the button below
+                to scan.
               </p>
             </motion.div>
 
@@ -182,16 +183,16 @@ const CheckIn = () => {
 
             <div
               style={{
-                marginTop: '1.5rem',
-                padding: '1rem',
-                background: '#fef3c7',
-                borderRadius: '8px',
-                fontSize: '0.9rem',
-                color: '#92400e'
+                marginTop: "1.5rem",
+                padding: "1rem",
+                background: "#fef3c7",
+                borderRadius: "8px",
+                fontSize: "0.9rem",
+                color: "#92400e",
               }}
             >
-              <strong>💡 Tip:</strong> The donor will generate a QR code from their listing. 
-              Just scan it to complete the pickup instantly!
+              <strong>💡 Tip:</strong> The donor will generate a QR code from
+              their listing. Just scan it to complete the pickup instantly!
             </div>
           </>
         )}
@@ -209,13 +210,13 @@ const CheckIn = () => {
                 delay={300}
                 onError={(err) => console.error("QR scan error:", err)}
                 onScan={handleQrScan}
-                style={{ 
-                  width: "100%", 
+                style={{
+                  width: "100%",
                   borderRadius: "12px",
-                  maxHeight: '400px'
+                  maxHeight: "400px",
                 }}
                 constraints={{
-                  video: { facingMode: "environment" }
+                  video: { facingMode: "environment" },
                 }}
               />
               <p
@@ -232,7 +233,7 @@ const CheckIn = () => {
               {!loading && (
                 <Button
                   onClick={() => setScanning(false)}
-                  style={{ background: '#e53e3e', marginTop: '1rem' }}
+                  style={{ background: "#e53e3e", marginTop: "1rem" }}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
@@ -260,7 +261,7 @@ const CheckIn = () => {
                   fontSize: "1rem",
                   opacity: 0.95,
                   marginTop: "0.75rem",
-                  fontWeight: '500'
+                  fontWeight: "500",
                 }}
               >
                 {success.title}
@@ -269,7 +270,7 @@ const CheckIn = () => {
                 style={{
                   fontSize: "0.85rem",
                   opacity: 0.8,
-                  marginTop: "1rem"
+                  marginTop: "1rem",
                 }}
               >
                 Transaction completed successfully!
@@ -278,13 +279,13 @@ const CheckIn = () => {
               <Button
                 onClick={() => {
                   setSuccess(null);
-                  navigate('/dashboard');
+                  navigate("/dashboard");
                 }}
-                style={{ 
-                  marginTop: '1.5rem',
-                  background: 'white',
-                  color: '#48bb78',
-                  border: '2px solid white'
+                style={{
+                  marginTop: "1.5rem",
+                  background: "white",
+                  color: "#48bb78",
+                  border: "2px solid white",
                 }}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -323,7 +324,13 @@ const CheckIn = () => {
                     ID: {item.id.slice(-8)}
                   </div>
                 </div>
-                <div style={{ fontSize: "0.85rem", color: "#48bb78", fontWeight: '600' }}>
+                <div
+                  style={{
+                    fontSize: "0.85rem",
+                    color: "#48bb78",
+                    fontWeight: "600",
+                  }}
+                >
                   ✓ Verified
                 </div>
               </HistoryItem>
@@ -335,4 +342,4 @@ const CheckIn = () => {
   );
 };
 
-export default CheckIn;
+export default QRScanner;

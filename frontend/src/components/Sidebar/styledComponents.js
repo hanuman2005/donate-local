@@ -30,7 +30,7 @@ export const SidebarContainer = styled.aside`
   top: 0;
   bottom: 0;
   width: 280px;
-  background: var(--bg-secondary); /* ← Uses theme variable */
+  background: var(--bg-secondary);
   border-right: 1px solid var(--border-color);
   box-shadow: var(--shadow-md);
   z-index: 1000;
@@ -119,8 +119,7 @@ export const NavItem = styled.div.withConfig({ shouldForwardProp })`
   border-radius: var(--radius-md);
   color: ${(props) =>
     props.$active ? "var(--primary)" : "var(--text-primary)"};
-  background: ${(props) =>
-    props.$active ? "rgba(102, 126, 234, 0.1)" : "transparent"};
+  background: ${(props) => (props.$active ? "var(--bg-hover)" : "transparent")};
   font-weight: ${(props) => (props.$active ? "600" : "500")};
   cursor: pointer;
   transition: all var(--transition-base);
@@ -129,7 +128,7 @@ export const NavItem = styled.div.withConfig({ shouldForwardProp })`
   user-select: none;
 
   &:hover {
-    background: rgba(102, 126, 234, 0.1);
+    background: var(--bg-hover);
     color: var(--primary);
     transform: translateX(4px);
   }
@@ -296,7 +295,7 @@ export const DropdownItem = styled.button.withConfig({ shouldForwardProp })`
   font-size: 0.9rem;
 
   &:hover {
-    background: rgba(102, 126, 234, 0.1);
+    background: var(--bg-hover);
     color: var(--primary);
     transform: translateX(4px);
   }
@@ -381,7 +380,7 @@ export const NotificationButton = styled.button.withConfig({
   justify-content: center;
 
   &:hover {
-    background: rgba(102, 126, 234, 0.1);
+    background: var(--bg-hover);
   }
 
   &:active {
@@ -451,7 +450,7 @@ export const MobileOverlay = styled.div`
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: var(--overlay-bg);
   z-index: 998;
   backdrop-filter: blur(2px);
 

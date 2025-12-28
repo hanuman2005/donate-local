@@ -25,7 +25,7 @@ export const Header = styled.div`
     font-size: 3rem;
     font-weight: 900;
     margin: 0 0 1rem 0;
-    text-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    text-shadow: var(--shadow-header-text);
     @media (max-width: 768px) {
       font-size: 2rem;
     }
@@ -80,7 +80,7 @@ export const AnalysisCard = styled(motion.div)`
   transition: all 0.3s ease;
   &:hover {
     transform: translateY(-5px);
-    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.2);
+    box-shadow: var(--shadow-xl);
   }
 `;
 
@@ -96,9 +96,9 @@ export const CardHeader = styled.div`
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: var(--gradient-primary);
     border-radius: 20px;
-    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+    box-shadow: var(--shadow-lg);
   }
   .info {
     flex: 1;
@@ -110,8 +110,8 @@ export const CardHeader = styled.div`
     }
     .material {
       display: inline-block;
-      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-      color: white;
+      background: var(--gradient-material);
+      color: var(--text-button);
       padding: 0.4rem 0.8rem;
       border-radius: 50px;
       font-size: 0.85rem;
@@ -175,7 +175,7 @@ export const EmptyState = styled.div`
       background: var(--primary);
       color: white;
       transform: translateY(-2px);
-      box-shadow: 0 10px 30px rgba(102, 126, 234, 0.15);
+      box-shadow: var(--shadow-focus);
     }
   }
 `;

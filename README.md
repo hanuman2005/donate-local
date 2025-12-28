@@ -1,4 +1,4 @@
-# ShareTogether
+# LifeLoop
 
 > Give what you don't want and take what you want
 
@@ -33,16 +33,10 @@ A real-time MERN platform connecting local communities to share items — reduci
 ShareTogether is a community-driven platform that enables users to donate items they no longer need and find items they want. Whether it's food, clothing, furniture, electronics, books, toys, or any other items, ShareTogether connects neighbors to reduce waste and build stronger communities.
 
 ### The Problem
+
 - 🗑️ Billions of items wasted globally every year
 - 😢 Many people in need of basic items
 - 🌍 Waste contributes significantly to environmental issues
-
-### Our Solution
-ShareTogether creates a circular economy that:
-- ✅ Reduces waste at the source
-- ✅ Helps those in need in local communities
-- ✅ Decreases environmental impact
-- ✅ Builds stronger community bonds
 
 ---
 
@@ -50,25 +44,24 @@ ShareTogether creates a circular economy that:
 
 ### 🎯 Core Functionality
 
+LifeLoop is a community-driven platform that enables users to donate items they no longer need and find items they want. Whether it's food, clothing, furniture, electronics, books, toys, or any other items, LifeLoop connects neighbors to reduce waste and build stronger communities.
+
 - **📝 Universal Item Donations**
+
   - Create listings for any type of item (food, clothing, furniture, electronics, books, toys, etc.)
-  - Upload multiple images (up to 5) via Cloudinary integration
-  - Real-time status updates (Available → Pending → Completed)
-  - 10+ item categories
 
 - **📍 Location-Aware Discovery**
-  - Geospatial search using MongoDB 2dsphere indexes
-  - Interactive map view with marker clustering
-  - "Near me" filtering with adjustable radius (1-100 km)
-  - Distance calculation for each listing
 
-- **💬 Real-Time Chat System**
-  - Socket.IO powered instant messaging
-  - Typing indicators and read receipts
-  - Chat history persistence
-  - Message notifications
+LifeLoop creates a circular economy that:
+
+- Interactive map view with marker clustering
+
+- Typing indicators and read receipts
+- Chat history persistence
+- Message notifications
 
 - **🔔 Smart Notifications**
+
   - Real-time push notifications via WebSocket
   - Interest expressed notifications
   - Listing assignment alerts
@@ -79,21 +72,6 @@ ShareTogether creates a circular economy that:
   - Generate unique QR codes for transactions
   - Secure hash-based verification
   - Camera scanning functionality
-  - Download QR as PNG
-  - Transaction history tracking
-
-- **📊 Impact Tracking**
-  - Personal impact dashboard
-  - Community-wide statistics
-  - Geographic heatmap
-  - Historical timeline
-  - Shareable impact cards
-  - CO2, waste, items saved metrics
-
-- **👤 User Profiles**
-  - Complete profile management
-  - Rating system with 5-star reviews
-  - Activity tracking
   - User statistics dashboard
 
 ### 🔐 Security & Authentication
@@ -111,41 +89,41 @@ ShareTogether creates a circular economy that:
 
 ### Frontend
 
-| Technology | Purpose |
-|------------|---------|
-| **React 19** | UI framework with hooks |
-| **React Router v7** | Client-side routing |
-| **Styled Components** | Component styling |
-| **Axios** | HTTP client with interceptors |
-| **Socket.IO Client** | Real-time communication |
-| **React Toastify** | Notifications |
-| **Leaflet** | Interactive maps |
-| **QRCode.react** | QR code generation |
-| **ZXing WASM** | QR code scanning |
+| Technology            | Purpose                       |
+| --------------------- | ----------------------------- |
+| **React 19**          | UI framework with hooks       |
+| **React Router v7**   | Client-side routing           |
+| **Styled Components** | Component styling             |
+| **Axios**             | HTTP client with interceptors |
+| **Socket.IO Client**  | Real-time communication       |
+| **React Toastify**    | Notifications                 |
+| **Leaflet**           | Interactive maps              |
+| **QRCode.react**      | QR code generation            |
+| **ZXing WASM**        | QR code scanning              |
 
 ### Backend
 
-| Technology | Purpose |
-|------------|---------|
-| **Node.js** | Runtime environment |
-| **Express.js** | Web framework |
-| **MongoDB** | NoSQL database |
-| **Mongoose** | ODM with schema validation |
-| **Socket.IO** | WebSocket server |
-| **JWT** | Authentication tokens |
-| **Bcrypt** | Password hashing |
-| **Cloudinary** | Image storage & CDN |
-| **Multer** | File upload handling |
+| Technology     | Purpose                    |
+| -------------- | -------------------------- |
+| **Node.js**    | Runtime environment        |
+| **Express.js** | Web framework              |
+| **MongoDB**    | NoSQL database             |
+| **Mongoose**   | ODM with schema validation |
+| **Socket.IO**  | WebSocket server           |
+| **JWT**        | Authentication tokens      |
+| **Bcrypt**     | Password hashing           |
+| **Cloudinary** | Image storage & CDN        |
+| **Multer**     | File upload handling       |
 
 ### DevOps & Tools
 
-| Technology | Purpose |
-|------------|---------|
-| **Nodemon** | Auto-restart dev server |
-| **Dotenv** | Environment variables |
-| **Compression** | Response compression |
-| **Helmet** | Security headers |
-| **Morgan** | HTTP logging |
+| Technology      | Purpose                 |
+| --------------- | ----------------------- |
+| **Nodemon**     | Auto-restart dev server |
+| **Dotenv**      | Environment variables   |
+| **Compression** | Response compression    |
+| **Helmet**      | Security headers        |
+| **Morgan**      | HTTP logging            |
 
 ---
 
@@ -218,6 +196,7 @@ npm install
 4. **Environment Variables**
 
 **Backend** (`backend/.env`):
+
 ```env
 # Server Configuration
 PORT=5000
@@ -240,6 +219,7 @@ CLIENT_URL=http://localhost:3000
 ```
 
 **Frontend** (`frontend/.env`):
+
 ```env
 REACT_APP_API_URL=http://localhost:5000/api
 REACT_APP_SOCKET_URL=http://localhost:5000
@@ -248,12 +228,14 @@ REACT_APP_SOCKET_URL=http://localhost:5000
 5. **Start Development Servers**
 
 **Backend** (Terminal 1):
+
 ```bash
 cd backend
 npm run dev
 ```
 
 **Frontend** (Terminal 2):
+
 ```bash
 cd frontend
 npm start
@@ -278,37 +260,37 @@ npm start
 
 ### Authentication Endpoints
 
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| POST | `/api/auth/register` | Register new user | ❌ |
-| POST | `/api/auth/login` | User login | ❌ |
-| GET | `/api/auth/me` | Get current user | ✅ |
-| PUT | `/api/auth/profile` | Update profile | ✅ |
+| Method | Endpoint             | Description       | Auth Required |
+| ------ | -------------------- | ----------------- | ------------- |
+| POST   | `/api/auth/register` | Register new user | ❌            |
+| POST   | `/api/auth/login`    | User login        | ❌            |
+| GET    | `/api/auth/me`       | Get current user  | ✅            |
+| PUT    | `/api/auth/profile`  | Update profile    | ✅            |
 
 ### Listing Endpoints
 
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| GET | `/api/listings` | Get all listings | ❌ |
-| GET | `/api/listings/nearby` | Get nearby listings | ❌ |
-| POST | `/api/listings` | Create listing | ✅ |
-| PUT | `/api/listings/:id` | Update listing | ✅ |
-| DELETE | `/api/listings/:id` | Delete listing | ✅ |
+| Method | Endpoint               | Description         | Auth Required |
+| ------ | ---------------------- | ------------------- | ------------- |
+| GET    | `/api/listings`        | Get all listings    | ❌            |
+| GET    | `/api/listings/nearby` | Get nearby listings | ❌            |
+| POST   | `/api/listings`        | Create listing      | ✅            |
+| PUT    | `/api/listings/:id`    | Update listing      | ✅            |
+| DELETE | `/api/listings/:id`    | Delete listing      | ✅            |
 
 ### QR Code Endpoints
 
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| POST | `/api/qr/generate` | Generate QR code | ✅ |
-| POST | `/api/qr/verify` | Verify QR code | ✅ |
-| GET | `/api/qr/my-transactions` | Get transactions | ✅ |
+| Method | Endpoint                  | Description      | Auth Required |
+| ------ | ------------------------- | ---------------- | ------------- |
+| POST   | `/api/qr/generate`        | Generate QR code | ✅            |
+| POST   | `/api/qr/verify`          | Verify QR code   | ✅            |
+| GET    | `/api/qr/my-transactions` | Get transactions | ✅            |
 
 ### Impact Endpoints
 
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| GET | `/api/impact/personal` | Personal impact | ✅ |
-| GET | `/api/impact/community` | Community stats | ❌ |
+| Method | Endpoint                | Description     | Auth Required |
+| ------ | ----------------------- | --------------- | ------------- |
+| GET    | `/api/impact/personal`  | Personal impact | ✅            |
+| GET    | `/api/impact/community` | Community stats | ❌            |
 
 For complete API documentation, see [Backend README](./backend/BACKEND_README.md)
 
@@ -317,20 +299,24 @@ For complete API documentation, see [Backend README](./backend/BACKEND_README.md
 ## 📸 Screenshots
 
 ### Dashboard
+
 ![Dashboard](./screenshots/dashboard.png)
-*User dashboard with statistics, nearby listings map, and personal listings*
+_User dashboard with statistics, nearby listings map, and personal listings_
 
 ### Listings Page
+
 ![Listings](./screenshots/listings.png)
-*Browse all available donations with filters*
+_Browse all available donations with filters_
 
 ### Chat Interface
+
 ![Chat](./screenshots/chat.png)
-*Real-time messaging between donors and recipients*
+_Real-time messaging between donors and recipients_
 
 ### Mobile Responsive
+
 ![Mobile](./screenshots/mobile.png)
-*Fully responsive design for mobile devices*
+_Fully responsive design for mobile devices_
 
 ---
 
@@ -463,18 +449,21 @@ SOFTWARE.
 ## 💡 Why ShareTogether Matters
 
 **The Problem:**
+
 - 🗑️ Billions of items wasted globally every year
 - 😢 Many people in need of basic items
 - 🌍 Waste contributes significantly to environmental issues
 
 **Our Solution:**
 ShareTogether connects those with items to donate to those in need, creating a circular economy that:
+
 - ✅ Reduces waste at the source
 - ✅ Helps those in need in local communities
 - ✅ Decreases environmental impact
 - ✅ Builds stronger community bonds
 
 **Impact to Date:**
+
 - 📦 X listings created
 - 🤝 Y donations completed
 - 🌱 Z items saved from waste
@@ -491,8 +480,29 @@ ShareTogether connects those with items to donate to those in need, creating a c
 
 ---
 
-**Last Updated**: January 2025  
-**Version**: 1.0.0  
-**Status**: ✅ PRODUCTION READY
+---
 
-Copy this into your root `README.md` file. It includes your branding, tagline, and links to your backend and frontend documentation.
+## 🧪 END-TO-END TESTING INSTRUCTIONS
+
+To verify the full user flow (from registration/login to item pickup, ratings, analytics, and admin):
+
+1. **Register/Login**: Create a new user or login as donor/recipient/admin.
+2. **Analyze Item**: Use the AI Waste Analyzer (frontend) to analyze an item (multi-image supported).
+3. **Create Listing**: One-click create a donation listing from analysis results.
+4. **Browse Listings**: View and search for listings (advanced search, geospatial, category filters).
+5. **Express Interest**: As a recipient, express interest in a listing.
+6. **Chat**: Use real-time chat to communicate between donor and recipient.
+7. **Assign & Schedule**: Donor assigns recipient, proposes pickup schedule (calendar integration).
+8. **Notifications**: Receive real-time notifications for all actions (interest, assignment, schedule, etc.).
+9. **Pickup & QR Verification**: Complete pickup using QR code system (scan and verify).
+10. **Rate & Review**: After pickup, rate and review the other party.
+11. **Impact & Analytics**: View personal and community impact dashboards, export analytics.
+12. **Admin Dashboard**: (If admin) Access platform analytics, user management, and export tools.
+
+All features are accessible via the sidebar and dashboard. Protected routes require authentication.
+
+---
+
+**Last Updated**: December 2025  
+**Version**: 2.0.0  
+**Status**: ✅ PRODUCTION READY

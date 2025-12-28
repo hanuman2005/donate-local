@@ -101,17 +101,17 @@ const DigitalTwin = () => {
             ["linear"],
             ["heatmap-density"],
             0,
-            "rgba(33,102,172,0)",
+            "var(--heatmap-0)",
             0.2,
-            "rgb(103,169,207)",
+            "var(--heatmap-1)",
             0.4,
-            "rgb(209,229,240)",
+            "var(--heatmap-2)",
             0.6,
-            "rgb(253,219,199)",
+            "var(--heatmap-3)",
             0.8,
-            "rgb(239,138,98)",
+            "var(--heatmap-4)",
             1,
-            "rgb(178,24,43)",
+            "var(--heatmap-5)",
           ],
           "heatmap-radius": 30,
         },
@@ -142,7 +142,7 @@ const DigitalTwin = () => {
           type: "line",
           source: id,
           paint: {
-            "line-color": "#00f2fe",
+            "line-color": "var(--flow-line-color)",
             "line-width": 2,
             "line-opacity": 0.6,
           },
@@ -196,7 +196,7 @@ const LoadingOverlay = styled.div`
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background: rgba(0, 0, 0, 0.8);
+  background: var(--overlay-bg);
   color: white;
   padding: 2rem;
   border-radius: var(--radius-lg);

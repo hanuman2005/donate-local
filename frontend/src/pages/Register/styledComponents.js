@@ -35,9 +35,9 @@ export const RegisterContainer = styled.div`
 `;
 
 export const RegisterCard = styled.div`
-  background: white;
-  border-radius: 20px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
   padding: 3rem;
   width: 100%;
   max-width: 600px;
@@ -68,7 +68,7 @@ export const RegisterHeader = styled.div`
 export const RegisterTitle = styled.h1`
   font-size: 2.25rem;
   font-weight: 700;
-  color: #2d3748;
+  color: var(--text-primary);
   margin-bottom: 0.5rem;
 
   @media (max-width: 768px) {
@@ -77,7 +77,7 @@ export const RegisterTitle = styled.h1`
 `;
 
 export const RegisterSubtitle = styled.p`
-  color: #718096;
+  color: var(--text-secondary);
   font-size: 1rem;
   line-height: 1.5;
 `;
@@ -138,24 +138,24 @@ export const Input = styled.input`
 
 export const Select = styled.select`
   padding: 14px 16px;
-  border: 2px solid #e2e8f0;
-  border-radius: 12px;
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-lg);
   font-size: 1rem;
   transition: all 0.3s ease;
-  background: #f8fafc;
+  background: var(--bg-input);
   cursor: pointer;
 
   &:focus {
     outline: none;
-    border-color: #f093fb;
-    background: white;
-    box-shadow: 0 0 0 3px rgba(240, 147, 251, 0.1);
+    border-color: var(--primary);
+    background: var(--bg-card);
+    box-shadow: 0 0 0 3px var(--shadow-focus);
   }
 `;
 
 export const RegisterButton = styled.button.withConfig({ shouldForwardProp })`
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-  color: white;
+  background: var(--gradient-primary);
+  color: var(--text-button);
   font-size: 1.1rem;
   font-weight: 600;
   padding: 16px;
@@ -171,7 +171,7 @@ export const RegisterButton = styled.button.withConfig({ shouldForwardProp })`
 
   &:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(240, 147, 251, 0.3);
+    box-shadow: var(--shadow-lg);
   }
 
   &:active:not(:disabled) {
@@ -186,12 +186,12 @@ export const RegisterButton = styled.button.withConfig({ shouldForwardProp })`
 `;
 
 export const ErrorMessage = styled.div`
-  background: #fed7d7;
-  color: #c53030;
+  background: var(--error-bg);
+  color: var(--error-text);
   padding: 8px 12px;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   font-size: 0.85rem;
-  border: 1px solid #feb2b2;
+  border: 1px solid var(--error-border);
   margin-top: 0.25rem;
 `;
 
@@ -204,12 +204,12 @@ export const DividerContainer = styled.div`
 export const DividerLine = styled.div`
   flex: 1;
   height: 1px;
-  background: #e2e8f0;
+  background: var(--border-color);
 `;
 
 export const DividerText = styled.span`
   padding: 0 1rem;
-  color: #a0aec0;
+  color: var(--text-tertiary);
   font-size: 0.9rem;
 `;
 
@@ -218,20 +218,20 @@ export const RegisterFooter = styled.div`
 `;
 
 export const FooterText = styled.p`
-  color: #718096;
+  color: var(--text-secondary);
   font-size: 0.95rem;
   line-height: 1.5;
 `;
 
 export const FooterLink = styled.span`
-  color: #f093fb;
+  color: var(--primary);
   font-weight: 600;
   text-decoration: none;
   cursor: pointer;
   transition: color 0.3s ease;
 
   &:hover {
-    color: #e879f9;
+    color: var(--primary-hover);
     text-decoration: underline;
   }
 `;

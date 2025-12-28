@@ -186,7 +186,7 @@ export const Input = styled.input`
     outline: none;
     border-color: var(--primary);
     background: var(--bg-card);
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    box-shadow: 0 0 0 3px var(--shadow-focus);
   }
 
   &::placeholder {
@@ -217,7 +217,7 @@ export const TextArea = styled.textarea`
     outline: none;
     border-color: var(--primary);
     background: var(--bg-card);
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    box-shadow: 0 0 0 3px var(--shadow-focus);
   }
 
   &::placeholder {
@@ -246,7 +246,7 @@ export const Select = styled.select`
     outline: none;
     border-color: var(--primary);
     background: var(--bg-card);
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    box-shadow: 0 0 0 3px var(--shadow-focus);
   }
 
   @media (max-width: 768px) {
@@ -327,7 +327,7 @@ export const RemoveImageButton = styled.button.withConfig({
   right: 8px;
   width: 28px;
   height: 28px;
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--bg-modal);
   color: var(--error);
   border: none;
   border-radius: var(--radius-full);
@@ -555,7 +555,7 @@ export const BulkItem = styled.div`
     &:focus {
       outline: none;
       border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+      box-shadow: 0 0 0 3px var(--shadow-focus);
     }
   }
 

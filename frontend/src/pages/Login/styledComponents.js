@@ -36,9 +36,9 @@ export const LoginContainer = styled.div`
 `;
 
 export const LoginCard = styled.div`
-  background: white;
-  border-radius: 20px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
   padding: 3rem;
   width: 100%;
   max-width: 450px;
@@ -69,7 +69,7 @@ export const LoginHeader = styled.div`
 export const LoginTitle = styled.h1`
   font-size: 2.25rem;
   font-weight: 700;
-  color: #2d3748;
+  color: var(--text-primary);
   margin-bottom: 0.5rem;
 
   @media (max-width: 768px) {
@@ -78,7 +78,7 @@ export const LoginTitle = styled.h1`
 `;
 
 export const LoginSubtitle = styled.p`
-  color: #718096;
+  color: var(--text-secondary);
   font-size: 1rem;
   line-height: 1.5;
 `;
@@ -128,8 +128,8 @@ export const Input = styled.input`
 `;
 
 export const LoginButton = styled.button.withConfig({ shouldForwardProp })`
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: var(--gradient-primary);
+  color: var(--text-button);
   font-size: 1.1rem;
   font-weight: 600;
   padding: 16px;
@@ -145,7 +145,7 @@ export const LoginButton = styled.button.withConfig({ shouldForwardProp })`
 
   &:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    box-shadow: var(--shadow-lg);
   }
 
   &:active:not(:disabled) {

@@ -42,11 +42,12 @@ const PeriodTab = styled.button`
   transition: all 0.2s;
   background: ${(props) =>
     props.$active ? "var(--primary)" : "var(--bg-secondary)"};
-  color: ${(props) => (props.$active ? "white" : "var(--text-secondary)")};
+  color: ${(props) =>
+    props.$active ? "var(--text-on-primary)" : "var(--text-secondary)"};
 
   &:hover {
     background: ${(props) =>
-      props.$active ? "var(--primary)" : "rgba(102, 126, 234, 0.2)"};
+      props.$active ? "var(--primary)" : "var(--bg-hover)"};
   }
 `;
 
@@ -83,13 +84,12 @@ const TimeSlot = styled(motion.button)`
     }};
   border-radius: 12px;
   background: ${(props) => {
-    if (props.$selected)
-      return "linear-gradient(135deg, #667eea 0%, #764ba2 100%)";
+    if (props.$selected) return "var(--gradient-primary)";
     if (props.$unavailable) return "var(--bg-secondary)";
     return "var(--bg-card)";
   }};
   color: ${(props) => {
-    if (props.$selected) return "white";
+    if (props.$selected) return "var(--text-inverse)";
     if (props.$unavailable) return "var(--text-muted)";
     return "var(--text-primary)";
   }};
@@ -124,11 +124,7 @@ const NoSlotsMessage = styled.div`
 const SelectedTimeInfo = styled.div`
   margin-top: 1rem;
   padding: 1rem;
-  background: linear-gradient(
-    135deg,
-    rgba(102, 126, 234, 0.1) 0%,
-    rgba(118, 75, 162, 0.1) 100%
-  );
+  background: var(--bg-secondary);
   border-radius: 12px;
   display: flex;
   align-items: center;

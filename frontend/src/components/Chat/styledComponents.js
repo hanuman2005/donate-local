@@ -29,10 +29,10 @@ export const ChatContainer = styled.div`
   height: ${(props) => (props.$compact ? "auto" : "calc(100vh - 120px)")};
   max-width: 1400px;
   margin: 2rem auto;
-  background: white;
+  background: var(--bg-card);
   border-radius: 20px;
   overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-card);
 
   @media (max-width: 968px) {
     grid-template-columns: 1fr;
@@ -42,8 +42,8 @@ export const ChatContainer = styled.div`
 `;
 
 export const Sidebar = styled.div`
-  background: white;
-  border-right: 1px solid #e2e8f0;
+  background: var(--bg-card);
+  border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -56,8 +56,8 @@ export const Sidebar = styled.div`
 export const SidebarHeader = styled.div`
   padding: 1.5rem;
   border-bottom: 1px solid #e2e8f0;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: var(--gradient-primary);
+  color: var(--text-on-primary);
   flex-shrink: 0;
 `;
 
@@ -70,20 +70,20 @@ export const SidebarTitle = styled.h2`
 export const SearchInput = styled.input`
   width: 100%;
   padding: 0.75rem 1rem;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  border: 2px solid var(--input-border);
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
+  background: var(--input-bg);
+  color: var(--text-primary);
   font-size: 0.95rem;
 
   &::placeholder {
-    color: rgba(255, 255, 255, 0.8);
+    color: var(--text-placeholder);
   }
 
   &:focus {
     outline: none;
-    background: rgba(255, 255, 255, 0.3);
-    border-color: rgba(255, 255, 255, 0.5);
+    background: var(--input-bg-focus);
+    border-color: var(--input-border-focus);
   }
 `;
 
@@ -97,7 +97,7 @@ export const ChatList = styled.div`
   }
 
   &::-webkit-scrollbar-thumb {
-    background: #cbd5e0;
+    background: var(--scrollbar-thumb);
     border-radius: 3px;
   }
 `;
@@ -111,18 +111,15 @@ export const ChatItem = styled.div`
   cursor: pointer;
   transition: all 0.2s;
   background: ${(props) =>
-    props.$active
-      ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
-      : "transparent"};
-  color: ${(props) => (props.$active ? "white" : "#2d3748")};
+    props.$active ? "var(--gradient-primary)" : "transparent"};
+  color: ${(props) =>
+    props.$active ? "var(--text-on-primary)" : "var(--text-primary)"};
   margin-bottom: 0.5rem;
   position: relative;
 
   &:hover {
     background: ${(props) =>
-      props.$active
-        ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
-        : "#f7fafc"};
+      props.$active ? "var(--gradient-primary)" : "var(--bg-hover)"};
     transform: translateX(5px);
   }
 `;
@@ -132,15 +129,14 @@ export const Avatar = styled.div`
   height: 50px;
   border-radius: 50%;
   background: ${(props) =>
-    props.$active
-      ? "white"
-      : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"};
+    props.$active ? "var(--bg-card)" : "var(--gradient-primary)"};
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
   font-size: 1.2rem;
-  color: ${(props) => (props.$active ? "#667eea" : "white")};
+  color: ${(props) =>
+    props.$active ? "var(--primary)" : "var(--text-on-primary)"};
   flex-shrink: 0;
   position: relative;
   overflow: hidden;
@@ -158,8 +154,8 @@ export const OnlineIndicator = styled.div`
   right: 2px;
   width: 12px;
   height: 12px;
-  background: #48bb78;
-  border: 2px solid white;
+  background: var(--success);
+  border: 2px solid var(--bg-card);
   border-radius: 50%;
 `;
 
@@ -198,8 +194,10 @@ export const TimeStamp = styled.div`
 `;
 
 export const UnreadBadge = styled.div`
-  background: ${(props) => (props.$active ? "white" : "#667eea")};
-  color: ${(props) => (props.$active ? "#667eea" : "white")};
+  background: ${(props) =>
+    props.$active ? "var(--bg-card)" : "var(--primary)"};
+  color: ${(props) =>
+    props.$active ? "var(--primary)" : "var(--text-on-primary)"};
   padding: 0.25rem 0.5rem;
   border-radius: 12px;
   font-size: 0.75rem;
@@ -211,7 +209,7 @@ export const UnreadBadge = styled.div`
 export const MainChat = styled.div`
   display: flex;
   flex-direction: column;
-  background: white;
+  background: var(--bg-card);
   position: relative;
   height: 100%;
   overflow: hidden;
@@ -223,12 +221,12 @@ export const MainChat = styled.div`
 
 export const ChatHeader = styled.div`
   padding: 1.5rem;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
   gap: 1rem;
-  background: white;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  background: var(--bg-card);
+  box-shadow: var(--shadow-card);
   z-index: 10;
   flex-shrink: 0;
 `;
@@ -253,12 +251,13 @@ export const HeaderInfo = styled.div`
 export const HeaderName = styled.div`
   font-size: 1.2rem;
   font-weight: 700;
-  color: #2d3748;
+  color: var(--text-primary);
 `;
 
 export const HeaderStatus = styled.div`
   font-size: 0.85rem;
-  color: ${(props) => (props.$online ? "#48bb78" : "#a0aec0")};
+  color: ${(props) =>
+    props.$online ? "var(--success)" : "var(--text-secondary)"};
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -268,7 +267,8 @@ export const HeaderStatus = styled.div`
     content: "";
     width: 8px;
     height: 8px;
-    background: ${(props) => (props.$online ? "#48bb78" : "#a0aec0")};
+    background: ${(props) =>
+      props.$online ? "var(--success)" : "var(--text-secondary)"};
     border-radius: 50%;
     display: inline-block;
   }
@@ -276,7 +276,7 @@ export const HeaderStatus = styled.div`
 
 export const TypingIndicator = styled.div`
   font-size: 0.85rem;
-  color: #667eea;
+  color: var(--primary);
   font-style: italic;
   animation: pulse 1.5s ease-in-out infinite;
 
@@ -295,7 +295,7 @@ export const MessagesArea = styled.div`
   flex: 1;
   overflow-y: auto;
   padding: 2rem;
-  background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+  background: var(--bg-chat-gradient);
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -306,7 +306,7 @@ export const MessagesArea = styled.div`
   }
 
   &::-webkit-scrollbar-thumb {
-    background: #cbd5e0;
+    background: var(--scrollbar-thumb);
     border-radius: 4px;
   }
 `;
@@ -378,10 +378,9 @@ export const MessageContent = styled.div`
 
 export const MessageText = styled.div`
   background: ${(props) =>
-    props.$isOwn
-      ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
-      : "white"};
-  color: ${(props) => (props.$isOwn ? "white" : "#2d3748")};
+    props.$isOwn ? "var(--gradient-primary)" : "var(--bg-card)"};
+  color: ${(props) =>
+    props.$isOwn ? "var(--text-on-primary)" : "var(--text-primary)"};
   padding: 0.875rem 1.25rem;
   border-radius: ${(props) =>
     props.$isOwn ? "20px 20px 4px 20px" : "20px 20px 20px 4px"};
@@ -404,11 +403,11 @@ export const MessageText = styled.div`
     props.$failed &&
     `
     opacity: 0.5;
-    border: 2px solid #e53e3e;
+    border: 2px solid var(--danger);
     &::after {
       content: '❌ Failed';
       font-size: 0.75rem;
-      color: #e53e3e;
+      color: var(--danger);
       margin-left: 0.5rem;
     }
   `}
@@ -416,7 +415,7 @@ export const MessageText = styled.div`
 
 export const MessageTime = styled.div`
   font-size: 0.75rem;
-  color: #a0aec0;
+  color: var(--text-secondary);
   padding: 0 0.25rem;
 `;
 
@@ -439,15 +438,15 @@ export const InputWrapper = styled.div`
   align-items: center;
   gap: 0.75rem;
   padding: 0.875rem 1.25rem;
-  background: #f7fafc;
-  border: 2px solid #e2e8f0;
+  background: var(--input-bg);
+  border: 2px solid var(--input-border);
   border-radius: 24px;
   transition: all 0.2s;
 
   &:focus-within {
-    border-color: #667eea;
-    background: white;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    border-color: var(--primary);
+    background: var(--bg-card);
+    box-shadow: var(--shadow-input-focus);
   }
 `;
 
@@ -466,7 +465,7 @@ export const MessageInput = styled.textarea`
   }
 
   &::placeholder {
-    color: #a0aec0;
+    color: var(--text-placeholder);
   }
 `;
 
@@ -494,9 +493,9 @@ export const SendButton = styled.button.withConfig({ shouldForwardProp })`
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--gradient-primary);
   border: none;
-  color: white;
+  color: var(--text-on-primary);
   font-size: 1.3rem;
   cursor: pointer;
   display: flex;
@@ -507,7 +506,7 @@ export const SendButton = styled.button.withConfig({ shouldForwardProp })`
 
   &:hover:not(:disabled) {
     transform: scale(1.1);
-    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+    box-shadow: var(--shadow-button-hover);
   }
 
   &:disabled {
@@ -524,7 +523,7 @@ export const EmptyState = styled.div`
   justify-content: center;
   text-align: center;
   padding: 2rem;
-  color: #a0aec0;
+  color: var(--text-secondary);
 `;
 
 export const EmptyIcon = styled.div`
@@ -545,20 +544,20 @@ export const EmptyIcon = styled.div`
 
 export const EmptyTitle = styled.h3`
   font-size: 1.5rem;
-  color: #4a5568;
+  color: var(--text-primary);
   margin-bottom: 0.5rem;
 `;
 
 export const EmptyText = styled.p`
   font-size: 1rem;
-  color: #a0aec0;
+  color: var(--text-secondary);
 `;
 
 export const LoadingSpinner = styled.div`
   width: 40px;
   height: 40px;
-  border: 4px solid #e2e8f0;
-  border-top-color: #667eea;
+  border: 4px solid var(--border);
+  border-top-color: var(--primary);
   border-radius: 50%;
   animation: spin 1s linear infinite;
 

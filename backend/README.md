@@ -1,8 +1,8 @@
-# 🎉 ShareTogether - Backend Documentation (Updated January 2025)
+# 🎉 LifeLoop - Backend Documentation (Updated December 2025)
 
 ## 🌟 PROJECT OVERVIEW
 
-**ShareTogether** is an intelligent circular economy platform that connects people to donate unused items, reduce waste, and track environmental impact. Unlike traditional donation platforms, ShareTogether uses **AI-powered waste analysis** to help users make informed decisions about their items before disposal.
+**LifeLoop** is an intelligent circular economy platform that connects people to donate unused items, reduce waste, and track environmental impact. Unlike traditional donation platforms, LifeLoop uses **AI-powered waste analysis** to help users make informed decisions about their items before disposal.
 
 ### 🎯 Core Mission
 
@@ -13,6 +13,36 @@ Transform waste into opportunity through:
 - **Environmental Impact**: Track CO₂ savings, waste diverted, and community contribution
 - **Smart Matching**: AI-powered recipient matching for efficient distribution
 - **Route Optimization**: Intelligent pickup clustering to minimize carbon emissions
+
+---
+
+## 🚀 How LifeLoop Works (Backend Workflow)
+
+1. **User submits item**: AI analysis endpoint processes images and returns material breakdown, hazards, and suggestions.
+2. **Listing created**: User creates a listing, which is stored in MongoDB and indexed for geospatial search.
+3. **Matching/notification logic**: AI matching suggests recipients, notifications are sent in real-time via Socket.IO.
+4. **Scheduling/route optimization**: Pickup schedules are proposed, optimized routes are generated for NGOs/volunteers.
+5. **Transaction/QR verification**: QR codes are generated and verified at pickup, with full audit trail and impact calculation.
+6. **Impact stats updated**: User and community impact dashboards are updated with every completed transaction.
+
+---
+
+## ✨ Full Feature List (Backend)
+
+- **AI Waste Analysis System**: Multi-image, material composition, hazard detection, recycling complexity, and OpenAI-powered upcycling ideas.
+- **Universal Item Donation System**: 10+ categories, AI classification, CRUD endpoints, and geospatial search.
+- **Route Optimization**: K-means clustering, TSP solver, CO₂ savings, and efficiency metrics.
+- **Digital Twin & Impact Tracking**: Real-time heatmap, impact calculations, and community dashboard.
+- **AI-Powered Smart Matching**: Recipient suggestions based on proximity, rating, and preferences.
+- **QR Code Verification System**: Secure hash-based QR, one-time use, location verification, and audit trail.
+- **Smart Scheduling System**: Propose, confirm, and manage pickups with reminders and calendar integration.
+- **Queue Management System**: Waitlist, auto-assignment, and real-time updates.
+- **Real-Time Communication**: Socket.IO chat, notifications, and online status.
+- **Advanced Analytics**: User and platform analytics, leaderboard, and export tools.
+- **Security**: JWT, bcrypt, CORS, Helmet, rate limiting, validation, and protected routes.
+- **Admin Tools**: User management, analytics, and export tools.
+
+---
 
 ---
 
@@ -805,9 +835,35 @@ MIT License - Free to use, modify, and distribute.
 
 ---
 
+---
+
+## 🧪 END-TO-END TESTING INSTRUCTIONS
+
+To verify the full backend flow (from registration/login to item pickup, ratings, analytics, and admin):
+
+1. **Register/Login**: Use `/api/auth/register` and `/api/auth/login` to create or authenticate users.
+2. **AI Waste Analysis**: Test `/api/waste-analysis` endpoints for multi-image analysis, material composition, and recommendations.
+3. **Create & Manage Listings**: Use `/api/listings` endpoints to create, search, assign, and complete listings.
+4. **Express Interest & Queue**: Recipients express interest and join queue; donors assign recipients.
+5. **Chat**: Test `/api/chat` endpoints for real-time messaging.
+6. **Scheduling**: Propose, confirm, and complete pickups via `/api/schedules`.
+7. **QR Verification**: Generate and verify QR codes for secure pickups.
+8. **Notifications**: Ensure real-time notifications are sent for all major actions.
+9. **Ratings & Reviews**: Submit and fetch ratings via `/api/ratings`.
+10. **Analytics & Impact**: Access `/api/analytics`, `/api/impact` for user and platform stats.
+11. **Admin**: Use admin endpoints for user/listing management and analytics export.
+
+All endpoints are documented above. Ensure environment variables are set for all integrations (MongoDB, Cloudinary, OpenAI, Mapbox, etc.).
+
+---
+
 **Version**: 2.0.0  
-**Last Updated**: January 2025  
+**Last Updated**: December 2025  
 **Status**: ✅ PRODUCTION READY
+
+---
+
+_Made with ❤️ for ShareTogether - AI-powered circular economy platform reducing waste, one item at a time_
 
 ---
 

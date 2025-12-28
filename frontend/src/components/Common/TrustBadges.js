@@ -1,7 +1,7 @@
 // src/components/TrustBadges/index.js
-import React from 'react';
-import styled from 'styled-components';
-import { motion } from 'framer-motion';
+import React from "react";
+import styled from "styled-components";
+import { motion } from "framer-motion";
 
 const BadgesContainer = styled.div`
   display: flex;
@@ -19,37 +19,37 @@ const Badge = styled(motion.div)`
   font-size: 0.85rem;
   font-weight: 600;
   cursor: help;
-  ${props => {
+  ${(props) => {
     switch (props.$type) {
-      case 'verified_contributor':
+      case "verified_contributor":
         return `
-          background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
-          color: white;
+          background: var(--gradient-success);
+          color: var(--text-on-success);
         `;
-      case 'trusted_recipient':
+      case "trusted_recipient":
         return `
-          background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
-          color: white;
+          background: var(--gradient-info);
+          color: var(--text-on-info);
         `;
-      case 'community_champion':
+      case "community_champion":
         return `
-          background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%);
-          color: white;
+          background: var(--gradient-warning);
+          color: var(--text-on-warning);
         `;
-      case 'power_donor':
+      case "power_donor":
         return `
-          background: linear-gradient(135deg, #9f7aea 0%, #805ad5 100%);
-          color: white;
+          background: var(--gradient-primary);
+          color: var(--text-on-primary);
         `;
-      case 'reliability_star':
+      case "reliability_star":
         return `
-          background: linear-gradient(135deg, #ecc94b 0%, #d69e2e 100%);
-          color: #744210;
+          background: var(--gradient-yellow);
+          color: var(--text-on-yellow);
         `;
       default:
         return `
-          background: #e2e8f0;
-          color: #4a5568;
+          background: var(--badge-bg-default);
+          color: var(--badge-text-default);
         `;
     }
   }}
@@ -61,11 +61,11 @@ const TrustScore = styled(motion.div)`
   gap: 0.5rem;
   padding: 0.5rem 1rem;
   border-radius: 20px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: var(--gradient-primary);
+  color: var(--text-on-primary);
   font-size: 0.85rem;
   font-weight: 700;
-  
+
   .score {
     font-size: 1.1rem;
   }
@@ -77,8 +77,8 @@ const VerificationBadge = styled(motion.div)`
   gap: 0.25rem;
   padding: 0.4rem 0.8rem;
   border-radius: 15px;
-  background: #d1fae5;
-  color: #065f46;
+  background: var(--badge-bg-verified);
+  color: var(--badge-text-verified);
   font-size: 0.8rem;
   font-weight: 600;
 `;
@@ -86,38 +86,38 @@ const VerificationBadge = styled(motion.div)`
 const getBadgeInfo = (badgeType) => {
   const badges = {
     verified_contributor: {
-      icon: '🌟',
-      label: 'Verified Contributor',
-      tooltip: 'Completed 5+ donations',
+      icon: "🌟",
+      label: "Verified Contributor",
+      tooltip: "Completed 5+ donations",
     },
     trusted_recipient: {
-      icon: '🎯',
-      label: 'Trusted Recipient',
-      tooltip: 'Completed 5+ successful pickups',
+      icon: "🎯",
+      label: "Trusted Recipient",
+      tooltip: "Completed 5+ successful pickups",
     },
     community_champion: {
-      icon: '🏆',
-      label: 'Community Champion',
-      tooltip: 'Outstanding community member',
+      icon: "🏆",
+      label: "Community Champion",
+      tooltip: "Outstanding community member",
     },
     power_donor: {
-      icon: '💎',
-      label: 'Power Donor',
-      tooltip: 'Donated 20+ items',
+      icon: "💎",
+      label: "Power Donor",
+      tooltip: "Donated 20+ items",
     },
     early_adopter: {
-      icon: '🚀',
-      label: 'Early Adopter',
-      tooltip: 'Joined in the first month',
+      icon: "🚀",
+      label: "Early Adopter",
+      tooltip: "Joined in the first month",
     },
     reliability_star: {
-      icon: '⭐',
-      label: 'Reliability Star',
-      tooltip: '95%+ completion rate',
+      icon: "⭐",
+      label: "Reliability Star",
+      tooltip: "95%+ completion rate",
     },
   };
 
-  return badges[badgeType] || { icon: '✨', label: badgeType, tooltip: '' };
+  return badges[badgeType] || { icon: "✨", label: badgeType, tooltip: "" };
 };
 
 const TrustBadges = ({ user, showScore = true, showVerification = true }) => {
@@ -139,15 +139,16 @@ const TrustBadges = ({ user, showScore = true, showVerification = true }) => {
       )}
 
       {/* Verification Badge */}
-      {showVerification && (verificationStatus.email || verificationStatus.phone) && (
-        <VerificationBadge
-          title="Email/Phone Verified"
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          ✅ Verified
-        </VerificationBadge>
-      )}
+      {showVerification &&
+        (verificationStatus.email || verificationStatus.phone) && (
+          <VerificationBadge
+            title="Email/Phone Verified"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            ✅ Verified
+          </VerificationBadge>
+        )}
 
       {/* Trust Badges */}
       {trustBadges.map((badge, index) => {
@@ -171,7 +172,7 @@ const TrustBadges = ({ user, showScore = true, showVerification = true }) => {
 
       {/* If no badges */}
       {trustBadges.length === 0 && !showScore && (
-        <span style={{ color: '#a0aec0', fontSize: '0.85rem' }}>
+        <span style={{ color: "var(--text-secondary)", fontSize: "0.85rem" }}>
           No badges yet
         </span>
       )}

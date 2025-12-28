@@ -29,10 +29,10 @@ const Analytics = () => {
     title: {
       fontSize: "1.5rem",
       fontWeight: "600",
-      color: isDark ? "#f1f5f9" : "#1f2937",
+      color: "var(--text-primary)",
     },
     subtitle: {
-      color: isDark ? "#94a3b8" : "#6b7280",
+      color: "var(--text-secondary)",
       fontSize: "0.875rem",
       marginTop: "0.25rem",
     },
@@ -43,13 +43,11 @@ const Analytics = () => {
       marginBottom: "2rem",
     },
     statCard: {
-      background: isDark ? "#334155" : "#fff",
+      background: "var(--bg-card)",
       borderRadius: "12px",
       padding: "1.25rem",
-      boxShadow: isDark
-        ? "0 1px 3px rgba(0,0,0,0.3)"
-        : "0 1px 3px rgba(0,0,0,0.1)",
-      border: `1px solid ${isDark ? "#475569" : "#e5e7eb"}`,
+      boxShadow: "var(--shadow-md)",
+      border: "1px solid var(--border-color)",
     },
     statIcon: {
       width: "48px",
@@ -60,16 +58,18 @@ const Analytics = () => {
       justifyContent: "center",
       fontSize: "1.5rem",
       marginBottom: "0.75rem",
+      background: "var(--bg-primary)",
+      color: "var(--primary)",
     },
     statValue: {
       fontSize: "2rem",
       fontWeight: "700",
-      color: isDark ? "#f1f5f9" : "#1f2937",
+      color: "var(--text-primary)",
       lineHeight: 1,
     },
     statLabel: {
       fontSize: "0.875rem",
-      color: isDark ? "#94a3b8" : "#6b7280",
+      color: "var(--text-secondary)",
       marginTop: "0.25rem",
     },
     statChange: {
@@ -79,13 +79,13 @@ const Analytics = () => {
       alignItems: "center",
       gap: "0.25rem",
     },
-    statChangeUp: { color: "#22c55e" },
-    statChangeDown: { color: "#ef4444" },
+    statChangeUp: { color: "var(--success)" },
+    statChangeDown: { color: "var(--danger)" },
     sectionTitle: {
       fontSize: "1.125rem",
       fontWeight: "600",
       marginBottom: "1rem",
-      color: isDark ? "#f1f5f9" : "#1f2937",
+      color: "var(--text-primary)",
     },
     recentSection: {
       display: "grid",
@@ -93,12 +93,10 @@ const Analytics = () => {
       gap: "1.5rem",
     },
     recentCard: {
-      background: isDark ? "#334155" : "#fff",
+      background: "var(--bg-card)",
       borderRadius: "12px",
       padding: "1.25rem",
-      boxShadow: isDark
-        ? "0 1px 3px rgba(0,0,0,0.3)"
-        : "0 1px 3px rgba(0,0,0,0.1)",
+      boxShadow: "var(--shadow-md)",
     },
     recentList: { listStyle: "none", padding: 0, margin: 0 },
     recentItem: {
@@ -106,8 +104,8 @@ const Analytics = () => {
       justifyContent: "space-between",
       alignItems: "center",
       padding: "0.75rem 0",
-      borderBottom: `1px solid ${isDark ? "#475569" : "#f3f4f6"}`,
-      color: isDark ? "#f1f5f9" : "#1f2937",
+      borderBottom: "1px solid var(--border-color)",
+      color: "var(--text-primary)",
     },
     recentItemLast: { borderBottom: "none" },
     badge: {
@@ -115,15 +113,17 @@ const Analytics = () => {
       borderRadius: "9999px",
       fontSize: "0.75rem",
       fontWeight: "500",
+      background: "var(--bg-badge)",
+      color: "var(--text-badge)",
     },
     loading: {
       textAlign: "center",
       padding: "3rem",
-      color: isDark ? "#94a3b8" : "#6b7280",
+      color: "var(--text-secondary)",
     },
     error: {
-      background: isDark ? "#7f1d1d" : "#fee2e2",
-      color: isDark ? "#fecaca" : "#991b1b",
+      background: "var(--bg-error)",
+      color: "var(--text-error)",
       padding: "1rem",
       borderRadius: "8px",
       marginBottom: "1rem",
@@ -135,33 +135,35 @@ const Analytics = () => {
       marginBottom: "2rem",
     },
     metricCard: {
-      background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+      background: "var(--gradient-primary)",
       borderRadius: "12px",
       padding: "1.25rem",
-      color: "#fff",
+      color: "var(--text-on-primary)",
     },
     metricValue: { fontSize: "1.75rem", fontWeight: "700" },
     metricLabel: { fontSize: "0.875rem", opacity: 0.9 },
     chartPlaceholder: {
-      background: isDark ? "#334155" : "#f9fafb",
+      background: "var(--bg-card)",
       borderRadius: "12px",
       padding: "2rem",
       textAlign: "center",
-      color: isDark ? "#94a3b8" : "#9ca3af",
+      color: "var(--text-secondary)",
       marginBottom: "1.5rem",
     },
   };
 
   const getStatusColor = (status) => {
     const colors = {
-      available: { bg: "#dcfce7", text: "#166534" },
-      pending: { bg: "#fef3c7", text: "#92400e" },
-      completed: { bg: "#dbeafe", text: "#1e40af" },
-      critical: { bg: "#fee2e2", text: "#991b1b" },
-      high: { bg: "#fff7ed", text: "#9a3412" },
-      medium: { bg: "#fefce8", text: "#854d0e" },
+      available: { bg: "var(--bg-success)", text: "var(--success)" },
+      pending: { bg: "var(--bg-warning)", text: "var(--warning)" },
+      completed: { bg: "var(--bg-info)", text: "var(--info)" },
+      critical: { bg: "var(--bg-error)", text: "var(--danger)" },
+      high: { bg: "var(--bg-warning)", text: "var(--warning)" },
+      medium: { bg: "var(--bg-secondary)", text: "var(--secondary)" },
     };
-    return colors[status] || { bg: "#f3f4f6", text: "#6b7280" };
+    return (
+      colors[status] || { bg: "var(--bg-card)", text: "var(--text-secondary)" }
+    );
   };
 
   if (loading) {
@@ -183,41 +185,21 @@ const Analytics = () => {
 
       {/* Key Metrics */}
       <div style={styles.metricsRow}>
-        <div
-          style={{
-            ...styles.metricCard,
-            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-          }}
-        >
+        <div style={styles.metricCard}>
           <div style={styles.metricValue}>{stats?.users?.total || 0}</div>
           <div style={styles.metricLabel}>Total Users</div>
         </div>
-        <div
-          style={{
-            ...styles.metricCard,
-            background: "linear-gradient(135deg, #22c55e 0%, #16a34a 100%)",
-          }}
-        >
+        <div style={styles.metricCard}>
           <div style={styles.metricValue}>{stats?.listings?.total || 0}</div>
           <div style={styles.metricLabel}>Total Listings</div>
         </div>
-        <div
-          style={{
-            ...styles.metricCard,
-            background: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
-          }}
-        >
+        <div style={styles.metricCard}>
           <div style={styles.metricValue}>
             {stats?.listings?.completed || 0}
           </div>
           <div style={styles.metricLabel}>Completed Donations</div>
         </div>
-        <div
-          style={{
-            ...styles.metricCard,
-            background: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
-          }}
-        >
+        <div style={styles.metricCard}>
           <div style={styles.metricValue}>{stats?.reports?.pending || 0}</div>
           <div style={styles.metricLabel}>Pending Reports</div>
         </div>
@@ -226,15 +208,7 @@ const Analytics = () => {
       {/* Stats Grid */}
       <div style={styles.statsGrid}>
         <div style={styles.statCard}>
-          <div
-            style={{
-              ...styles.statIcon,
-              background: "#dcfce7",
-              color: "#22c55e",
-            }}
-          >
-            👥
-          </div>
+          <div style={styles.statIcon}>👥</div>
           <div style={styles.statValue}>{stats?.users?.active || 0}</div>
           <div style={styles.statLabel}>Active Users</div>
           <div style={{ ...styles.statChange, ...styles.statChangeUp }}>
@@ -243,57 +217,25 @@ const Analytics = () => {
         </div>
 
         <div style={styles.statCard}>
-          <div
-            style={{
-              ...styles.statIcon,
-              background: "#fee2e2",
-              color: "#ef4444",
-            }}
-          >
-            🚫
-          </div>
+          <div style={styles.statIcon}>🚫</div>
           <div style={styles.statValue}>{stats?.users?.suspended || 0}</div>
           <div style={styles.statLabel}>Suspended Users</div>
         </div>
 
         <div style={styles.statCard}>
-          <div
-            style={{
-              ...styles.statIcon,
-              background: "#dbeafe",
-              color: "#3b82f6",
-            }}
-          >
-            📦
-          </div>
+          <div style={styles.statIcon}>📦</div>
           <div style={styles.statValue}>{stats?.listings?.active || 0}</div>
           <div style={styles.statLabel}>Active Listings</div>
         </div>
 
         <div style={styles.statCard}>
-          <div
-            style={{
-              ...styles.statIcon,
-              background: "#fef3c7",
-              color: "#f59e0b",
-            }}
-          >
-            ⚠️
-          </div>
+          <div style={styles.statIcon}>⚠️</div>
           <div style={styles.statValue}>{stats?.listings?.flagged || 0}</div>
           <div style={styles.statLabel}>Flagged Listings</div>
         </div>
 
         <div style={styles.statCard}>
-          <div
-            style={{
-              ...styles.statIcon,
-              background: "#f3e8ff",
-              color: "#a855f7",
-            }}
-          >
-            ✓
-          </div>
+          <div style={styles.statIcon}>✓</div>
           <div style={styles.statValue}>
             {stats?.verifications?.pending || 0}
           </div>
@@ -301,15 +243,7 @@ const Analytics = () => {
         </div>
 
         <div style={styles.statCard}>
-          <div
-            style={{
-              ...styles.statIcon,
-              background: "#ecfdf5",
-              color: "#10b981",
-            }}
-          >
-            📈
-          </div>
+          <div style={styles.statIcon}>📈</div>
           <div style={styles.statValue}>{stats?.users?.growth || 0}%</div>
           <div style={styles.statLabel}>User Growth (30d)</div>
         </div>
@@ -342,7 +276,12 @@ const Analytics = () => {
                 >
                   <div>
                     <div style={{ fontWeight: "500" }}>{listing.title}</div>
-                    <div style={{ fontSize: "0.75rem", color: "#6b7280" }}>
+                    <div
+                      style={{
+                        fontSize: "0.75rem",
+                        color: "var(--text-secondary)",
+                      }}
+                    >
                       by {listing.donor?.firstName} {listing.donor?.lastName}
                     </div>
                   </div>
@@ -379,7 +318,12 @@ const Analytics = () => {
                 >
                   <div>
                     <div style={{ fontWeight: "500" }}>{report.reason}</div>
-                    <div style={{ fontSize: "0.75rem", color: "#6b7280" }}>
+                    <div
+                      style={{
+                        fontSize: "0.75rem",
+                        color: "var(--text-secondary)",
+                      }}
+                    >
                       {report.reportType} • by {report.reportedBy?.firstName}
                     </div>
                   </div>

@@ -46,8 +46,8 @@ const Modal = styled(motion.div)`
 `;
 
 const ModalHeader = styled.div`
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: var(--gradient-primary);
+  color: var(--text-on-primary);
   padding: 1.5rem 2rem;
   display: flex;
   justify-content: space-between;
@@ -64,9 +64,9 @@ const HeaderTitle = styled.h2`
 `;
 
 const CloseButton = styled.button`
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--bg-secondary);
   border: none;
-  color: white;
+  color: var(--text-on-primary);
   width: 40px;
   height: 40px;
   border-radius: 50%;
@@ -78,7 +78,7 @@ const CloseButton = styled.button`
   transition: all 0.3s;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.3);
+    background: var(--bg-tertiary);
   }
 `;
 
@@ -104,13 +104,16 @@ const Step = styled.div`
   font-size: 0.9rem;
   font-weight: 600;
   background: ${(props) => {
-    if (props.$active)
-      return "linear-gradient(135deg, #667eea 0%, #764ba2 100%)";
-    if (props.$completed) return "#48bb78";
+    if (props.$active) return "var(--gradient-primary)";
+    if (props.$completed) return "var(--bg-success)";
     return "var(--bg-secondary)";
   }};
   color: ${(props) =>
-    props.$active || props.$completed ? "white" : "var(--text-secondary)"};
+    props.$active
+      ? "var(--text-on-primary)"
+      : props.$completed
+      ? "var(--success)"
+      : "var(--text-secondary)"};
   transition: all 0.3s;
 `;
 
@@ -118,7 +121,7 @@ const StepNumber = styled.span`
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--bg-tertiary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -253,12 +256,12 @@ const Button = styled(motion.button)`
 `;
 
 const PrimaryButton = styled(Button)`
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: var(--gradient-primary);
+  color: var(--text-on-primary);
 
   &:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    box-shadow: var(--shadow-lg);
   }
 `;
 
@@ -306,11 +309,7 @@ const RecurringFrequency = styled.select`
 `;
 
 const Summary = styled.div`
-  background: linear-gradient(
-    135deg,
-    rgba(102, 126, 234, 0.1) 0%,
-    rgba(118, 75, 162, 0.1) 100%
-  );
+  background: var(--bg-card);
   border-radius: 16px;
   padding: 1.5rem;
   margin-top: 1rem;

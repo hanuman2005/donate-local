@@ -93,7 +93,7 @@ const Overlay = styled.div`
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background: var(--overlay-bg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -127,9 +127,9 @@ const Title = styled.h2`
 `;
 
 const CloseButton = styled.button.withConfig({ shouldForwardProp })`
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--primary);
   border: none;
-  color: white;
+  color: var(--text-inverse);
   width: 36px;
   height: 36px;
   border-radius: 50%;
@@ -138,7 +138,7 @@ const CloseButton = styled.button.withConfig({ shouldForwardProp })`
   transition: all 0.3s;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.3);
+    background: var(--primary-dark);
   }
 `;
 

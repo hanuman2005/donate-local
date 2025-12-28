@@ -7,8 +7,7 @@ import { useNotifications } from "../../context/NotificationContext";
 import ThemeToggle from "../Common/ThemeToggle";
 // import { motionVariants } from "../../animations/motionVariants";
 
-// Create motion-enabled Link component (replaces deprecated motion(Link))
-const MotionLink = motion.create(Link);
+// ...existing code...
 
 import {
   SidebarContainer,
@@ -43,6 +42,9 @@ import {
   MainContent,
 } from "./styledComponents";
 
+// Create motion-enabled Link component (replaces deprecated motion(Link))
+const MotionLink = motion.create(Link);
+
 const Sidebar = ({ children }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
@@ -53,6 +55,8 @@ const Sidebar = ({ children }) => {
   const location = useLocation();
 
   const isDonor = user?.userType === "donor" || user?.userType === "both";
+  const isRecipient =
+    user?.userType === "recipient" || user?.userType === "both";
 
   // Close mobile menu on route change
   useEffect(() => {
@@ -119,10 +123,18 @@ const Sidebar = ({ children }) => {
     ? [
         { path: "/dashboard", label: "Dashboard", icon: "📊" },
         { path: "/schedules", label: "My Schedules", icon: "📅" },
-        { path: "/my-pickups", label: "My Pickups", icon: "🚚" },
+        ...(isRecipient
+          ? [
+              { path: "/my-pickups", label: "My Pickups", icon: "🚚" },
+              {
+                path: "/route-optimizer",
+                label: "Route Optimizer",
+                icon: "🚗",
+              },
+            ]
+          : []),
         { path: "/waste-analyzer", label: "AI Analysis", icon: "🤖" },
         { path: "/analysis-history", label: "Analysis History", icon: "📜" },
-        { path: "/route-optimizer", label: "Route Optimizer", icon: "🚗" },
         ...(isDonor
           ? [{ path: "/create-listing", label: "Create Listing", icon: "➕" }]
           : []),
@@ -546,7 +558,7 @@ const Sidebar = ({ children }) => {
                     <NavItem
                       as="button"
                       onClick={handleLogout}
-                      style={{ color: "#ef4444" }}
+                      style={{ color: "var(--danger)" }}
                       aria-label="Log out of your account"
                     >
                       <NavIcon aria-hidden="true">🚪</NavIcon>

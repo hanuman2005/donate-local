@@ -75,8 +75,8 @@ const Container = styled.div`
 `;
 
 const Header = styled.div`
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: var(--gradient-primary);
+  color: var(--text-inverse);
   padding: 1.25rem 1.5rem;
 `;
 
@@ -105,15 +105,16 @@ const StatusBadge = styled.span`
   background: ${(props) => {
     switch (props.$status) {
       case "en_route":
-        return "rgba(237, 137, 54, 0.9)";
+        return "var(--warning)";
       case "arriving":
-        return "rgba(72, 187, 120, 0.9)";
+        return "var(--success)";
       case "arrived":
-        return "rgba(72, 187, 120, 1)";
+        return "var(--success-light)";
       default:
-        return "rgba(255, 255, 255, 0.2)";
+        return "var(--bg-card)";
     }
   }};
+  color: var(--text-inverse);
 `;
 
 const ETABar = styled.div`
@@ -243,12 +244,12 @@ const DriverAvatar = styled.div`
   width: 50px;
   height: 50px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--gradient-primary);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.5rem;
-  color: white;
+  color: var(--text-on-primary, #fff);
   font-weight: 600;
 `;
 
@@ -273,8 +274,8 @@ const CallButton = styled(motion.button)`
   padding: 0.625rem;
   border: none;
   border-radius: 50%;
-  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
-  color: white;
+  background: var(--gradient-success, var(--primary));
+  color: var(--text-on-primary, #fff);
   font-size: 1.25rem;
   cursor: pointer;
   display: flex;
@@ -320,7 +321,7 @@ const TimelineDot = styled.div`
   border-radius: 50%;
   background: ${(props) =>
     props.$completed
-      ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+      ? "var(--gradient-primary)"
       : props.$active
       ? "var(--primary)"
       : "var(--bg-tertiary)"};
@@ -328,7 +329,7 @@ const TimelineDot = styled.div`
   align-items: center;
   justify-content: center;
   font-size: 0.75rem;
-  color: white;
+  color: var(--text-on-primary, #fff);
   flex-shrink: 0;
 `;
 
@@ -567,10 +568,11 @@ const PickupTracker = ({ scheduleId, onClose }) => {
                 exit={{ scale: 0 }}
                 style={{
                   padding: "0.5rem 1rem",
-                  background: "rgba(72, 187, 120, 0.9)",
+                  background: "var(--success-bg, var(--primary))",
                   borderRadius: "8px",
                   fontSize: "0.875rem",
                   fontWeight: "600",
+                  color: "var(--text-on-primary, #fff)",
                 }}
               >
                 🔔 Almost there!
@@ -622,7 +624,7 @@ const PickupTracker = ({ scheduleId, onClose }) => {
           {driverLocation && destinationCoords && (
             <Polyline
               positions={[driverLocation, destinationCoords]}
-              color="#667eea"
+              color="var(--primary)"
               weight={4}
               opacity={0.7}
               dashArray="10, 10"

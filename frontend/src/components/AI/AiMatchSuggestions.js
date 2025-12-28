@@ -7,11 +7,11 @@ import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 
 const Container = styled(motion.div)`
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--gradient-primary);
   border-radius: 20px;
   padding: 2rem;
   margin: 2rem 0;
-  color: white;
+  color: var(--text-on-primary);
 `;
 
 const Header = styled.div`
@@ -28,7 +28,7 @@ const Header = styled.div`
 `;
 
 const AIBadge = styled(motion.span)`
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--ai-badge-bg, rgba(255, 255, 255, 0.2));
   padding: 0.5rem 1rem;
   border-radius: 20px;
   font-size: 0.85rem;
@@ -43,23 +43,23 @@ const MatchList = styled.div`
 `;
 
 const MatchCard = styled(motion.div)`
-  background: rgba(255, 255, 255, 0.15);
+  background: var(--ai-matchcard-bg, rgba(255, 255, 255, 0.15));
   backdrop-filter: blur(10px);
   border-radius: 16px;
   padding: 1.5rem;
   border: 2px solid
     ${(props) =>
       props.$score >= 85
-        ? "#48bb78"
+        ? "var(--success)"
         : props.$score >= 70
-        ? "#4299e1"
+        ? "var(--primary)"
         : props.$score >= 55
-        ? "#ed8936"
-        : "rgba(255, 255, 255, 0.3)"};
+        ? "var(--warning)"
+        : "var(--border-color)"};
   transition: all 0.3s ease;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.25);
+    background: var(--ai-matchcard-hover-bg, rgba(255, 255, 255, 0.25));
     transform: translateX(8px);
   }
 `;
@@ -80,7 +80,7 @@ const UserInfo = styled.div`
     width: 50px;
     height: 50px;
     border-radius: 50%;
-    border: 3px solid white;
+    border: 3px solid var(--bg-card);
   }
 
   div {
@@ -102,7 +102,7 @@ const ScoreBadge = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--ai-scorebadge-bg, rgba(255, 255, 255, 0.2));
   padding: 0.75rem 1rem;
   border-radius: 12px;
 
@@ -160,12 +160,12 @@ const Button = styled(motion.button)`
   ${(props) =>
     props.$primary
       ? `
-    background: white;
-    color: #667eea;
+    background: var(--bg-card);
+    color: var(--primary);
   `
       : `
-    background: rgba(255, 255, 255, 0.2);
-    color: white;
+    background: var(--ai-button-bg, rgba(255,255,255,0.2));
+    color: var(--text-on-primary);
   `}
 
   &:disabled {

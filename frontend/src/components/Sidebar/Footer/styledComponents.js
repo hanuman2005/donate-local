@@ -2,8 +2,8 @@
 import styled from "styled-components";
 
 export const FooterContainer = styled.footer`
-  background: #1e293b;
-  color: #f1f1f1;
+  background: var(--bg-sidebar-footer);
+  color: var(--text-sidebar-footer);
   padding: 3rem 2rem 1rem;
   margin-top: 4rem;
 `;
@@ -25,18 +25,18 @@ export const FooterTitle = styled.h4`
   font-size: 1.1rem;
   margin-bottom: 1rem;
   font-weight: bold;
-  color: #fff;
+  color: var(--text-on-primary);
 `;
 
 export const FooterLink = styled.a`
   display: block;
   margin-bottom: 0.5rem;
   text-decoration: none;
-  color: #ccc;
+  color: var(--text-secondary);
   transition: color 0.2s ease;
 
   &:hover {
-    color: #fff;
+    color: var(--text-on-primary);
   }
 `;
 
@@ -48,11 +48,11 @@ export const SocialIcons = styled.div`
 
 export const SocialIcon = styled.a`
   font-size: 1.5rem;
-  color: #ccc;
+  color: var(--text-secondary);
   transition: color 0.3s ease;
 
   &:hover {
-    color: #fff;
+    color: var(--text-on-primary);
   }
 `;
 
@@ -60,7 +60,7 @@ export const FooterBottom = styled.div`
   text-align: center;
   margin-top: 2rem;
   font-size: 0.85rem;
-  border-top: 1px solid #333;
+  border-top: 1px solid var(--border-color);
   padding-top: 1rem;
-  color: #aaa;
+  color: var(--text-muted);
 `;

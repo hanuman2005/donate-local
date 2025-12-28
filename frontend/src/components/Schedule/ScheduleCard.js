@@ -28,15 +28,15 @@ const formatLocation = (pickupLocation) => {
 };
 
 const Card = styled(motion.div)`
-  background: white;
+  background: var(--bg-card);
   border-radius: 16px;
   padding: 1.5rem;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  border-left: 4px solid ${(props) => props.$statusColor || "#4299e1"};
+  box-shadow: var(--shadow-md);
+  border-left: 4px solid ${(props) => props.$statusColor || "var(--primary)"};
   transition: all 0.3s ease;
 
   &:hover {
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    box-shadow: var(--shadow-lg);
     transform: translateY(-2px);
   }
 `;
@@ -54,7 +54,7 @@ const ListingInfo = styled.div`
   h3 {
     font-size: 1.1rem;
     font-weight: 700;
-    color: #2d3748;
+    color: var(--text-primary);
     margin: 0 0 0.5rem 0;
   }
 `;
@@ -68,17 +68,17 @@ const StatusBadge = styled.span`
   ${(props) => {
     switch (props.$status) {
       case "proposed":
-        return "background: #fef3c7; color: #92400e;";
+        return "background: var(--bg-warning); color: var(--warning);";
       case "confirmed":
-        return "background: #d1fae5; color: #065f46;";
+        return "background: var(--bg-success); color: var(--success);";
       case "completed":
-        return "background: #dbeafe; color: #1e40af;";
+        return "background: var(--bg-completed); color: var(--completed);";
       case "cancelled":
-        return "background: #fee2e2; color: #991b1b;";
+        return "background: var(--bg-cancelled); color: var(--cancelled);";
       case "expired":
-        return "background: #f3f4f6; color: #6b7280;";
+        return "background: var(--bg-expired); color: var(--expired);";
       default:
-        return "background: #e5e7eb; color: #4b5563;";
+        return "background: var(--bg-default); color: var(--text-secondary);";
     }
   }}
 `;
@@ -89,7 +89,7 @@ const DateTime = styled.div`
   gap: 1rem;
   margin-bottom: 1rem;
   padding: 1rem;
-  background: #f7fafc;
+  background: var(--bg-secondary);
   border-radius: 12px;
 `;
 
@@ -105,12 +105,12 @@ const DateTimeItem = styled.div`
   div {
     strong {
       display: block;
-      color: #2d3748;
+      color: var(--text-primary);
       font-size: 0.95rem;
     }
 
     span {
-      color: #718096;
+      color: var(--text-secondary);
       font-size: 0.85rem;
     }
   }
@@ -121,7 +121,7 @@ const PartyInfo = styled.div`
   align-items: center;
   gap: 0.75rem;
   padding: 0.75rem;
-  background: #f7fafc;
+  background: var(--bg-secondary);
   border-radius: 10px;
   margin-bottom: 0.75rem;
 
@@ -137,12 +137,12 @@ const PartyInfo = styled.div`
 
     strong {
       display: block;
-      color: #2d3748;
+      color: var(--text-primary);
       font-size: 0.95rem;
     }
 
     span {
-      color: #718096;
+      color: var(--text-secondary);
       font-size: 0.85rem;
     }
   }
@@ -152,11 +152,11 @@ const Location = styled.div`
   display: flex;
   align-items: start;
   gap: 0.5rem;
-  color: #4a5568;
+  color: var(--text-secondary);
   font-size: 0.9rem;
   margin-bottom: 1rem;
   padding: 0.75rem;
-  background: #f7fafc;
+  background: var(--bg-secondary);
   border-radius: 8px;
 
   span:first-child {
@@ -165,15 +165,15 @@ const Location = styled.div`
 `;
 
 const Notes = styled.div`
-  background: #fffbeb;
-  border-left: 3px solid #f59e0b;
+  background: var(--bg-warning-light);
+  border-left: 3px solid var(--warning);
   padding: 0.75rem;
   border-radius: 8px;
   margin-bottom: 1rem;
 
   p {
     margin: 0;
-    color: #78350f;
+    color: var(--warning);
     font-size: 0.9rem;
     line-height: 1.5;
   }
@@ -198,17 +198,17 @@ const Button = styled(motion.button)`
   ${(props) =>
     props.$variant === "primary"
       ? `
-    background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
-    color: white;
+    background: var(--gradient-success);
+    color: var(--text-on-primary);
   `
       : props.$variant === "danger"
       ? `
-    background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
-    color: white;
+    background: var(--gradient-danger);
+    color: var(--text-on-primary);
   `
       : `
-    background: #f7fafc;
-    color: #4a5568;
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
   `}
 
   &:disabled {
@@ -221,13 +221,13 @@ const Input = styled.input`
   width: 100%;
   padding: 0.75rem;
   margin-bottom: 0.75rem;
-  border: 2px solid #e2e8f0;
+  border: 2px solid var(--border-color);
   border-radius: 8px;
   font-size: 0.9rem;
 
   &:focus {
     outline: none;
-    border-color: #4299e1;
+    border-color: var(--primary);
   }
 `;
 
@@ -241,8 +241,8 @@ const CalendarButton = styled(motion.button)`
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 0.75rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: var(--gradient-primary);
+  color: var(--text-on-primary);
   border: none;
   border-radius: 8px;
   font-size: 0.8rem;
@@ -260,7 +260,7 @@ const CalendarMenu = styled(motion.div)`
   top: 100%;
   right: 0;
   margin-top: 0.5rem;
-  background: white;
+  background: var(--bg-card);
   border-radius: 12px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
   overflow: hidden;
@@ -273,14 +273,14 @@ const CalendarMenuItem = styled.a`
   align-items: center;
   gap: 0.75rem;
   padding: 0.75rem 1rem;
-  color: #4a5568;
+  color: var(--text-secondary);
   text-decoration: none;
   font-size: 0.9rem;
   transition: background 0.2s;
   cursor: pointer;
 
   &:hover {
-    background: #f7fafc;
+    background: var(--bg-secondary);
   }
 
   span:first-child {

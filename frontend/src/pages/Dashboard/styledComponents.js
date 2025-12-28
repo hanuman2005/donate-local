@@ -73,7 +73,7 @@ export const WelcomeText = styled.div`
   h1 {
     font-size: 2rem;
     font-weight: 700;
-    background: linear-gradient(135deg, #667eea, #764ba2);
+    background: var(--gradient-primary);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     margin-bottom: 0.5rem;
@@ -465,13 +465,13 @@ export const StatusBadge = styled.span`
   font-weight: 600;
   background: ${({ $status }) =>
     $status === "completed"
-      ? "#22c55e"
+      ? "var(--success-bg)"
       : $status === "pending"
-      ? "#667eea"
-      : $status === "available"
-      ? "#8b5cf6"
-      : "#94a3b8"};
-  color: white;
+      ? "var(--warning-bg)"
+      : $status === "failed"
+      ? "var(--danger-bg)"
+      : "var(--gradient-primary)"};
+  color: var(--text-inverse);
   text-transform: capitalize;
 `;
 

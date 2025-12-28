@@ -37,7 +37,7 @@ const HeroSection = styled.section`
   align-items: center;
   justify-content: center;
   position: relative;
-  background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+  background: var(--gradient-primary);
   overflow: hidden;
   padding: 2rem;
 
@@ -64,41 +64,47 @@ const HeroBadge = styled(motion.div).withConfig({ shouldForwardProp })`
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  padding: 0.5rem 1rem;
+  background: var(--primary);
+  border: 1px solid var(--primary-dark);
+  color: var(--text-inverse);
+  font-size: 1.05rem;
+  font-weight: 700;
+  padding: 0.6rem 1.4rem;
   border-radius: 50px;
-  color: #a5b4fc;
-  font-size: 0.875rem;
-  font-weight: 500;
   margin-bottom: 1.5rem;
+  box-shadow: var(--shadow-md);
+  letter-spacing: 0.5px;
 `;
 
 const HeroTitle = styled(motion.h1).withConfig({ shouldForwardProp })`
   font-size: clamp(2.5rem, 6vw, 4.5rem);
   font-weight: 800;
-  color: white;
+  color: var(--text-inverse);
   line-height: 1.1;
   margin-bottom: 1.5rem;
   letter-spacing: -0.02em;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
 
   span {
-    background: linear-gradient(135deg, #a5b4fc 0%, #818cf8 50%, #c084fc 100%);
+    background: var(--primary);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    color: var(--primary-light);
+    font-weight: 900;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
   }
 `;
 
 const HeroSubtitle = styled(motion.p).withConfig({ shouldForwardProp })`
   font-size: clamp(1.1rem, 2vw, 1.35rem);
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--text-inverse);
   line-height: 1.7;
   margin-bottom: 2.5rem;
   max-width: 600px;
   margin-left: auto;
   margin-right: auto;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
 `;
 
 const CTAGroup = styled(motion.div).withConfig({ shouldForwardProp })`
@@ -109,8 +115,8 @@ const CTAGroup = styled(motion.div).withConfig({ shouldForwardProp })`
 `;
 
 const PrimaryButton = styled(motion.button).withConfig({ shouldForwardProp })`
-  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-  color: white;
+  background: var(--gradient-primary);
+  color: var(--text-inverse);
   font-size: 1.1rem;
   font-weight: 600;
   padding: 1rem 2rem;
@@ -120,22 +126,21 @@ const PrimaryButton = styled(motion.button).withConfig({ shouldForwardProp })`
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  box-shadow: 0 10px 40px rgba(99, 102, 241, 0.4);
+  box-shadow: var(--shadow-lg);
   transition: all 0.3s;
 
   &:hover {
-    box-shadow: 0 15px 50px rgba(99, 102, 241, 0.5);
+    box-shadow: var(--shadow-xl);
   }
 `;
 
 const SecondaryButton = styled(motion.button).withConfig({ shouldForwardProp })`
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  color: white;
+  background: var(--bg-card);
+  color: var(--primary);
   font-size: 1.1rem;
   font-weight: 600;
   padding: 1rem 2rem;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 2px solid var(--primary);
   border-radius: 12px;
   cursor: pointer;
   display: flex;
@@ -144,8 +149,9 @@ const SecondaryButton = styled(motion.button).withConfig({ shouldForwardProp })`
   transition: all 0.3s;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.15);
-    border-color: rgba(255, 255, 255, 0.3);
+    background: var(--primary);
+    color: var(--text-inverse);
+    border-color: var(--primary-dark);
   }
 `;
 
@@ -167,14 +173,16 @@ const HeroStat = styled.div`
   .number {
     font-size: 2rem;
     font-weight: 800;
-    color: white;
+    color: var(--text-inverse);
     display: block;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
   }
 
   .label {
-    font-size: 0.875rem;
-    color: rgba(255, 255, 255, 0.6);
+    font-size: 1rem;
+    color: var(--text-inverse);
     margin-top: 0.25rem;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
   }
 `;
 
@@ -520,8 +528,9 @@ const TrustItem = styled.div`
 // Final CTA Section
 const FinalCTASection = styled.section`
   padding: 6rem 2rem;
-  background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+  background: var(--gradient-primary);
   text-align: center;
+  color: var(--text-inverse);
 `;
 
 const FinalCTAContent = styled.div`
@@ -532,14 +541,16 @@ const FinalCTAContent = styled.div`
 const FinalCTATitle = styled.h2`
   font-size: clamp(2rem, 4vw, 3rem);
   font-weight: 800;
-  color: white;
+  color: var(--text-inverse);
   margin-bottom: 1rem;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
 `;
 
 const FinalCTASubtitle = styled.p`
   font-size: 1.2rem;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--text-primary);
   margin-bottom: 2.5rem;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 `;
 
 const EmptyState = styled.div`

@@ -1,11 +1,13 @@
-# ShareTogether - Frontend Documentation (Updated January 2025)
+# LifeLoop - Frontend Documentation (Updated December 2025)
 
 ## 🌟 PROJECT OVERVIEW
 
-**ShareTogether** is an intelligent circular economy platform that uses **AI to help users make informed decisions** about their unused items. Unlike traditional donation platforms, ShareTogether analyzes items with TensorFlow.js to suggest reuse, recycling, or donation options before disposal.
+**LifeLoop** is an intelligent circular economy platform that uses **AI to help users make informed decisions** about their unused items. Unlike traditional donation platforms, LifeLoop analyzes items with TensorFlow.js to suggest reuse, recycling, or donation options before disposal.
 
 ### 🎯 Core Mission
+
 Transform waste into opportunity through AI-powered decision making:
+
 - **🤖 AI Waste Analyzer**: Upload photos → Get material composition + recommendations
 - **♻️ Smart Suggestions**: Reuse ideas, upcycle projects, recycling guidance
 - **🎁 Easy Donation**: Convert analyzed items to listings with one click
@@ -14,21 +16,58 @@ Transform waste into opportunity through AI-powered decision making:
 
 ---
 
+## 🚀 How LifeLoop Works (Workflow)
+
+1. **Analyze Item**: Use the AI Waste Analyzer to upload 1-5 photos and get a material breakdown, hazard warnings, and smart suggestions (reuse, upcycle, donate, recycle).
+2. **Get Suggestions**: Instantly receive AI-powered recommendations and upcycling ideas (OpenAI GPT-4).
+3. **Create Listing**: With one click, convert analysis results into a donation listing (auto-filled form).
+4. **Discover & Search**: Browse or search for items using geospatial filters, categories, and interactive maps.
+5. **Chat & Schedule**: Use real-time chat to coordinate with donors/recipients, then schedule pickups with calendar integration.
+6. **Pickup & Verify**: Complete the handoff using QR code verification (scan and confirm at pickup).
+7. **Track Impact**: View your personal and community impact dashboards, including CO₂/waste saved, water saved, and more.
+8. **Rate & Review**: Leave ratings and reviews after each transaction to build trust.
+9. **Repeat**: Continue sharing, receiving, and tracking your positive impact!
+
+---
+
+## ✨ Full Feature List (Frontend)
+
+- **AI Waste Analyzer**: Multi-image, material composition, hazard detection, and recycling complexity.
+- **AI Upcycling Ideas**: OpenAI GPT-4 powered creative DIY suggestions.
+- **Route Optimization**: K-means clustering + TSP solver for NGO pickups, CO₂ savings, and efficiency metrics.
+- **Universal Donations**: 10+ categories (food, clothing, electronics, furniture, books, toys, household, recyclables, personal care, garden, more).
+- **Geospatial Search & Map**: MongoDB 2dsphere, Leaflet, Mapbox GL, OpenStreetMap, radius filters, clustering, and live heatmap.
+- **Real-Time Chat & Notifications**: Socket.IO, typing indicators, read receipts, push notifications, toast feedback.
+- **QR Verification**: Secure hash-based QR, camera scanning, download, and transaction tracking.
+- **Impact Tracking**: Personal and community dashboards, CO₂/waste/water metrics, shareable cards, and heatmap.
+- **Rating System**: 5-star reviews, trust scores, and user statistics.
+- **Scheduling & Calendar**: Pickup scheduling, reminders, calendar view, and expiry automation.
+- **Analytics Dashboard**: User and platform stats, export tools, and leaderboard.
+- **Multi-language/i18n**: English, Hindi, Telugu (expandable).
+- **Dark Mode**: Theme toggle with persistence.
+- **PWA Ready**: Manifest.json, service worker foundation.
+- **Security**: JWT, bcrypt, CORS, Helmet, rate limiting, validation, and protected routes.
+- **Admin Dashboard**: User management, analytics, and export tools.
+
+---
+
+---
+
 ## ✅ FRONTEND VERIFICATION
 
 ### 📊 Final Status Report
 
-| Component | Status | Details |
-|-----------|--------|---------|
-| **Pages** | ✅ Complete | 12+ pages including AI Waste Analyzer |
-| **Components** | ✅ Complete | 25+ reusable components |
-| **AI/ML** | ✅ Complete | TensorFlow.js + Multi-image analysis |
+| Component             | Status      | Details                                     |
+| --------------------- | ----------- | ------------------------------------------- |
+| **Pages**             | ✅ Complete | 12+ pages including AI Waste Analyzer       |
+| **Components**        | ✅ Complete | 25+ reusable components                     |
+| **AI/ML**             | ✅ Complete | TensorFlow.js + Multi-image analysis        |
 | **Context Providers** | ✅ Complete | Auth, Socket, Notification, Language, Theme |
-| **Routing** | ✅ Complete | React Router v7 with protected routes |
-| **Real-time** | ✅ Complete | Socket.IO + live notifications |
-| **Maps** | ✅ Complete | Leaflet + OpenStreetMap + Mapbox |
-| **QR Scanner** | ✅ Complete | ZXing WASM camera scanning |
-| **Styling** | ✅ Complete | Styled Components + Framer Motion |
+| **Routing**           | ✅ Complete | React Router v7 with protected routes       |
+| **Real-time**         | ✅ Complete | Socket.IO + live notifications              |
+| **Maps**              | ✅ Complete | Leaflet + OpenStreetMap + Mapbox            |
+| **QR Scanner**        | ✅ Complete | ZXing WASM camera scanning                  |
+| **Styling**           | ✅ Complete | Styled Components + Framer Motion           |
 
 ---
 
@@ -140,43 +179,43 @@ frontend/
 
 ### Core Dependencies
 
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| **React** | 19.1.1 | UI framework |
-| **React DOM** | 19.1.1 | Rendering |
-| **React Router** | 7.9.5 | Client routing |
-| **Styled Components** | 6.1.19 | Component styling |
-| **Axios** | 1.11.0 | HTTP client |
-| **Socket.IO Client** | 4.8.1 | Real-time communication |
-| **React Toastify** | 11.0.5 | Toast notifications |
-| **Framer Motion** | 12.23.24 | Animations |
-| **React Icons** | 5.5.0 | Icon library |
+| Technology            | Version  | Purpose                 |
+| --------------------- | -------- | ----------------------- |
+| **React**             | 19.1.1   | UI framework            |
+| **React DOM**         | 19.1.1   | Rendering               |
+| **React Router**      | 7.9.5    | Client routing          |
+| **Styled Components** | 6.1.19   | Component styling       |
+| **Axios**             | 1.11.0   | HTTP client             |
+| **Socket.IO Client**  | 4.8.1    | Real-time communication |
+| **React Toastify**    | 11.0.5   | Toast notifications     |
+| **Framer Motion**     | 12.23.24 | Animations              |
+| **React Icons**       | 5.5.0    | Icon library            |
 
 ### AI/ML Dependencies
 
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| **TensorFlow.js** | 4.22.0 | Machine learning |
-| **@tensorflow-models/mobilenet** | 2.1.1 | Image classification |
-| **@tensorflow-models/coco-ssd** | 2.2.3 | Object detection |
+| Technology                       | Version | Purpose              |
+| -------------------------------- | ------- | -------------------- |
+| **TensorFlow.js**                | 4.22.0  | Machine learning     |
+| **@tensorflow-models/mobilenet** | 2.1.1   | Image classification |
+| **@tensorflow-models/coco-ssd**  | 2.2.3   | Object detection     |
 
 ### Map Dependencies
 
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| **Leaflet** | 1.9.4 | Interactive maps |
-| **React Leaflet** | 5.0.0 | Leaflet React bindings |
-| **Leaflet Geosearch** | 4.2.2 | Location search |
+| Technology            | Version | Purpose                |
+| --------------------- | ------- | ---------------------- |
+| **Leaflet**           | 1.9.4   | Interactive maps       |
+| **React Leaflet**     | 5.0.0   | Leaflet React bindings |
+| **Leaflet Geosearch** | 4.2.2   | Location search        |
 
 ### Other Dependencies
 
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| **QRCode.react** | 4.2.0 | QR generation |
-| **ZXing WASM** | 2.2.3 | QR scanning |
+| Technology           | Version        | Purpose            |
+| -------------------- | -------------- | ------------------ |
+| **QRCode.react**     | 4.2.0          | QR generation      |
+| **ZXing WASM**       | 2.2.3          | QR scanning        |
 | **React QR Scanner** | 1.0.0-alpha.11 | Camera integration |
-| **date-fns** | 4.1.0 | Date formatting |
-| **Recharts** | 3.4.1 | Charts/graphs |
+| **date-fns**         | 4.1.0          | Date formatting    |
+| **Recharts**         | 3.4.1          | Charts/graphs      |
 
 ---
 
@@ -187,6 +226,7 @@ frontend/
 **The Game Changer**: Users analyze items before deciding what to do with them.
 
 #### **Multi-Image Analysis** ✨ NEW
+
 - **Upload 1-5 Photos**: Take pictures from different angles
 - **AI Aggregation**: Combines predictions for 85-95% accuracy (vs 70-80% single photo)
 - **Image Grid**: Numbered thumbnails with individual remove buttons
@@ -194,6 +234,7 @@ frontend/
 - **Enhanced Analysis Badge**: Shows when multiple images were processed
 
 #### **Material Composition Display**
+
 ```
 🔬 Material Composition Analysis
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -218,12 +259,14 @@ Glass (LCD)                10% ⚠️ Not Recyclable
 ```
 
 #### **Smart Recommendations**
+
 - **Reuse Ideas**: "Use as backup storage device for important files"
 - **Upcycle Projects**: "Convert screen into digital photo frame"
 - **Recycling Guidance**: "Remove battery before recycling. Take to specialized e-waste center"
 - **Nearby Centers**: Shows 5 closest recycling facilities with distances & navigation
 
 #### **AI Upcycling Modal** 🎨
+
 - **Powered by OpenAI GPT-4**
 - **Creative DIY Projects**: Step-by-step instructions
 - **Materials Needed**: Complete list
@@ -232,13 +275,16 @@ Glass (LCD)                10% ⚠️ Not Recyclable
 - **Before/After Examples**: Visual inspiration
 
 #### **One-Click Donation**
+
 After analysis, users can:
+
 1. Click "Create Donation Listing"
 2. Form auto-fills with AI data (title, category, description, material info)
 3. Add pickup details
 4. Publish instantly
 
 #### **Analysis History Page** 📊
+
 - View all past analyses
 - See aggregated eco stats (total CO₂ saved, waste diverted)
 - Track analysis count per item
@@ -246,6 +292,7 @@ After analysis, users can:
 - Export data
 
 **Tech Stack**:
+
 - TensorFlow.js MobileNet (classification)
 - COCO-SSD (object detection)
 - Custom material database (50+ items)
@@ -259,6 +306,7 @@ After analysis, users can:
 **Real-Time Environmental Visualization**:
 
 #### **Mapbox GL Integration**
+
 - **Live Heatmap**: Color-coded donation hotspots
 - **Flow Animations**: Donor → Recipient connections with animated lines
 - **Pulsing Markers**: New transactions appear with pulse effect
@@ -266,12 +314,14 @@ After analysis, users can:
 - **Intensity Colors**: Blue (low) → Yellow → Red (high)
 
 #### **Real-Time Updates**
+
 - **Socket.IO Integration**: `digitalTwin.update` events
 - **Smooth Animations**: Framer Motion for marker appearance
 - **Auto-Refresh**: Updates every 30 seconds
 - **Historical Data**: Toggle between live and historical views
 
 #### **Impact Stats Overlay**
+
 ```
 🌍 LIVE COMMUNITY IMPACT
 ━━━━━━━━━━━━━━━━━━━━━━━━
@@ -290,6 +340,7 @@ After analysis, users can:
 ### 3. ✅ Universal Item Donation System
 
 **Any Item Type Supported**:
+
 - 🥕 **Food**: Produce, dairy, bakery, canned goods, prepared meals
 - 👕 **Clothing**: Clothes, shoes, bags, fabrics, accessories
 - 📱 **Electronics**: Laptops, phones, tablets, chargers, headphones
@@ -306,6 +357,7 @@ After analysis, users can:
 ### 4. 📍 Interactive Maps
 
 #### **Browse Map (Leaflet)**
+
 - OpenStreetMap tiles
 - Custom category markers (🥕🥛🍞📦👕)
 - User location tracking (blue pulse)
@@ -313,6 +365,7 @@ After analysis, users can:
 - Click marker → Listing popup
 
 #### **Digital Twin Map (Mapbox GL)**
+
 - Live heatmap visualization
 - Animated flow lines
 - Real-time transaction updates
@@ -324,6 +377,7 @@ After analysis, users can:
 ### 5. 💬 Real-Time Communication
 
 #### **Socket.IO Features**
+
 - Instant messaging
 - Typing indicators ("User is typing...")
 - Read receipts (✓✓)
@@ -332,6 +386,7 @@ After analysis, users can:
 - File/image sharing
 
 #### **Notification System**
+
 - 🔔 Real-time push notifications
 - Toast notifications (top-right)
 - Notification bell badge (unread count)
@@ -344,6 +399,7 @@ After analysis, users can:
 ### 6. 📱 QR Code System
 
 #### **QR Generation**
+
 - Secure hash-based QR codes
 - Download as PNG
 - Display in modal
@@ -351,6 +407,7 @@ After analysis, users can:
 - 48-hour expiry
 
 #### **QR Scanner** (ZXing WASM)
+
 - Camera integration
 - Real-time scanning
 - Overlay with crosshair
@@ -365,6 +422,7 @@ After analysis, users can:
 **Intelligent Pickup Planning**:
 
 #### **Features**
+
 - View all assigned pickups
 - Click "Optimize Routes with AI"
 - See 2-3 optimized routes
@@ -373,6 +431,7 @@ After analysis, users can:
 - Environmental impact
 
 #### **Display**
+
 ```
 🚗 Smart Route Optimizer
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -401,6 +460,7 @@ Route 1 (3 stops, 15.2km, 45min)
 ### 8. 📊 Impact Dashboard
 
 #### **Personal Impact**
+
 - ♻️ Waste prevented (kg)
 - 🌍 CO₂ saved (kg)
 - 💧 Water saved (liters)
@@ -411,6 +471,7 @@ Route 1 (3 stops, 15.2km, 45min)
 - ✨ Badges earned
 
 #### **Community Stats**
+
 - Platform-wide aggregation
 - Daily/weekly/monthly trends
 - Top donors leaderboard
@@ -424,31 +485,31 @@ Route 1 (3 stops, 15.2km, 45min)
 
 ### Public Routes
 
-| Route | Component | Description |
-|-------|-----------|-------------|
-| `/` | Home | Landing page + live stats |
-| `/login` | Login | User login |
-| `/register` | Register | Registration |
-| `/listings` | Listings | Browse all |
-| `/listings/:id` | ListingDetails | Single view |
-| `/waste-analyzer` | WasteAnalyzer | 🤖 **AI Analyzer** (Public) |
-| `/digital-twin` | DigitalTwin | 🌍 Live impact map |
-| `/about` | About | About page |
+| Route             | Component      | Description                 |
+| ----------------- | -------------- | --------------------------- |
+| `/`               | Home           | Landing page + live stats   |
+| `/login`          | Login          | User login                  |
+| `/register`       | Register       | Registration                |
+| `/listings`       | Listings       | Browse all                  |
+| `/listings/:id`   | ListingDetails | Single view                 |
+| `/waste-analyzer` | WasteAnalyzer  | 🤖 **AI Analyzer** (Public) |
+| `/digital-twin`   | DigitalTwin    | 🌍 Live impact map          |
+| `/about`          | About          | About page                  |
 
 ### Protected Routes
 
-| Route | Component | Auth | Description |
-|-------|-----------|------|-------------|
-| `/dashboard` | Dashboard | ✅ | User dashboard |
-| `/create-listing` | CreateListing | ✅ | Create listing |
-| `/profile` | Profile | ✅ | User profile |
-| `/analysis-history` | AnalysisHistory | ✅ | 🔬 **Analysis history** |
-| `/route-optimizer` | RouteOptimizer | ✅ | 🚗 **Route planning** |
-| `/notifications` | Notifications | ✅ | Notifications |
-| `/chat` | Chat | ✅ | Messaging |
-| `/verify-pickup` | QRScanner | ✅ | QR scanning |
-| `/impact/personal` | PersonalImpact | ✅ | Personal stats |
-| `/schedules` | Schedules | ✅ | Pickup schedules |
+| Route               | Component       | Auth | Description             |
+| ------------------- | --------------- | ---- | ----------------------- |
+| `/dashboard`        | Dashboard       | ✅   | User dashboard          |
+| `/create-listing`   | CreateListing   | ✅   | Create listing          |
+| `/profile`          | Profile         | ✅   | User profile            |
+| `/analysis-history` | AnalysisHistory | ✅   | 🔬 **Analysis history** |
+| `/route-optimizer`  | RouteOptimizer  | ✅   | 🚗 **Route planning**   |
+| `/notifications`    | Notifications   | ✅   | Notifications           |
+| `/chat`             | Chat            | ✅   | Messaging               |
+| `/verify-pickup`    | QRScanner       | ✅   | QR scanning             |
+| `/impact/personal`  | PersonalImpact  | ✅   | Personal stats          |
+| `/schedules`        | Schedules       | ✅   | Pickup schedules        |
 
 ---
 
@@ -459,6 +520,7 @@ Route 1 (3 stops, 15.2km, 45min)
 **Location**: `src/pages/WasteAnalyzer/`
 
 **Features**:
+
 - Multi-image upload (up to 5)
 - Drag & drop support
 - Image grid with numbered thumbnails
@@ -474,6 +536,7 @@ Route 1 (3 stops, 15.2km, 45min)
 - Confetti animation on success
 
 **User Flow**:
+
 1. Upload 1-5 photos
 2. Click "Analyze All Images"
 3. AI processes each image (2-5 seconds)
@@ -498,6 +561,7 @@ Route 1 (3 stops, 15.2km, 45min)
 **Location**: `src/components/MaterialCompositionDisplay/`
 
 **Features**:
+
 - Material cards with percentages
 - Hazard level indicators (color-coded)
 - Recyclable badges
@@ -508,6 +572,7 @@ Route 1 (3 stops, 15.2km, 45min)
 - Responsive design
 
 **Props**:
+
 ```javascript
 {
   analysis: {
@@ -527,6 +592,7 @@ Route 1 (3 stops, 15.2km, 45min)
 **Location**: `src/components/AIWasteAnalyzer/`
 
 **Features**:
+
 - Requests user location (geolocation API)
 - Fetches nearby centers (OpenStreetMap Nominatim)
 - Material-specific search (e.g., "electronics recycling")
@@ -538,9 +604,10 @@ Route 1 (3 stops, 15.2km, 45min)
 - Loading spinner
 
 **Props**:
+
 ```javascript
 {
-  material: String  // "E-Waste", "Plastic", etc.
+  material: String; // "E-Waste", "Plastic", etc.
 }
 ```
 
@@ -551,6 +618,7 @@ Route 1 (3 stops, 15.2km, 45min)
 **Location**: `src/pages/DigitalTwin/`
 
 **Features**:
+
 - Mapbox GL map
 - Live heatmap layer
 - Animated flow lines
@@ -562,6 +630,7 @@ Route 1 (3 stops, 15.2km, 45min)
 - Legend
 
 **Environment Variable Required**:
+
 ```env
 REACT_APP_MAPBOX_TOKEN=pk.your_mapbox_token
 ```
@@ -573,6 +642,7 @@ REACT_APP_MAPBOX_TOKEN=pk.your_mapbox_token
 **Location**: `src/pages/RouteOptimizer/`
 
 **Features**:
+
 - Fetches assigned pickups
 - Displays count + list
 - "Optimize Routes" button
@@ -587,6 +657,7 @@ REACT_APP_MAPBOX_TOKEN=pk.your_mapbox_token
 - Responsive design
 
 **User Flow**:
+
 1. NGO logs in
 2. Navigate to `/route-optimizer`
 3. See "Assigned Pickups: 10"
@@ -602,6 +673,7 @@ REACT_APP_MAPBOX_TOKEN=pk.your_mapbox_token
 **Location**: `src/pages/AnalysisHistory/`
 
 **Features**:
+
 - List of all analyses
 - Stats bar (total analyses, eco points, CO₂ saved)
 - Analysis cards:
@@ -653,8 +725,8 @@ npm >= 9.0.0
 1. **Clone Repository**
 
 ```bash
-git clone https://github.com/yourusername/sharetogether.git
-cd sharetogether/frontend
+git clone https://github.com/hanuman2005/lifeloop.git
+cd lifeloop/frontend
 ```
 
 2. **Install Dependencies**
@@ -679,6 +751,7 @@ cp .env.example .env
 5. **Add Leaflet CSS**
 
 In `src/index.css`:
+
 ```css
 @import "leaflet/dist/leaflet.css";
 ```
@@ -702,6 +775,7 @@ npm run build
 ## 📊 PROJECT STATISTICS
 
 ### Code Metrics
+
 - **Pages**: 12+
 - **Components**: 25+
 - **Context Providers**: 5
@@ -711,6 +785,7 @@ npm run build
 - **Total Components**: 40+ (pages + components)
 
 ### Features
+
 - ✅ AI Waste Analysis (Multi-image)
 - ✅ Material Composition Display
 - ✅ Digital Twin Heatmap
@@ -751,8 +826,8 @@ netlify deploy --prod
 ### Environment Variables (Production)
 
 ```env
-REACT_APP_API_URL=https://api.sharetogether.com/api
-REACT_APP_SOCKET_URL=https://api.sharetogether.com
+REACT_APP_API_URL=https://api.lifeloop.com/api
+REACT_APP_SOCKET_URL=https://api.lifeloop.com
 REACT_APP_MAPBOX_TOKEN=pk.your_production_token
 ```
 
@@ -776,6 +851,7 @@ REACT_APP_MAPBOX_TOKEN=pk.your_production_token
 ## 👨‍💻 AUTHOR
 
 **Hanumantha Madineni**
+
 - GitHub: [@hanuman2005](https://github.com/hanuman2005)
 - Email: madenenihanumanturao@gmail.com
 
@@ -796,14 +872,41 @@ MIT License - Free to use, modify, and distribute.
 ✅ **Route Optimizer**: Functional  
 ✅ **All Pages**: Styled & Responsive  
 ✅ **Real-time**: Socket.IO Working  
-✅ **Security**: Production Ready  
+✅ **Security**: Production Ready
+
+---
+
+---
+
+## 🧪 END-TO-END TESTING INSTRUCTIONS
+
+To verify the full user flow (from registration/login to item pickup, ratings, and analytics):
+
+1. **Register/Login**: Create a new user or login as donor/recipient/admin.
+2. **Analyze Item**: Use the AI Waste Analyzer to analyze an item (multi-image supported).
+3. **Create Listing**: One-click create a donation listing from analysis results.
+4. **Browse Listings**: View and search for listings (advanced search, geospatial, category filters).
+5. **Express Interest**: As a recipient, express interest in a listing.
+6. **Chat**: Use real-time chat to communicate between donor and recipient.
+7. **Assign & Schedule**: Donor assigns recipient, proposes pickup schedule (calendar integration).
+8. **Notifications**: Receive real-time notifications for all actions (interest, assignment, schedule, etc.).
+9. **Pickup & QR Verification**: Complete pickup using QR code system (scan and verify).
+10. **Rate & Review**: After pickup, rate and review the other party.
+11. **Impact & Analytics**: View personal and community impact dashboards, export analytics.
+12. **Admin Dashboard**: (If admin) Access platform analytics, user management, and export tools.
+
+All features are accessible via the sidebar and dashboard. Protected routes require authentication.
 
 ---
 
 **Version**: 2.0.0  
-**Last Updated**: January 2025  
+**Last Updated**: December 2025  
 **Status**: ✅ PRODUCTION READY
 
 ---
 
-*Made with ❤️ for ShareTogether - AI-powered platform helping users make smart decisions about their unused items, one analysis at a time* 🤖♻️🌍
+_Made with ❤️ for LifeLoop - AI-powered platform helping users make smart decisions about their unused items, one analysis at a time_ 🤖♻️🌍
+
+---
+
+_Made with ❤️ for ShareTogether - AI-powered platform helping users make smart decisions about their unused items, one analysis at a time_ 🤖♻️🌍
