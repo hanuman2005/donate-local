@@ -1,11 +1,10 @@
-// src/pages/WasteAnalyzer/index.js - COMPLETE WITH AI UPCYCLING FEATURE
+import LoadingSkeleton from "../../components/Common/LoadingSkeleton";
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import * as mobilenet from "@tensorflow-models/mobilenet";
 import * as tf from "@tensorflow/tfjs";
-import { motionVariants } from "../../animations/motionVariants";
 import {
   classifyWasteItem,
   getWasteAdvice,
@@ -17,12 +16,6 @@ import { analyzeMaterialComposition } from "../../utils/materialCompositionAnaly
 import MaterialCompositionDisplay from "../../components/Map/MaterialCompositionDisplay";
 import UpcycleModal from "./UpcycleModal";
 import {
-  shimmer,
-  float,
-  pulse,
-  glow,
-  slideInFromRight,
-  confetti,
   PageContainer,
   ContentWrapper,
   Hero,
@@ -225,8 +218,6 @@ const WasteAnalyzer = () => {
     lettuce: "Organic",
     strawberry: "Organic",
     "granny smith": "Organic",
-    orange: "Organic",
-    lemon: "Organic",
     lime: "Organic",
     eggplant: "Organic",
     zucchini: "Organic",
@@ -252,12 +243,9 @@ const WasteAnalyzer = () => {
     "plastic straw": "Plastic",
     "plastic lid": "Plastic",
     "plastic wrap": "Plastic",
-    "plastic bag": "Plastic",
     "glass jar": "Glass",
     "glass bottle": "Glass",
     jar: "Glass",
-    newspaper: "Paper",
-    magazine: "Paper",
     book: "Paper",
     notebook: "Paper",
     tissue: "Paper",
@@ -537,6 +525,11 @@ const WasteAnalyzer = () => {
             <div className="spinner" />
             <h3>Loading AI Model...</h3>
             <p>Preparing smart waste analysis</p>
+            <LoadingSkeleton
+              width="100%"
+              height="2rem"
+              style={{ marginTop: 16 }}
+            />
           </LoadingCard>
         </LoadingOverlay>
       </PageContainer>

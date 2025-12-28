@@ -4,6 +4,8 @@
  */
 
 // Check if Twilio is configured
+// Debug: Log Twilio env variables
+
 const isTwilioConfigured = () => {
   return (
     process.env.TWILIO_ACCOUNT_SID &&

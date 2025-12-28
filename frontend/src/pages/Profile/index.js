@@ -266,7 +266,8 @@ Thank you for supporting your community!
               initial="hidden"
               animate="show"
             >
-              <Spinner />
+              <LoadingSkeleton width="100%" height="8rem" />
+              <p aria-live="polite">Loading profile...</p>
             </motion.div>
           </LoadingOverlay>
         )}

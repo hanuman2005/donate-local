@@ -442,21 +442,19 @@ const SchedulesPage = () => {
 
   const handleConfirm = async (scheduleId) => {
     try {
-      await scheduleAPI.confirmSchedule(scheduleId);
-      toast.success("Schedule confirmed! 🎉");
-      fetchSchedules();
-    } catch (error) {
-      toast.error("Failed to confirm schedule");
-    }
-  };
-
-  const handleCancel = async (scheduleId) => {
-    if (!window.confirm("Are you sure you want to cancel this schedule?"))
-      return;
-    try {
-      await scheduleAPI.cancelSchedule(scheduleId);
-      toast.success("Schedule cancelled");
-      fetchSchedules();
+      if (loading) {
+        return (
+          <Container>
+            <Header>
+              <h1>Schedules</h1>
+            </Header>
+            <LoadingContainer>
+              <LoadingSkeleton width="100%" height="8rem" />
+              <p aria-live="polite">Loading schedules...</p>
+            </LoadingContainer>
+          </Container>
+        );
+      }
     } catch (error) {
       toast.error("Failed to cancel schedule");
     }

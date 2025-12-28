@@ -9,7 +9,10 @@ import ListingCard from "../../components/Listings/ListingCard";
 import FiltersPanel from "../../components/Listings/FilterPanel";
 import LoadingSpinner from "../../components/Common/LoadingSpinner";
 import { toast } from "react-toastify";
-import { motionVariants, useScrollAnimation } from "../../animations/motionVariants";
+import {
+  motionVariants,
+  useScrollAnimation,
+} from "../../animations/motionVariants";
 import {
   ListingsContainer,
   Header,
@@ -41,7 +44,7 @@ const Listings = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const itemsPerPage = 12;
-  
+
   const { user } = useAuth();
   const navigate = useNavigate();
   const scrollAnimation = useScrollAnimation();
@@ -57,7 +60,7 @@ const Listings = () => {
       console.log("🔄 Fetching all listings...");
       const response = await listingsAPI.getAll({ status: "available" });
       const listings = response.data.listings || response.data.data || [];
-      
+
       console.log("✅ Fetched listings:", listings.length);
       setAllListings(listings);
       setFilteredListings(listings); // Show all by default
@@ -91,32 +94,37 @@ const Listings = () => {
   };
 
   // ✅ FIX: Handle filter results without causing infinite loading
-  const handleFilterResults = useCallback((results, isError = false) => {
-    console.log("📥 Received filtered results:", results?.length || 0);
-    
-    if (isError) {
-      setError("Failed to apply filters. Showing all listings.");
-      setFilteredListings(allListings); // Fallback to all listings
-    } else {
-      setFilteredListings(results || allListings);
-      setTotalPages(Math.ceil((results?.length || 0) / itemsPerPage));
-      setCurrentPage(1);
-      setError(null);
-    }
-  }, [allListings]);
+  const handleFilterResults = useCallback(
+    (results, isError = false) => {
+      console.log("📥 Received filtered results:", results?.length || 0);
+
+      if (isError) {
+        setError("Failed to apply filters. Showing all listings.");
+        setFilteredListings(allListings); // Fallback to all listings
+      } else {
+        setFilteredListings(results || allListings);
+        setTotalPages(Math.ceil((results?.length || 0) / itemsPerPage));
+        setCurrentPage(1);
+        setError(null);
+      }
+    },
+    [allListings]
+  );
 
   const handleDelete = async (listing) => {
-    if (!window.confirm(`Are you sure you want to delete "${listing.title}"?`)) {
+    if (
+      !window.confirm(`Are you sure you want to delete "${listing.title}"?`)
+    ) {
       return;
     }
 
     try {
       await listingsAPI.delete(listing._id);
       toast.success("Listing deleted successfully");
-      
+
       // Remove from both arrays
-      setAllListings(prev => prev.filter(l => l._id !== listing._id));
-      setFilteredListings(prev => prev.filter(l => l._id !== listing._id));
+      setAllListings((prev) => prev.filter((l) => l._id !== listing._id));
+      setFilteredListings((prev) => prev.filter((l) => l._id !== listing._id));
     } catch (err) {
       console.error("Delete error:", err);
       toast.error(err.response?.data?.message || "Failed to delete listing");
@@ -125,7 +133,8 @@ const Listings = () => {
 
   const isOwner = (listing) => {
     if (!user || !listing.donor) return false;
-    const donorId = typeof listing.donor === "object" ? listing.donor._id : listing.donor;
+    const donorId =
+      typeof listing.donor === "object" ? listing.donor._id : listing.donor;
     return donorId?.toString() === user._id?.toString();
   };
 
@@ -142,19 +151,9 @@ const Listings = () => {
 
   if (loading) {
     return (
-      <LoadingContainer
-        as={motion.div}
-        variants={motionVariants.fadeSlide}
-        initial="hidden"
-        animate="show"
-      >
-        <LoadingSpinner size="large" />
-        <motion.p
-          variants={motionVariants.fadeSlideUp}
-          style={{ color: "#718096", fontSize: "1.1rem", marginTop: "1rem" }}
-        >
-          Loading listings...
-        </motion.p>
+      <LoadingContainer>
+        <LoadingSkeleton width="100%" height="6rem" />
+        <p aria-live="polite">Loading listings...</p>
       </LoadingContainer>
     );
   }
@@ -177,18 +176,16 @@ const Listings = () => {
         <div>
           <Title>🔍 Browse All Listings</Title>
           <Subtitle>
-            {filteredListings.length > 0 
-              ? `Found ${filteredListings.length} listing${filteredListings.length !== 1 ? 's' : ''} ready for pickup`
-              : "Use filters to find items near you"
-            }
+            {filteredListings.length > 0
+              ? `Found ${filteredListings.length} listing${
+                  filteredListings.length !== 1 ? "s" : ""
+                } ready for pickup`
+              : "Use filters to find items near you"}
           </Subtitle>
         </div>
 
         {/* VIEW TOGGLE */}
-        <ViewToggle
-          as={motion.div}
-          variants={motionVariants.fadeSlideUp}
-        >
+        <ViewToggle as={motion.div} variants={motionVariants.fadeSlideUp}>
           <ToggleButton
             as={motion.button}
             whileHover={{ scale: 1.05 }}
@@ -265,7 +262,9 @@ const Listings = () => {
                 <EmptyState style={{ height: "600px" }}>
                   <EmptyIcon>🗺️</EmptyIcon>
                   <EmptyText>No locations to display</EmptyText>
-                  <EmptySubtext>Adjust your filters to see results</EmptySubtext>
+                  <EmptySubtext>
+                    Adjust your filters to see results
+                  </EmptySubtext>
                 </EmptyState>
               )}
             </MapWrapper>
@@ -279,10 +278,7 @@ const Listings = () => {
               exit="exit"
             >
               {paginatedListings.length === 0 ? (
-                <EmptyState
-                  as={motion.div}
-                  variants={motionVariants.scalePop}
-                >
+                <EmptyState as={motion.div} variants={motionVariants.scalePop}>
                   <EmptyIcon
                     as={motion.div}
                     animate={{
@@ -365,8 +361,12 @@ const Listings = () => {
 
                       <PageButton
                         as={motion.button}
-                        whileHover={{ scale: currentPage === totalPages ? 1 : 1.05 }}
-                        whileTap={{ scale: currentPage === totalPages ? 1 : 0.95 }}
+                        whileHover={{
+                          scale: currentPage === totalPages ? 1 : 1.05,
+                        }}
+                        whileTap={{
+                          scale: currentPage === totalPages ? 1 : 0.95,
+                        }}
                         onClick={() => handlePageChange(currentPage + 1)}
                         disabled={currentPage === totalPages}
                       >

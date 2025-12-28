@@ -6,6 +6,9 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const http = require("http");
 const socketIO = require("socket.io");
+const helmet = require("helmet");
+const csurf = require("csurf");
+const cookieParser = require("cookie-parser");
 
 // Load env variables
 dotenv.config();
@@ -41,8 +44,11 @@ const { setIO: setQueueIO } = require("./utils/queueCronJob");
 // 📧 Email service
 const { initializeTransporter, verifyConnection } = require("./config/email");
 
+const { swaggerUi, swaggerSpec } = require("./config/swagger");
 const app = express();
 const server = http.createServer(app);
+// Swagger API docs route
+app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // ✅ Configure CORS properly
 const allowedOrigins = [
@@ -100,6 +106,25 @@ app.use((req, res, next) => {
   req.io = io;
   next();
 });
+
+// Security headers
+app.use(helmet());
+
+// CSRF protection
+app.use(cookieParser());
+if (process.env.NODE_ENV === "production") {
+  app.use(csurf({ cookie: true }));
+}
+
+// Enforce HTTPS in production
+if (process.env.NODE_ENV === "production") {
+  app.use((req, res, next) => {
+    if (req.headers["x-forwarded-proto"] !== "https") {
+      return res.redirect("https://" + req.headers.host + req.url);
+    }
+    next();
+  });
+}
 
 // Logging middleware (only in development)
 if (process.env.NODE_ENV !== "production") {
@@ -159,6 +184,10 @@ app.use("/api/ai", require("./routes/ai"));
 app.use("/api/queue", queueRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/sms", require("./routes/sms"));
+
+// Apply rate limiter middleware
+const rateLimiter = require("./services/rateLimiter");
+app.use(rateLimiter);
 
 // Error handling middleware
 app.use(errorHandler);

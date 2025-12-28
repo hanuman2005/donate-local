@@ -1,4 +1,4 @@
-// src/pages/RouteOptimizer/index.js
+import LoadingSkeleton from "../../components/Common/LoadingSkeleton.js";
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { motion } from "framer-motion";
@@ -196,7 +196,7 @@ const RouteOptimizer = () => {
   const [pickups, setPickups] = useState([]);
   const [optimizedRoutes, setOptimizedRoutes] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [depot, setDepot] = useState({
+  const [depot] = useState({
     lat: 16.5062, // Default: Bhimavaram
     lon: 81.5217,
     name: "NGO Depot",
@@ -249,223 +249,233 @@ const RouteOptimizer = () => {
 
   return (
     <PageContainer>
-      <Container>
-        <Header>
-          <h1>🚗 Smart Route Optimizer</h1>
-          <p>AI-powered pickup route planning with CO₂ optimization</p>
-        </Header>
+      {loading ? (
+        <div style={{ padding: "4rem", textAlign: "center" }}>
+          <LoadingSkeleton width="100%" height="8rem" />
+          <p aria-live="polite">Loading route optimizer...</p>
+        </div>
+      ) : (
+        <Container>
+          <Header>
+            <h1>🚗 Smart Route Optimizer</h1>
+            <p>AI-powered pickup route planning with CO₂ optimization</p>
+          </Header>
 
-        <Card>
-          <h2>Assigned Pickups: {pickups.length}</h2>
-          <Button
-            onClick={handleOptimize}
-            disabled={loading || pickups.length === 0}
-          >
-            {loading ? "🔄 Optimizing..." : "🤖 Optimize Routes with AI"}
-          </Button>
+          <Card>
+            <h2>Assigned Pickups: {pickups.length}</h2>
+            <Button
+              onClick={handleOptimize}
+              disabled={loading || pickups.length === 0}
+            >
+              {loading ? "🔄 Optimizing..." : "🤖 Optimize Routes with AI"}
+            </Button>
 
-          {optimizedRoutes && (
-            <>
-              <StatsGrid>
-                <StatCard>
-                  <div className="value">
-                    {optimizedRoutes.summary.totalRoutes}
-                  </div>
-                  <div className="label">Optimized Routes</div>
-                </StatCard>
-                <StatCard>
-                  <div className="value">
-                    {optimizedRoutes.summary.totalDistance}km
-                  </div>
-                  <div className="label">Total Distance</div>
-                </StatCard>
-                <StatCard>
-                  <div className="value">
-                    {optimizedRoutes.summary.totalCO2}kg
-                  </div>
-                  <div className="label">CO₂ Emissions</div>
-                </StatCard>
-                <StatCard>
-                  <div className="value">
-                    {optimizedRoutes.summary.estimatedTotalTime}min
-                  </div>
-                  <div className="label">Estimated Time</div>
-                </StatCard>
-              </StatsGrid>
-
-              <Card
-                style={{
-                  background:
-                    "linear-gradient(135deg, #48bb78 0%, #38a169 100%)",
-                  color: "white",
-                }}
-              >
-                <h3>🌍 Environmental Savings</h3>
+            {optimizedRoutes && (
+              <>
                 <StatsGrid>
-                  <div>
+                  <StatCard>
                     <div className="value">
-                      {optimizedRoutes.summary.optimization.distanceSavedKm}km
+                      {optimizedRoutes.summary.totalRoutes}
                     </div>
-                    <div className="label">Distance Saved</div>
-                  </div>
-                  <div>
+                    <div className="label">Optimized Routes</div>
+                  </StatCard>
+                  <StatCard>
                     <div className="value">
-                      {optimizedRoutes.summary.optimization.co2SavedKg}kg
+                      {optimizedRoutes.summary.totalDistance}km
                     </div>
-                    <div className="label">CO₂ Saved</div>
-                  </div>
-                  <div>
+                    <div className="label">Total Distance</div>
+                  </StatCard>
+                  <StatCard>
                     <div className="value">
-                      {optimizedRoutes.summary.optimization.percentageSaved}%
+                      {optimizedRoutes.summary.totalCO2}kg
                     </div>
-                    <div className="label">Efficiency Gain</div>
-                  </div>
+                    <div className="label">CO₂ Emissions</div>
+                  </StatCard>
+                  <StatCard>
+                    <div className="value">
+                      {optimizedRoutes.summary.estimatedTotalTime}min
+                    </div>
+                    <div className="label">Estimated Time</div>
+                  </StatCard>
                 </StatsGrid>
-              </Card>
 
-              <h2>Optimized Routes</h2>
-              {optimizedRoutes.routes.map((route, index) => (
-                <RouteCard
-                  key={index}
+                <Card
                   style={{
-                    borderLeft: `4px solid ${
-                      routeColors[index % routeColors.length]
-                    }`,
-                    boxShadow:
-                      selectedRouteIdx === index
-                        ? "0 0 0 3px #4299e1"
-                        : undefined,
-                    cursor: "pointer",
+                    background:
+                      "linear-gradient(135deg, #48bb78 0%, #38a169 100%)",
+                    color: "white",
                   }}
-                  onClick={() => setSelectedRouteIdx(index)}
-                  tabIndex={0}
-                  aria-label={`Show Route ${route.routeNumber} on map`}
                 >
-                  <h3>Route {route.routeNumber}</h3>
-                  <div className="route-info">
-                    <div className="info-item">
-                      <div className="label">Stops</div>
-                      <div className="value">{route.stops}</div>
-                    </div>
-                    <div className="info-item">
-                      <div className="label">Distance</div>
-                      <div className="value">{route.totalDistance}km</div>
-                    </div>
-                    <div className="info-item">
-                      <div className="label">Time</div>
-                      <div className="value">{route.estimatedTime}min</div>
-                    </div>
-                    <div className="info-item">
-                      <div className="label">CO₂</div>
+                  <h3>🌍 Environmental Savings</h3>
+                  <StatsGrid>
+                    <div>
                       <div className="value">
-                        {route.emissions.co2EmittedKg}kg
+                        {optimizedRoutes.summary.optimization.distanceSavedKm}km
+                      </div>
+                      <div className="label">Distance Saved</div>
+                    </div>
+                    <div>
+                      <div className="value">
+                        {optimizedRoutes.summary.optimization.co2SavedKg}kg
+                      </div>
+                      <div className="label">CO₂ Saved</div>
+                    </div>
+                    <div>
+                      <div className="value">
+                        {optimizedRoutes.summary.optimization.percentageSaved}%
+                      </div>
+                      <div className="label">Efficiency Gain</div>
+                    </div>
+                  </StatsGrid>
+                </Card>
+
+                <h2>Optimized Routes</h2>
+                {optimizedRoutes.routes.map((route, index) => (
+                  <RouteCard
+                    key={index}
+                    style={{
+                      borderLeft: `4px solid ${
+                        routeColors[index % routeColors.length]
+                      }`,
+                      boxShadow:
+                        selectedRouteIdx === index
+                          ? "0 0 0 3px #4299e1"
+                          : undefined,
+                      cursor: "pointer",
+                    }}
+                    onClick={() => setSelectedRouteIdx(index)}
+                    tabIndex={0}
+                    aria-label={`Show Route ${route.routeNumber} on map`}
+                  >
+                    <h3>Route {route.routeNumber}</h3>
+                    <div className="route-info">
+                      <div className="info-item">
+                        <div className="label">Stops</div>
+                        <div className="value">{route.stops}</div>
+                      </div>
+                      <div className="info-item">
+                        <div className="label">Distance</div>
+                        <div className="value">{route.totalDistance}km</div>
+                      </div>
+                      <div className="info-item">
+                        <div className="label">Time</div>
+                        <div className="value">{route.estimatedTime}min</div>
+                      </div>
+                      <div className="info-item">
+                        <div className="label">CO₂</div>
+                        <div className="value">
+                          {route.emissions.co2EmittedKg}kg
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="pickups-list">
-                    {route.pickups.map((pickup, i) => (
-                      <div key={i} className="pickup-item">
-                        {i + 1}. {pickup.donorName} - {pickup.itemTitle} (
-                        {pickup.quantity} {pickup.unit || "items"})
-                      </div>
-                    ))}
-                  </div>
-                </RouteCard>
-              ))}
+                    <div className="pickups-list">
+                      {route.pickups.map((pickup, i) => (
+                        <div key={i} className="pickup-item">
+                          {i + 1}. {pickup.donorName} - {pickup.itemTitle} (
+                          {pickup.quantity} {pickup.unit || "items"})
+                        </div>
+                      ))}
+                    </div>
+                  </RouteCard>
+                ))}
 
-              {/* Map showing all routes, highlight selected */}
-              <MapWrapper>
-                <MapContainer
-                  center={[depot.lat, depot.lon]}
-                  zoom={12}
-                  style={{
-                    height: "100%",
-                    width: "100%",
-                    borderRadius: "12px",
-                  }}
-                  scrollWheelZoom={true}
-                >
-                  <TileLayer
-                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                  />
-                  {/* Depot marker */}
-                  <Marker
-                    position={[depot.lat, depot.lon]}
-                    icon={L.divIcon({
-                      html: '<div style="background:#4299e1;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;font-size:18px;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.2);">🏢</div>',
-                      className: "depot-marker",
-                      iconSize: [28, 28],
-                      iconAnchor: [14, 14],
-                    })}
+                {/* Map showing all routes, highlight selected */}
+                <MapWrapper>
+                  <MapContainer
+                    center={[depot.lat, depot.lon]}
+                    zoom={12}
+                    style={{
+                      height: "100%",
+                      width: "100%",
+                      borderRadius: "12px",
+                    }}
+                    scrollWheelZoom={true}
                   >
-                    <Popup>Depot: {depot.name}</Popup>
-                  </Marker>
-                  {/* Draw all routes as polylines, highlight selected */}
-                  {optimizedRoutes.routes.map((route, idx) => {
-                    // Build polyline: depot -> pickups (in order) -> depot (optional)
-                    const points = [
-                      [depot.lat, depot.lon],
-                      ...route.pickups.map((p) => [
-                        p.location.lat,
-                        p.location.lon,
-                      ]),
-                      // Optionally, return to depot:
-                      //[depot.lat, depot.lon]
-                    ];
-                    return (
-                      <Polyline
-                        key={idx}
-                        positions={points}
-                        pathOptions={{
-                          color: routeColors[idx % routeColors.length],
-                          weight:
-                            selectedRouteIdx === null ||
-                            selectedRouteIdx === idx
-                              ? 7
-                              : 3,
-                          opacity:
-                            selectedRouteIdx === null ||
-                            selectedRouteIdx === idx
-                              ? 0.9
-                              : 0.3,
-                          dashArray: selectedRouteIdx === idx ? null : "6 12",
-                        }}
-                      />
-                    );
-                  })}
-                  {/* Pickup markers for selected route */}
-                  {selectedRouteIdx !== null &&
-                    optimizedRoutes.routes[selectedRouteIdx].pickups.map(
-                      (pickup, i) => (
-                        <Marker
-                          key={i}
-                          position={[pickup.location.lat, pickup.location.lon]}
-                          icon={L.divIcon({
-                            html: `<div style="background:#48bb78;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:15px;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.2);">${
-                              i + 1
-                            }</div>`,
-                            className: "pickup-marker",
-                            iconSize: [24, 24],
-                            iconAnchor: [12, 12],
-                          })}
-                        >
-                          <Popup>
-                            <strong>{pickup.donorName}</strong>
-                            <br />
-                            {pickup.itemTitle} ({pickup.quantity}{" "}
-                            {pickup.unit || "items"})
-                          </Popup>
-                        </Marker>
-                      )
-                    )}
-                </MapContainer>
-              </MapWrapper>
-            </>
-          )}
-        </Card>
-      </Container>
+                    <TileLayer
+                      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    />
+                    {/* Depot marker */}
+                    <Marker
+                      position={[depot.lat, depot.lon]}
+                      icon={L.divIcon({
+                        html: '<div style="background:#4299e1;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;font-size:18px;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.2);">🏢</div>',
+                        className: "depot-marker",
+                        iconSize: [28, 28],
+                        iconAnchor: [14, 14],
+                      })}
+                    >
+                      <Popup>Depot: {depot.name}</Popup>
+                    </Marker>
+                    {/* Draw all routes as polylines, highlight selected */}
+                    {optimizedRoutes.routes.map((route, idx) => {
+                      // Build polyline: depot -> pickups (in order) -> depot (optional)
+                      const points = [
+                        [depot.lat, depot.lon],
+                        ...route.pickups.map((p) => [
+                          p.location.lat,
+                          p.location.lon,
+                        ]),
+                        // Optionally, return to depot:
+                        //[depot.lat, depot.lon]
+                      ];
+                      return (
+                        <Polyline
+                          key={idx}
+                          positions={points}
+                          pathOptions={{
+                            color: routeColors[idx % routeColors.length],
+                            weight:
+                              selectedRouteIdx === null ||
+                              selectedRouteIdx === idx
+                                ? 7
+                                : 3,
+                            opacity:
+                              selectedRouteIdx === null ||
+                              selectedRouteIdx === idx
+                                ? 0.9
+                                : 0.3,
+                            dashArray: selectedRouteIdx === idx ? null : "6 12",
+                          }}
+                        />
+                      );
+                    })}
+                    {/* Pickup markers for selected route */}
+                    {selectedRouteIdx !== null &&
+                      optimizedRoutes.routes[selectedRouteIdx].pickups.map(
+                        (pickup, i) => (
+                          <Marker
+                            key={i}
+                            position={[
+                              pickup.location.lat,
+                              pickup.location.lon,
+                            ]}
+                            icon={L.divIcon({
+                              html: `<div style="background:#48bb78;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:15px;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.2);">${
+                                i + 1
+                              }</div>`,
+                              className: "pickup-marker",
+                              iconSize: [24, 24],
+                              iconAnchor: [12, 12],
+                            })}
+                          >
+                            <Popup>
+                              <strong>{pickup.donorName}</strong>
+                              <br />
+                              {pickup.itemTitle} ({pickup.quantity}{" "}
+                              {pickup.unit || "items"})
+                            </Popup>
+                          </Marker>
+                        )
+                      )}
+                  </MapContainer>
+                </MapWrapper>
+              </>
+            )}
+          </Card>
+        </Container>
+      )}
     </PageContainer>
   );
 };

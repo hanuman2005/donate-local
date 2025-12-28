@@ -78,10 +78,8 @@ const AnalysisHistory = () => {
   if (loading) {
     return (
       <PageContainer>
-        <LoadingSpinner>
-          <div className="spinner" />
-          <p>Loading your analysis history...</p>
-        </LoadingSpinner>
+        <LoadingSkeleton width="100%" height="8rem" />
+        <p aria-live="polite">Loading analysis history...</p>
       </PageContainer>
     );
   }

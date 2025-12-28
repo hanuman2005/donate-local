@@ -185,7 +185,8 @@ const MyPickups = () => {
   if (loading) {
     return (
       <Container>
-        <LoadingSpinner />
+        <LoadingSkeleton width="100%" height="8rem" />
+        <p aria-live="polite">Loading pickups...</p>
       </Container>
     );
   }

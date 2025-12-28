@@ -50,7 +50,7 @@ import {
   FAB,
   GradientHeader,
 } from "./styledComponents";
-import LoadingSpinner from "../../components/Common/LoadingSpinner";
+import LoadingSkeleton from "../../components/Common/LoadingSkeleton";
 
 // Motion variants for animations
 const containerVariants = {
@@ -238,8 +238,8 @@ const Dashboard = () => {
     return (
       <DashboardWrapper>
         <LoadingContainer>
-          <LoadingSpinner size="large" />
-          <p>Loading your dashboard...</p>
+          <LoadingSkeleton width="100%" height="8rem" />
+          <p aria-live="polite">Loading your dashboard...</p>
         </LoadingContainer>
       </DashboardWrapper>
     );

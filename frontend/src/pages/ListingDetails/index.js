@@ -4,7 +4,7 @@ import api, { listingsAPI, chatAPI } from "../../services/api";
 import QRCodeGenerator from "../../components/QR/QRCode";
 // import QRScanner from "../../components/QRScanner";
 import { useAuth } from "../../context/AuthContext";
-import LoadingSpinner from "../../components/Common/LoadingSpinner";
+import LoadingSkeleton from "../../components/Common/LoadingSkeleton";
 import { toast } from "react-toastify";
 
 import AIMatchSuggestions from "../../components/AI/AiMatchSuggestions";
@@ -186,18 +186,22 @@ const ListingDetails = () => {
     }
   };
 
-  if (loading)
+  if (loading) {
     return (
       <DetailsContainer>
-        <LoadingSpinner />
+        <LoadingSkeleton width="100%" height="8rem" />
+        <p aria-live="polite">Loading listing details...</p>
       </DetailsContainer>
     );
-  if (error || !listing)
+  }
+
+  if (error) {
     return (
       <DetailsContainer>
         <ErrorState>{error}</ErrorState>
       </DetailsContainer>
     );
+  }
 
   return (
     <DetailsContainer>

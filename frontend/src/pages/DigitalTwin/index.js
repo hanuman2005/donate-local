@@ -5,6 +5,7 @@ import { impactAPI } from "../../services/api";
 import { io } from "socket.io-client";
 import styled from "styled-components";
 import { toast } from "react-toastify";
+import LoadingSkeleton from "../../components/Common/LoadingSkeleton";
 
 mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_TOKEN;
 
@@ -196,7 +197,12 @@ const LoadingOverlay = styled.div`
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background: var(--overlay-bg);
+          {loading && (
+            <LoadingOverlay>
+              <LoadingSkeleton width="100%" height="8rem" />
+              <span aria-live="polite">Loading digital twin...</span>
+            </LoadingOverlay>
+          )}
   color: white;
   padding: 2rem;
   border-radius: var(--radius-lg);

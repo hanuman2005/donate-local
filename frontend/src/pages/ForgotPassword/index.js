@@ -9,7 +9,7 @@ const ForgotPassword = () => {
   const isDark = theme === "dark";
 
   const [email, setEmail] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false); // Keeping the state for loading
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
 
@@ -198,7 +198,11 @@ const ForgotPassword = () => {
           </div>
 
           <button type="submit" style={styles.button} disabled={loading}>
-            {loading ? "Sending..." : "Send Reset Link"}
+            {loading ? (
+              <LoadingSkeleton width="100%" height="6rem" />
+            ) : (
+              "Send Reset Link"
+            )}
           </button>
         </form>
 
