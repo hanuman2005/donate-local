@@ -1,141 +1,24 @@
 // src/pages/MyPickups/index.jsx
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import styled from "styled-components";
-import { motion } from "framer-motion";
 import api from "../../services/api";
 import LoadingSkeleton from "../../components/Common/LoadingSkeleton";
 import { toast } from "react-toastify";
 import QRGenerator from "../../components/QR/QRCode";
+import {Container,
+        Title,
+        Grid,
+        Card,
+        StatusBadge,
+        ListingTitle,
+        DetailRow,
+        Label,
+        Value,
+        Button,
+        SecondaryButton,
+        EmptyState,
+        QRSection} from "./MyPickups.styles";
 
-// Framer Motion props that should not be forwarded to the DOM
-const motionProps = [
-  "initial",
-  "animate",
-  "exit",
-  "variants",
-  "transition",
-  "whileHover",
-  "whileTap",
-  "whileFocus",
-  "whileDrag",
-  "whileInView",
-  "drag",
-  "dragConstraints",
-  "dragElastic",
-  "dragMomentum",
-  "layout",
-  "layoutId",
-  "onAnimationStart",
-  "onAnimationComplete",
-];
-const shouldForwardProp = (prop) => !motionProps.includes(prop);
-
-const Container = styled.div`
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem;
-`;
-
-const Title = styled.h1`
-  color: var(--text-primary);
-  margin-bottom: 2rem;
-`;
-
-const Grid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 1.5rem;
-`;
-
-const Card = styled(motion.div)`
-  background: white;
-  border-radius: 16px;
-  padding: 1.5rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease;
-
-  &:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
-  }
-`;
-
-const ListingTitle = styled.h3`
-  color: #2d3748;
-  margin-bottom: 1rem;
-`;
-
-const StatusBadge = styled.span`
-  display: inline-block;
-  padding: 0.5rem 1rem;
-  border-radius: 20px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  background: ${(props) =>
-    props.$status === "pending" ? "#ed8936" : "#48bb78"};
-  color: white;
-  margin-bottom: 1rem;
-`;
-
-const DetailRow = styled.div`
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 0.75rem;
-  font-size: 0.95rem;
-`;
-
-const Label = styled.span`
-  color: var(--text-secondary);
-  font-weight: 500;
-`;
-
-const Value = styled.span`
-  color: var(--text-primary);
-  font-weight: 600;
-`;
-
-const Button = styled.button.withConfig({ shouldForwardProp })`
-  width: 100%;
-  padding: 0.75rem;
-  background: var(--gradient-primary);
-  color: var(--text-button);
-  border: none;
-  border-radius: 10px;
-  font-weight: 600;
-  cursor: pointer;
-  margin-top: 1rem;
-  transition: transform 0.2s;
-
-  &:hover {
-    transform: scale(1.02);
-  }
-`;
-
-const SecondaryButton = styled(Button)`
-  background: var(--bg-secondary);
-  color: var(--text-tertiary);
-  border: 2px solid var(--border-color);
-`;
-
-const QRSection = styled.div`
-  margin-top: 1.5rem;
-  padding: 1.5rem;
-  background: var(--bg-secondary);
-  border-radius: var(--radius-md);
-  border: 2px dashed var(--border-dashed);
-`;
-
-const EmptyState = styled.div`
-  text-align: center;
-  padding: 4rem 2rem;
-  color: var(--text-secondary);
-
-  h2 {
-    color: var(--text-primary);
-    margin-bottom: 1rem;
-  }
-`;
 
 const MyPickups = () => {
   const [listings, setListings] = useState([]);

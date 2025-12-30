@@ -41,6 +41,7 @@ export const RegisterCard = styled.div`
   padding: 3rem;
   width: 100%;
   max-width: 600px;
+  border: 1px solid var(--border-color);
   animation: fadeIn 0.5s ease-out;
 
   @keyframes fadeIn {
@@ -111,7 +112,7 @@ export const FormGroup = styled.div`
 
 export const Label = styled.label`
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--text-secondary);
   font-size: 0.95rem;
 `;
 
@@ -120,19 +121,24 @@ export const Input = styled.input`
   border: 2px solid var(--border-color);
   border-radius: var(--radius-lg);
   font-size: 1rem;
-  transition: all 0.3s ease;
-  background: var(--bg-input);
+  transition: all var(--transition-base);
+  background: var(--bg-secondary);
   color: var(--text-primary);
 
   &:focus {
     outline: none;
-    border-color: var(--primary-color);
+    border-color: var(--primary);
     background: var(--bg-card);
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.08);
+    box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.1);
   }
 
   &::placeholder {
-    color: var(--text-secondary);
+    color: var(--text-muted);
+    opacity: 0.6;
+  }
+
+  @media (max-width: 768px) {
+    font-size: 16px; /* Prevents zoom on iOS */
   }
 `;
 
@@ -141,37 +147,39 @@ export const Select = styled.select`
   border: 2px solid var(--border-color);
   border-radius: var(--radius-lg);
   font-size: 1rem;
-  transition: all 0.3s ease;
-  background: var(--bg-input);
+  transition: all var(--transition-base);
+  background: var(--bg-secondary);
   cursor: pointer;
+  color: var(--text-primary);
 
   &:focus {
     outline: none;
     border-color: var(--primary);
     background: var(--bg-card);
-    box-shadow: 0 0 0 3px var(--shadow-focus);
+    box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.1);
   }
 `;
 
 export const RegisterButton = styled.button.withConfig({ shouldForwardProp })`
   background: var(--gradient-primary);
-  color: var(--text-button);
+  color: var(--text-inverse);
   font-size: 1.1rem;
   font-weight: 600;
   padding: 16px;
   border: none;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all var(--transition-base);
   margin-top: 1rem;
   display: flex;
   align-items: center;
   justify-content: center;
   min-height: 54px;
+  box-shadow: var(--shadow-md);
 
   &:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: var(--shadow-lg);
+    box-shadow: var(--shadow-xl);
   }
 
   &:active:not(:disabled) {
@@ -187,11 +195,11 @@ export const RegisterButton = styled.button.withConfig({ shouldForwardProp })`
 
 export const ErrorMessage = styled.div`
   background: var(--error-bg);
-  color: var(--error-text);
+  color: var(--error);
   padding: 8px 12px;
   border-radius: var(--radius-md);
   font-size: 0.85rem;
-  border: 1px solid var(--error-border);
+  border: 1px solid var(--error);
   margin-top: 0.25rem;
 `;
 
@@ -209,7 +217,7 @@ export const DividerLine = styled.div`
 
 export const DividerText = styled.span`
   padding: 0 1rem;
-  color: var(--text-tertiary);
+  color: var(--text-muted);
   font-size: 0.9rem;
 `;
 
@@ -228,10 +236,10 @@ export const FooterLink = styled.span`
   font-weight: 600;
   text-decoration: none;
   cursor: pointer;
-  transition: color 0.3s ease;
+  transition: color var(--transition-fast);
 
   &:hover {
-    color: var(--primary-hover);
+    color: var(--primary-dark);
     text-decoration: underline;
   }
 `;

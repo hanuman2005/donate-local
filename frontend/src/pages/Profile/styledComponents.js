@@ -28,15 +28,20 @@ export const ProfileContainer = styled.div`
   background: var(--bg-primary);
   padding: 2rem;
   margin-top: 80px;
+
+  @media (max-width: 768px) {
+    padding: 1.5rem 1rem;
+  }
 `;
 
 export const ProfileCard = styled.div`
   max-width: 1200px;
   margin: 0 auto;
   background: var(--bg-card);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-2xl);
   box-shadow: var(--shadow-xl);
   overflow: hidden;
+  border: 1px solid var(--border-color);
 `;
 
 export const CoverPhoto = styled.div`
@@ -59,6 +64,10 @@ export const CoverPhoto = styled.div`
       no-repeat bottom;
     background-size: cover;
   }
+
+  @media (max-width: 768px) {
+    height: 200px;
+  }
 `;
 
 export const ProfileHeader = styled.div`
@@ -73,6 +82,7 @@ export const ProfileHeader = styled.div`
     flex-direction: column;
     align-items: center;
     text-align: center;
+    padding: 0 1.5rem 1.5rem;
   }
 `;
 
@@ -84,7 +94,7 @@ export const AvatarWrapper = styled.div`
 export const Avatar = styled.div`
   width: 160px;
   height: 160px;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   border: 6px solid var(--bg-card);
   background: var(--gradient-primary);
   display: flex;
@@ -92,15 +102,21 @@ export const Avatar = styled.div`
   justify-content: center;
   font-size: 4rem;
   font-weight: 800;
-  color: var(--text-button);
+  color: var(--text-inverse);
   overflow: hidden;
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--shadow-xl);
   position: relative;
 
   img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+  }
+
+  @media (max-width: 768px) {
+    width: 140px;
+    height: 140px;
+    font-size: 3.5rem;
   }
 `;
 
@@ -111,18 +127,19 @@ export const AvatarUpload = styled.label`
   width: 40px;
   height: 40px;
   background: var(--gradient-primary);
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: var(--shadow-md);
-  transition: all 0.3s;
+  box-shadow: var(--shadow-lg);
+  transition: all var(--transition-base);
   font-size: 1.2rem;
+  color: var(--text-inverse);
 
   &:hover {
     transform: scale(1.1);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    box-shadow: var(--shadow-xl);
   }
 
   input {
@@ -140,6 +157,10 @@ export const ProfileName = styled.h1`
   font-weight: 800;
   color: var(--text-primary);
   margin: 0 0 0.5rem 0;
+
+  @media (max-width: 768px) {
+    font-size: 2rem;
+  }
 `;
 
 export const ProfileEmail = styled.p`
@@ -176,27 +197,26 @@ export const ProfileActions = styled.div`
 export const ActionButton = styled.button.withConfig({ shouldForwardProp })`
   padding: 0.75rem 1.5rem;
   background: ${(props) =>
-    props.$primary
-      ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
-      : "white"};
-  color: ${(props) => (props.$primary ? "white" : "#667eea")};
-  border: 2px solid ${(props) => (props.$primary ? "transparent" : "#667eea")};
-  border-radius: 12px;
+    props.$primary ? "var(--gradient-primary)" : "var(--bg-card)"};
+  color: ${(props) =>
+    props.$primary ? "var(--text-inverse)" : "var(--primary)"};
+  border: 2px solid
+    ${(props) => (props.$primary ? "transparent" : "var(--primary)")};
+  border-radius: var(--radius-lg);
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all var(--transition-base);
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  box-shadow: var(--shadow-md);
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+    box-shadow: var(--shadow-xl);
     background: ${(props) =>
-      props.$primary
-        ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
-        : "#667eea"};
-    color: white;
+      props.$primary ? "var(--gradient-primary)" : "var(--primary)"};
+    color: var(--text-inverse);
   }
 
   &:disabled {
@@ -211,35 +231,38 @@ export const StatsContainer = styled.div`
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 1.5rem;
   padding: 2rem;
-  border-top: 1px solid #e2e8f0;
-  border-bottom: 1px solid #e2e8f0;
+  border-top: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
 `;
 
 export const StatCard = styled.div`
   text-align: center;
   padding: 1.5rem;
-  background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
-  border-radius: 16px;
-  transition: all 0.3s;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-xl);
+  transition: all var(--transition-base);
+  border: 1px solid var(--border-color);
 
   &:hover {
     transform: translateY(-5px);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary-light);
   }
 `;
 
 export const StatValue = styled.div`
   font-size: 2.5rem;
   font-weight: 800;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--gradient-primary);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  background-clip: text;
   margin-bottom: 0.5rem;
 `;
 
 export const StatLabel = styled.div`
   font-size: 0.95rem;
-  color: #718096;
+  color: var(--text-secondary);
   font-weight: 600;
 `;
 
@@ -247,7 +270,7 @@ export const ContentTabs = styled.div`
   display: flex;
   gap: 0;
   padding: 0 2rem;
-  border-bottom: 2px solid #e2e8f0;
+  border-bottom: 2px solid var(--border-color);
   overflow-x: auto;
 
   &::-webkit-scrollbar {
@@ -259,15 +282,16 @@ export const Tab = styled.button.withConfig({ shouldForwardProp })`
   padding: 1.25rem 2rem;
   background: transparent;
   border: none;
-  color: ${(props) => (props.$active ? "#667eea" : "#718096")};
+  color: ${(props) =>
+    props.$active ? "var(--primary)" : "var(--text-secondary)"};
   font-weight: 700;
   cursor: pointer;
   position: relative;
-  transition: all 0.3s;
+  transition: all var(--transition-base);
   white-space: nowrap;
 
   &:hover {
-    color: #667eea;
+    color: var(--primary);
   }
 
   ${(props) =>
@@ -280,7 +304,7 @@ export const Tab = styled.button.withConfig({ shouldForwardProp })`
       left: 0;
       right: 0;
       height: 3px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: var(--gradient-primary);
       border-radius: 3px 3px 0 0;
     }
   `}
@@ -288,6 +312,10 @@ export const Tab = styled.button.withConfig({ shouldForwardProp })`
 
 export const TabContent = styled.div`
   padding: 2rem;
+
+  @media (max-width: 768px) {
+    padding: 1.5rem;
+  }
 `;
 
 export const FormGrid = styled.div`
@@ -304,60 +332,65 @@ export const FormGroup = styled.div`
 
 export const Label = styled.label`
   font-weight: 600;
-  color: #4a5568;
+  color: var(--text-secondary);
   font-size: 0.95rem;
 `;
 
 export const Input = styled.input`
   padding: 0.875rem 1rem;
-  border: 2px solid #e2e8f0;
-  border-radius: 12px;
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-lg);
   font-size: 1rem;
-  transition: all 0.2s;
-  background: ${(props) => (props.disabled ? "#f7fafc" : "white")};
+  transition: all var(--transition-base);
+  background: ${(props) =>
+    props.disabled ? "var(--bg-secondary)" : "var(--bg-card)"};
+  color: var(--text-primary);
 
   &:focus {
     outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.1);
   }
 
   &:disabled {
     cursor: not-allowed;
-    color: #a0aec0;
+    color: var(--text-muted);
   }
 `;
 
 export const TextArea = styled.textarea`
   padding: 0.875rem 1rem;
-  border: 2px solid #e2e8f0;
-  border-radius: 12px;
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-lg);
   font-size: 1rem;
   font-family: inherit;
   resize: vertical;
   min-height: 120px;
-  transition: all 0.2s;
+  transition: all var(--transition-base);
+  background: var(--bg-card);
+  color: var(--text-primary);
 
   &:focus {
     outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.1);
   }
 `;
 
 export const Select = styled.select`
   padding: 0.875rem 1rem;
-  border: 2px solid #e2e8f0;
-  border-radius: 12px;
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-lg);
   font-size: 1rem;
   cursor: pointer;
-  background: white;
-  transition: all 0.2s;
+  background: var(--bg-card);
+  color: var(--text-primary);
+  transition: all var(--transition-base);
 
   &:focus {
     outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.1);
   }
 `;
 
@@ -368,18 +401,18 @@ export const BadgesSection = styled.div`
 `;
 
 export const BadgeCard = styled.div`
-  background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
-  border-radius: 16px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-xl);
   padding: 1.5rem;
   text-align: center;
-  transition: all 0.3s;
-  border: 2px solid ${(props) => (props.$unlocked ? "#667eea" : "#e2e8f0")};
+  transition: all var(--transition-base);
+  border: 2px solid
+    ${(props) => (props.$unlocked ? "var(--primary)" : "var(--border-color)")};
   opacity: ${(props) => (props.$unlocked ? 1 : 0.5)};
 
   &:hover {
     transform: ${(props) => (props.$unlocked ? "translateY(-5px)" : "none")};
-    box-shadow: ${(props) =>
-      props.$unlocked ? "0 10px 30px rgba(102, 126, 234, 0.2)" : "none"};
+    box-shadow: ${(props) => (props.$unlocked ? "var(--shadow-lg)" : "none")};
   }
 `;
 
@@ -390,13 +423,13 @@ export const BadgeIcon = styled.div`
 
 export const BadgeName = styled.div`
   font-weight: 700;
-  color: #2d3748;
+  color: var(--text-primary);
   margin-bottom: 0.25rem;
 `;
 
 export const BadgeDescription = styled.div`
   font-size: 0.85rem;
-  color: #718096;
+  color: var(--text-secondary);
 `;
 
 export const RatingsSection = styled.div`
@@ -406,10 +439,10 @@ export const RatingsSection = styled.div`
 `;
 
 export const RatingCard = styled.div`
-  background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
-  border-radius: 16px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-xl);
   padding: 1.5rem;
-  border-left: 4px solid #667eea;
+  border-left: 4px solid var(--primary);
 `;
 
 export const RatingHeader = styled.div`
@@ -428,9 +461,9 @@ export const RaterInfo = styled.div`
 export const RaterAvatar = styled.div`
   width: 45px;
   height: 45px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  border-radius: var(--radius-full);
+  background: var(--gradient-primary);
+  color: var(--text-inverse);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -440,33 +473,35 @@ export const RaterAvatar = styled.div`
 
 export const RaterName = styled.div`
   font-weight: 700;
-  color: #2d3748;
+  color: var(--text-primary);
 `;
 
 export const RatingDate = styled.div`
   font-size: 0.85rem;
-  color: #a0aec0;
+  color: var(--text-muted);
 `;
 
 export const Stars = styled.div`
   font-size: 1.2rem;
-  color: #fbbf24;
+  color: var(--warning);
 `;
 
 export const RatingComment = styled.p`
-  color: #4a5568;
+  color: var(--text-secondary);
   line-height: 1.6;
   font-style: italic;
 `;
 
 export const MessageBox = styled.div`
   padding: 1rem 1.5rem;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   margin-bottom: 1.5rem;
-  background: ${(props) => (props.$type === "error" ? "#fed7d7" : "#c6f6d5")};
-  color: ${(props) => (props.$type === "error" ? "#c53030" : "#2f855a")};
+  background: ${(props) =>
+    props.$type === "error" ? "var(--error-bg)" : "var(--success-bg)"};
+  color: ${(props) =>
+    props.$type === "error" ? "var(--error)" : "var(--success)"};
   border-left: 4px solid
-    ${(props) => (props.$type === "error" ? "#e53e3e" : "#48bb78")};
+    ${(props) => (props.$type === "error" ? "var(--error)" : "var(--success)")};
   font-weight: 600;
 `;
 
@@ -476,7 +511,7 @@ export const LoadingOverlay = styled.div`
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(255, 255, 255, 0.9);
+  background: var(--bg-overlay);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -486,9 +521,9 @@ export const LoadingOverlay = styled.div`
 export const Spinner = styled.div`
   width: 60px;
   height: 60px;
-  border: 6px solid #e2e8f0;
-  border-top-color: #667eea;
-  border-radius: 50%;
+  border: 6px solid var(--border-color);
+  border-top-color: var(--primary);
+  border-radius: var(--radius-full);
   animation: spin 1s linear infinite;
 
   @keyframes spin {
@@ -498,14 +533,13 @@ export const Spinner = styled.div`
   }
 `;
 
-// ===== Additional Components for Donations & Receipts =====
-
 export const HistorySection = styled.div`
-  background: white;
-  border-radius: 16px;
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
   padding: 2rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
   margin-top: 1rem;
+  border: 1px solid var(--border-color);
 `;
 
 export const HistoryItem = styled.div`
@@ -513,7 +547,7 @@ export const HistoryItem = styled.div`
   justify-content: space-between;
   align-items: center;
   padding: 1.25rem;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--border-color);
   &:last-child {
     border-bottom: none;
   }
@@ -525,7 +559,7 @@ export const ItemDetails = styled.div`
 
 export const ItemTitle = styled.h3`
   font-size: 1.1rem;
-  color: #2d3748;
+  color: var(--text-primary);
   margin-bottom: 0.25rem;
 `;
 
@@ -533,20 +567,24 @@ export const ItemMeta = styled.div`
   display: flex;
   gap: 1rem;
   font-size: 0.9rem;
-  color: #718096;
+  color: var(--text-secondary);
 `;
 
 export const ReceiptButton = styled.button.withConfig({ shouldForwardProp })`
   padding: 0.6rem 1rem;
   border: none;
-  border-radius: 8px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  border-radius: var(--radius-md);
+  background: var(--gradient-primary);
+  color: var(--text-inverse);
   font-weight: 600;
   cursor: pointer;
-  transition: 0.2s;
+  transition: all var(--transition-base);
+  box-shadow: var(--shadow-sm);
+
   &:hover {
     opacity: 0.9;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
   }
 `;
 
@@ -556,33 +594,37 @@ export const ReceiptModal = styled.div`
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.85);
+  background: var(--bg-overlay);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
   flex-direction: column;
-  color: #2d3748;
+  color: var(--text-primary);
 `;
 
 export const ReceiptHeader = styled.div`
-  background: white;
-  border-radius: 12px 12px 0 0;
+  background: var(--bg-card);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   padding: 1.5rem;
   width: 400px;
   text-align: center;
+  border: 1px solid var(--border-color);
+  border-bottom: none;
 `;
 
 export const ReceiptBody = styled.div`
-  background: white;
+  background: var(--bg-card);
   padding: 1.5rem;
   width: 400px;
-  border-radius: 0 0 12px 12px;
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  border: 1px solid var(--border-color);
+  border-top: none;
 `;
 
 export const ReceiptRow = styled.div`
   display: flex;
   justify-content: space-between;
   padding: 0.5rem 0;
-  border-bottom: 1px dashed #e2e8f0;
+  border-bottom: 1px dashed var(--border-color);
 `;

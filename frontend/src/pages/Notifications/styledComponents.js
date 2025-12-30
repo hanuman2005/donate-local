@@ -1,4 +1,4 @@
-// client/src/pages/Notifications/styledComponents.js - COMPLETE & OPTIMIZED
+// client/src/pages/Notifications/styledComponents.js - Updated with Theme Variables
 import styled from "styled-components";
 
 // Framer Motion props that should not be forwarded to the DOM
@@ -95,13 +95,14 @@ export const Title = styled.h1`
 
 export const UnreadBadge = styled.span`
   background: var(--gradient-primary);
-  color: var(--text-button);
+  color: var(--text-inverse);
   padding: 0.35rem 0.875rem;
-  border-radius: 20px;
+  border-radius: var(--radius-full);
   font-size: 0.9rem;
   font-weight: 700;
   line-height: 1;
   display: inline-block;
+  box-shadow: var(--shadow-md);
 
   @media (max-width: 768px) {
     padding: 0.3rem 0.75rem;
@@ -118,17 +119,17 @@ export const MarkAllButton = styled.button.withConfig({ shouldForwardProp })`
   padding: 0.75rem 1.5rem;
   background: var(--bg-card);
   border: 2px solid var(--border-color);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   color: var(--primary);
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all var(--transition-base);
   white-space: nowrap;
   font-size: 0.95rem;
 
   &:hover {
     background: var(--primary);
-    color: white;
+    color: var(--text-inverse);
     border-color: var(--primary);
     transform: translateY(-2px);
     box-shadow: var(--shadow-lg);
@@ -161,13 +162,14 @@ export const FilterButton = styled.button.withConfig({ shouldForwardProp })`
   padding: 0.75rem 1.5rem;
   background: ${(props) =>
     props.$active ? "var(--gradient-primary)" : "var(--bg-card)"};
-  color: ${(props) => (props.$active ? "white" : "var(--text-primary)")};
+  color: ${(props) =>
+    props.$active ? "var(--text-inverse)" : "var(--text-primary)"};
   border: 2px solid
     ${(props) => (props.$active ? "transparent" : "var(--border-color)")};
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all var(--transition-base);
   white-space: nowrap;
   font-size: 0.95rem;
 
@@ -243,35 +245,26 @@ export const DateLabel = styled.div`
 
 export const NotificationCard = styled.div`
   background: var(--bg-card);
-  border-radius: 16px;
+  border-radius: var(--radius-xl);
   padding: 1.5rem;
   box-shadow: var(--shadow-lg);
   display: flex;
   gap: 1.5rem;
   align-items: start;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all var(--transition-base);
   border-left: 4px solid
     ${(props) => (props.$read ? "transparent" : "var(--primary)")};
   opacity: ${(props) => (props.$read ? 0.7 : 1)};
   position: relative;
   overflow: hidden;
+  border: 1px solid var(--border-color);
 
   &:hover {
     transform: translateX(5px);
-    box-shadow: var(--shadow-lg);
+    box-shadow: var(--shadow-xl);
     opacity: 1;
-  }
-
-  &::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 4px;
-    height: 100%;
-    background: var(--gradient-primary);
-    opacity: ${(props) => (props.$read ? 0 : 1)};
+    border-color: var(--primary-light);
   }
 
   @media (max-width: 768px) {
@@ -282,21 +275,21 @@ export const NotificationCard = styled.div`
   @media (max-width: 480px) {
     padding: 1rem;
     gap: 1rem;
-    border-radius: 12px;
+    border-radius: var(--radius-lg);
   }
 `;
 
 export const NotificationIcon = styled.div`
   width: 50px;
   height: 50px;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   background: ${(props) => {
     const colors = {
-      message: "var(--notification-message-gradient)",
-      interest: "var(--notification-interest-gradient)",
-      assignment: "var(--notification-assignment-gradient)",
-      completion: "var(--notification-completion-gradient)",
-      system: "var(--notification-system-gradient)",
+      message: "var(--gradient-primary)",
+      interest: "var(--gradient-primary)",
+      assignment: "var(--gradient-primary)",
+      completion: "var(--gradient-primary)",
+      system: "var(--gradient-primary)",
     };
     return colors[props.type] || colors.system;
   }};
@@ -306,6 +299,7 @@ export const NotificationIcon = styled.div`
   font-size: 1.5rem;
   flex-shrink: 0;
   line-height: 1;
+  box-shadow: var(--shadow-md);
 
   @media (max-width: 768px) {
     width: 45px;
@@ -317,7 +311,7 @@ export const NotificationIcon = styled.div`
     width: 40px;
     height: 40px;
     font-size: 1.2rem;
-    border-radius: 10px;
+    border-radius: var(--radius-md);
   }
 `;
 
@@ -402,15 +396,16 @@ export const NotificationActions = styled.div`
 export const ActionButton = styled.button.withConfig({ shouldForwardProp })`
   padding: 0.5rem 1rem;
   background: ${(props) =>
-    props.$primary ? "var(--gradient-primary)" : "#f7fafc"};
+    props.$primary ? "var(--gradient-primary)" : "var(--bg-secondary)"};
   color: ${(props) =>
-    props.$primary ? "var(--text-button)" : "var(--text-tertiary)"};
-  border: none;
-  border-radius: 8px;
+    props.$primary ? "var(--text-inverse)" : "var(--text-primary)"};
+  border: ${(props) =>
+    props.$primary ? "none" : `1px solid var(--border-color)`};
+  border-radius: var(--radius-md);
   font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all var(--transition-fast);
   white-space: nowrap;
 
   &:hover {
@@ -435,12 +430,13 @@ export const EmptyState = styled.div`
   text-align: center;
   padding: 4rem 2rem;
   background: var(--bg-card);
-  border-radius: 20px;
+  border-radius: var(--radius-xl);
   box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border-color);
 
   @media (max-width: 768px) {
     padding: 3.5rem 1.5rem;
-    border-radius: 16px;
+    border-radius: var(--radius-lg);
   }
 
   @media (max-width: 480px) {
@@ -522,7 +518,7 @@ export const Spinner = styled.div`
   height: 50px;
   border: 4px solid var(--border-color);
   border-top-color: var(--primary);
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   animation: spin 1s linear infinite;
 
   @keyframes spin {

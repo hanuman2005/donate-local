@@ -1,4 +1,4 @@
-// src/pages/Listings/styledComponents.js - COMPLETE FILE FOR SIDEBAR LAYOUT
+// src/pages/Listings/styledComponents.js - Updated with Theme Variables
 import styled from "styled-components";
 
 // Framer Motion props that should not be forwarded to the DOM
@@ -103,7 +103,8 @@ export const ToggleButton = styled.button.withConfig({ shouldForwardProp })`
   transition: all var(--transition-base);
   background: ${(props) =>
     props.$active ? "var(--gradient-primary)" : "transparent"};
-  color: ${(props) => (props.$active ? "white" : "var(--text-secondary)")};
+  color: ${(props) =>
+    props.$active ? "var(--text-inverse)" : "var(--text-secondary)"};
 
   &:hover {
     background: ${(props) =>
@@ -194,7 +195,7 @@ export const RetryButton = styled.button.withConfig({ shouldForwardProp })`
   margin-top: 1.5rem;
   padding: 0.75rem 2rem;
   background: var(--gradient-primary);
-  color: white;
+  color: var(--text-inverse);
   border: none;
   border-radius: var(--radius-lg);
   font-weight: 600;
@@ -250,7 +251,8 @@ export const PageButton = styled.button.withConfig({ shouldForwardProp })`
   padding: 0.75rem 2rem;
   background: ${(props) =>
     props.disabled ? "var(--bg-secondary)" : "var(--gradient-primary)"};
-  color: ${(props) => (props.disabled ? "var(--text-secondary)" : "white")};
+  color: ${(props) =>
+    props.disabled ? "var(--text-secondary)" : "var(--text-inverse)"};
   border: none;
   border-radius: var(--radius-lg);
   font-weight: 600;

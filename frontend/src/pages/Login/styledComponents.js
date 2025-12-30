@@ -30,7 +30,7 @@ export const LoginContainer = styled.div`
   background: var(--bg-primary);
   color: var(--text-primary);
   padding: 2rem 1rem;
-  margin-top: 80px; /* Match header height */
+  margin-top: 80px;
   min-height: calc(100vh - 80px);
   transition: all var(--transition-base);
 `;
@@ -42,6 +42,7 @@ export const LoginCard = styled.div`
   padding: 3rem;
   width: 100%;
   max-width: 450px;
+  border: 1px solid var(--border-color);
   animation: fadeIn 0.5s ease-out;
 
   @keyframes fadeIn {
@@ -102,7 +103,7 @@ export const FormGroup = styled.div`
 
 export const Label = styled.label`
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--text-secondary);
   font-size: 0.95rem;
 `;
 
@@ -111,41 +112,47 @@ export const Input = styled.input`
   border: 2px solid var(--border-color);
   border-radius: var(--radius-lg);
   font-size: 1rem;
-  transition: all 0.3s ease;
-  background: var(--bg-input);
+  transition: all var(--transition-base);
+  background: var(--bg-secondary);
   color: var(--text-primary);
 
   &:focus {
     outline: none;
-    border-color: var(--primary-color);
+    border-color: var(--primary);
     background: var(--bg-card);
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.08);
+    box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.1);
   }
 
   &::placeholder {
-    color: var(--text-secondary);
+    color: var(--text-muted);
+    opacity: 0.6;
+  }
+
+  @media (max-width: 768px) {
+    font-size: 16px; /* Prevents zoom on iOS */
   }
 `;
 
 export const LoginButton = styled.button.withConfig({ shouldForwardProp })`
   background: var(--gradient-primary);
-  color: var(--text-button);
+  color: var(--text-inverse);
   font-size: 1.1rem;
   font-weight: 600;
   padding: 16px;
   border: none;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all var(--transition-base);
   margin-top: 1rem;
   display: flex;
   align-items: center;
   justify-content: center;
   min-height: 54px;
+  box-shadow: var(--shadow-md);
 
   &:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: var(--shadow-lg);
+    box-shadow: var(--shadow-xl);
   }
 
   &:active:not(:disabled) {
@@ -160,22 +167,22 @@ export const LoginButton = styled.button.withConfig({ shouldForwardProp })`
 `;
 
 export const ErrorMessage = styled.div`
-  background: #fed7d7;
-  color: #c53030;
+  background: var(--error-bg);
+  color: var(--error);
   padding: 12px 16px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   font-size: 0.9rem;
-  border: 1px solid #feb2b2;
+  border: 1px solid var(--error);
   margin-bottom: 0.5rem;
 `;
 
 export const SuccessMessage = styled.div`
-  background: #c6f6d5;
-  color: #2f855a;
+  background: var(--success-bg);
+  color: var(--success);
   padding: 12px 16px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   font-size: 0.9rem;
-  border: 1px solid #9ae6b4;
+  border: 1px solid var(--success);
   margin-bottom: 0.5rem;
 `;
 
@@ -188,12 +195,12 @@ export const DividerContainer = styled.div`
 export const DividerLine = styled.div`
   flex: 1;
   height: 1px;
-  background: #e2e8f0;
+  background: var(--border-color);
 `;
 
 export const DividerText = styled.span`
   padding: 0 1rem;
-  color: #a0aec0;
+  color: var(--text-muted);
   font-size: 0.9rem;
 `;
 
@@ -202,20 +209,20 @@ export const LoginFooter = styled.div`
 `;
 
 export const FooterText = styled.p`
-  color: #718096;
+  color: var(--text-secondary);
   font-size: 0.95rem;
   line-height: 1.5;
 `;
 
 export const FooterLink = styled.span`
-  color: #667eea;
+  color: var(--primary);
   font-weight: 600;
   text-decoration: none;
   cursor: pointer;
-  transition: color 0.3s ease;
+  transition: color var(--transition-fast);
 
   &:hover {
-    color: #5a67d8;
+    color: var(--primary-dark);
     text-decoration: underline;
   }
 `;
