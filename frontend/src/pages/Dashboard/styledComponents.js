@@ -1,19 +1,23 @@
-// src/pages/Dashboard/styledComponents.js - COMPLETE ENHANCED VERSION
+// src/pages/Dashboard/styledComponents.js - Updated with new color scheme
 import styled from "styled-components";
 import { motion } from "framer-motion";
 
+// ============================================
+// MAIN WRAPPER
+// ============================================
 export const DashboardWrapper = styled.div`
   min-height: 100vh;
   background: var(--bg-primary);
   padding: 2rem;
-  transition: all var(--transition-base);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  transition: background var(--transition-base);
 
   @media (max-width: 768px) {
-    padding: 0.5rem;
+    padding: 1rem;
   }
 
   @media (max-width: 480px) {
-    padding: 0.25rem;
+    padding: 0.75rem;
   }
 `;
 
@@ -22,35 +26,43 @@ export const Container = styled.div`
   margin: 0 auto;
 `;
 
-export const WelcomeCard = styled.div`
+// ============================================
+// HERO SECTION
+// ============================================
+export const HeroCard = styled(motion.div)`
   background: var(--bg-card);
-  backdrop-filter: blur(20px);
-  border-radius: var(--radius-xl);
-  padding: 2rem;
+  border-radius: var(--radius-2xl);
+  padding: 3rem;
   margin-bottom: 2rem;
-  box-shadow: var(--shadow-xl);
   border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-lg);
   position: relative;
   overflow: hidden;
 
+  /* Decorative gradient orb */
   &::before {
     content: "";
     position: absolute;
-    top: -50%;
-    right: -10%;
-    width: 400px;
-    height: 400px;
-    background: radial-gradient(circle, rgba(102, 126, 234, 0.1), transparent);
+    top: -100px;
+    right: -100px;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(35, 76, 106, 0.1), transparent);
     border-radius: 50%;
+    pointer-events: none;
+  }
+
+  @media (max-width: 768px) {
+    padding: 2rem;
   }
 
   @media (max-width: 480px) {
-    padding: 1rem;
-    margin-bottom: 1rem;
+    padding: 1.5rem;
+    border-radius: var(--radius-xl);
   }
 `;
 
-export const WelcomeHeader = styled.div`
+export const HeroContent = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -58,116 +70,86 @@ export const WelcomeHeader = styled.div`
   position: relative;
   z-index: 1;
 
-  @media (max-width: 768px) {
+  @media (max-width: 968px) {
     flex-direction: column;
     align-items: flex-start;
-    gap: 1rem;
-  }
-
-  @media (max-width: 480px) {
-    gap: 0.5rem;
+    gap: 1.5rem;
   }
 `;
 
-export const WelcomeText = styled.div`
+export const HeroText = styled.div`
+  flex: 1;
+
   h1 {
-    font-size: 2rem;
-    font-weight: 700;
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 800;
     background: var(--gradient-primary);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    margin-bottom: 0.5rem;
+    background-clip: text;
+    margin: 0 0 0.5rem 0;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
   }
 
   p {
+    font-size: clamp(1rem, 2vw, 1.1rem);
     color: var(--text-secondary);
-    font-size: 1rem;
-  }
+    margin: 0;
+    max-width: 600px;
+    line-height: 1.5;
 
-  @media (max-width: 768px) {
-    h1 {
-      font-size: 1.8rem;
-    }
-    p {
-      font-size: 0.95rem;
+    strong {
+      font-weight: 700;
+      color: var(--primary);
     }
   }
 `;
 
-export const QuickActions = styled.div`
-  display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
-
-  @media (max-width: 768px) {
-    width: 100%;
-    gap: 0.5rem;
-  }
-
-  @media (max-width: 480px) {
-    flex-direction: column;
-    gap: 0.25rem;
-  }
-`;
-
-export const ActionBtn = styled(motion.button)`
-  padding: 0.75rem 1.5rem;
-  border-radius: var(--radius-lg);
+export const PrimaryButton = styled(motion.button)`
+  background: var(--gradient-primary);
   border: none;
-  font-weight: 600;
+  border-radius: var(--radius-xl);
+  padding: 1rem 2.5rem;
+  color: var(--text-inverse);
+  font-size: 1.1rem;
+  font-weight: 700;
   cursor: pointer;
+  box-shadow: 0 10px 30px rgba(27, 60, 83, 0.3);
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  font-size: 0.95rem;
+  gap: 0.75rem;
   transition: all var(--transition-base);
-  position: relative;
-  overflow: hidden;
+  white-space: nowrap;
 
-  ${(props) =>
-    props.$primary
-      ? `
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    color: white;
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-  `
-      : `
-    background: var(--bg-card);
-    color: var(--primary);
-    border: 2px solid var(--primary);
-  `}
-
-  &::before {
-    content: "";
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 0;
-    height: 0;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.3);
-    transform: translate(-50%, -50%);
-    transition: width 0.6s, height 0.6s;
-  }
-
-  &:hover::before {
-    width: 300px;
-    height: 300px;
+  span {
+    font-size: 1.5rem;
   }
 
   &:hover {
+    box-shadow: 0 15px 40px rgba(27, 60, 83, 0.4);
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
   }
 
-  @media (max-width: 768px) {
-    flex: 1;
+  &:active {
+    transform: translateY(0);
+  }
+
+  @media (max-width: 968px) {
+    width: 100%;
     justify-content: center;
-    padding: 0.65rem 1.25rem;
+  }
+
+  @media (max-width: 480px) {
+    padding: 0.875rem 2rem;
+    font-size: 1rem;
   }
 `;
 
-export const StatsGrid = styled.div`
+// ============================================
+// STATS GRID
+// ============================================
+export const StatsGrid = styled(motion.div)`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 1.5rem;
@@ -186,14 +168,15 @@ export const StatsGrid = styled.div`
 export const StatCard = styled(motion.div)`
   background: var(--bg-card);
   border-radius: var(--radius-xl);
-  padding: 1.75rem;
-  box-shadow: var(--shadow-lg);
+  padding: 2rem;
   border: 1px solid var(--border-color);
-  transition: all var(--transition-base);
-  cursor: pointer;
   position: relative;
   overflow: hidden;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  box-shadow: var(--shadow-md);
 
+  /* Top accent line */
   &::before {
     content: "";
     position: absolute;
@@ -201,25 +184,23 @@ export const StatCard = styled(motion.div)`
     left: 0;
     right: 0;
     height: 4px;
-    background: ${({ $color }) =>
-      $color || "linear-gradient(90deg, #667eea, #764ba2)"};
+    background: ${(props) => props.$color || 'var(--primary)'};
   }
 
+  /* Hover glow effect */
   &::after {
     content: "";
     position: absolute;
-    top: -50%;
-    right: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle, rgba(102, 126, 234, 0.1), transparent);
+    inset: 0;
+    background: radial-gradient(circle at center, rgba(35, 76, 106, 0.1), transparent);
     opacity: 0;
-    transition: opacity 0.3s;
+    transition: opacity var(--transition-base);
   }
 
   &:hover {
     transform: translateY(-5px);
     box-shadow: var(--shadow-xl);
+    border-color: var(--primary-light);
   }
 
   &:hover::after {
@@ -227,92 +208,165 @@ export const StatCard = styled(motion.div)`
   }
 
   @media (max-width: 768px) {
+    padding: 1.5rem;
+  }
+
+  @media (max-width: 480px) {
     padding: 1.25rem;
   }
 `;
 
 export const StatIcon = styled.div`
   font-size: 2.5rem;
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
   position: relative;
   z-index: 1;
 
-  @media (max-width: 768px) {
+  @media (max-width: 480px) {
     font-size: 2rem;
   }
 `;
 
-export const StatValue = styled.div`
+export const StatValue = styled(motion.div)`
   font-size: 2.5rem;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--text-primary);
-  margin-bottom: 0.5rem;
+  margin: 0.5rem 0;
   line-height: 1;
   position: relative;
   z-index: 1;
 
-  @media (max-width: 768px) {
+  @media (max-width: 480px) {
     font-size: 2rem;
   }
 `;
 
 export const StatLabel = styled.div`
-  color: var(--text-secondary);
   font-size: 0.95rem;
-  font-weight: 500;
+  color: var(--text-secondary);
+  font-weight: 600;
+  margin-top: 0.5rem;
   position: relative;
   z-index: 1;
 
-  @media (max-width: 768px) {
+  @media (max-width: 480px) {
     font-size: 0.85rem;
   }
 `;
 
+export const ProgressRing = styled.div`
+  width: 80px;
+  height: 80px;
+  position: relative;
+  margin: 1rem 0;
+
+  svg {
+    transform: rotate(-90deg);
+  }
+
+  .progress-value {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  @media (max-width: 480px) {
+    width: 70px;
+    height: 70px;
+
+    .progress-value {
+      font-size: 1.1rem;
+    }
+  }
+`;
+
+// ============================================
+// CONTENT GRID
+// ============================================
 export const ContentGrid = styled.div`
   display: grid;
   grid-template-columns: 2fr 1fr;
   gap: 2rem;
+  margin-bottom: 2rem;
 
   @media (max-width: 1024px) {
     grid-template-columns: 1fr;
   }
-`;
-
-export const MainContent = styled.main`
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
 
   @media (max-width: 768px) {
     gap: 1.5rem;
   }
+`;
+
+export const MainContent = styled.div`
+  /* Grid column handled by parent */
 `;
 
 export const Sidebar = styled.aside`
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 1.25rem;
+  padding: 2rem 1.5rem;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-md);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-color);
+  transition: box-shadow var(--transition-base), background var(--transition-base);
 
+  /* Optional: add a hover effect for interactivity */
+  &:hover {
+    box-shadow: var(--shadow-lg);
+    background: rgba(255, 255, 255, 0.22);
+  }
+
+  @media (max-width: 1024px) {
+    padding: 1.25rem 1rem;
+    border-radius: var(--radius-xl);
+  }
   @media (max-width: 768px) {
-    gap: 1.5rem;
+    padding: 1rem 0.5rem;
+    border-radius: var(--radius-lg);
   }
 `;
 
-export const Card = styled(motion.div)`
+// ============================================
+// GLASS CARD
+// ============================================
+export const GlassCard = styled(motion.div)`
   background: var(--bg-card);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-2xl);
   padding: 2rem;
-  box-shadow: var(--shadow-lg);
   border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-md);
   transition: all var(--transition-base);
 
   &:hover {
-    box-shadow: var(--shadow-xl);
+    box-shadow: var(--shadow-lg);
     transform: translateY(-2px);
   }
 
+  ${(props) =>
+    props.$fullWidth &&
+    `
+    grid-column: span 2;
+    
+    @media (max-width: 1024px) {
+      grid-column: span 1;
+    }
+  `}
+
   @media (max-width: 768px) {
     padding: 1.5rem;
+  }
+
+  @media (max-width: 480px) {
+    padding: 1.25rem;
+    border-radius: var(--radius-xl);
   }
 `;
 
@@ -326,35 +380,49 @@ export const CardHeader = styled.div`
     font-size: 1.5rem;
     font-weight: 700;
     color: var(--text-primary);
+    margin: 0;
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    margin: 0;
   }
 
-  @media (max-width: 768px) {
+  @media (max-width: 480px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+
     h2 {
       font-size: 1.3rem;
     }
   }
 `;
 
-export const ViewAllBtn = styled(motion.button)`
-  background: none;
-  border: none;
+export const ViewAllButton = styled(motion.button)`
+  background: var(--bg-hover);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 0.5rem 1rem;
   color: var(--primary);
+  font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
-  font-size: 0.9rem;
-  padding: 0.5rem 1rem;
-  border-radius: var(--radius-md);
-  transition: all var(--transition-base);
+  transition: all var(--transition-fast);
 
   &:hover {
-    background: var(--bg-hover);
+    background: var(--primary);
+    color: var(--text-inverse);
+    border-color: var(--primary);
+  }
+
+  @media (max-width: 480px) {
+    align-self: stretch;
+    text-align: center;
   }
 `;
 
+// ============================================
+// ITEMS LIST
+// ============================================
 export const ItemsList = styled.div`
   display: flex;
   flex-direction: column;
@@ -362,57 +430,40 @@ export const ItemsList = styled.div`
 `;
 
 export const ItemCard = styled(motion.div)`
-  display: flex;
-  gap: 1rem;
-  padding: 1rem;
-  background: ${({ $status }) =>
-    $status === "completed" ? "rgba(34, 197, 94, 0.1)" : "var(--bg-secondary)"};
+  background: var(--bg-secondary);
   border-radius: var(--radius-lg);
-  border: 2px solid
-    ${({ $status }) =>
-      $status === "completed"
-        ? "#22c55e"
-        : $status === "pending"
-        ? "#667eea"
-        : "var(--border-color)"};
+  padding: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
   cursor: pointer;
+  border: 1px solid var(--border-color);
   transition: all var(--transition-base);
-  position: relative;
-  overflow: hidden;
-
-  &::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 4px;
-    background: ${({ $status }) =>
-      $status === "completed"
-        ? "#22c55e"
-        : $status === "pending"
-        ? "#667eea"
-        : "transparent"};
-  }
 
   &:hover {
-    transform: translateX(8px);
+    transform: translateX(5px);
+    background: var(--bg-hover);
+    border-color: var(--primary-light);
     box-shadow: var(--shadow-md);
+  }
+
+  @media (max-width: 480px) {
+    padding: 1rem;
   }
 `;
 
 export const ItemIcon = styled.div`
-  font-size: 2.5rem;
   width: 60px;
   height: 60px;
+  border-radius: var(--radius-lg);
+  background: var(--bg-card);
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--bg-card);
-  border-radius: var(--radius-lg);
+  font-size: 1.75rem;
   flex-shrink: 0;
   overflow: hidden;
-  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-light);
 
   img {
     width: 100%;
@@ -420,10 +471,10 @@ export const ItemIcon = styled.div`
     object-fit: cover;
   }
 
-  @media (max-width: 768px) {
+  @media (max-width: 480px) {
     width: 50px;
     height: 50px;
-    font-size: 2rem;
+    font-size: 1.5rem;
   }
 `;
 
@@ -433,117 +484,227 @@ export const ItemInfo = styled.div`
 `;
 
 export const ItemName = styled.div`
+  font-size: 1.1rem;
   font-weight: 600;
   color: var(--text-primary);
   margin-bottom: 0.25rem;
-  font-size: 1rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  @media (max-width: 480px) {
+    font-size: 1rem;
+  }
 `;
 
 export const ItemMeta = styled.div`
-  color: var(--text-secondary);
   font-size: 0.85rem;
-  margin-bottom: 0.5rem;
+  color: var(--text-secondary);
   display: flex;
   align-items: center;
   gap: 0.5rem;
   flex-wrap: wrap;
-`;
 
-export const ItemCategory = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: var(--primary);
-  font-size: 0.85rem;
-  font-weight: 500;
+  @media (max-width: 480px) {
+    font-size: 0.8rem;
+  }
 `;
 
 export const StatusBadge = styled.span`
-  padding: 0.25rem 0.75rem;
-  border-radius: var(--radius-full);
+  background: ${(props) => {
+    switch (props.$status) {
+      case "completed":
+        return "var(--success)";
+      case "pending":
+        return "var(--warning)";
+      case "available":
+        return "var(--primary)";
+      default:
+        return "var(--text-muted)";
+    }
+  }};
+  padding: 0.4rem 0.8rem;
+  border-radius: var(--radius-md);
   font-size: 0.75rem;
   font-weight: 600;
-  background: ${({ $status }) =>
-    $status === "completed"
-      ? "var(--success-bg)"
-      : $status === "pending"
-      ? "var(--warning-bg)"
-      : $status === "failed"
-      ? "var(--danger-bg)"
-      : "var(--gradient-primary)"};
   color: var(--text-inverse);
   text-transform: capitalize;
+  flex-shrink: 0;
+
+  @media (max-width: 480px) {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.7rem;
+  }
 `;
 
-export const InsightsList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-`;
-
-export const InsightCard = styled(motion.div)`
-  display: flex;
-  gap: 1rem;
-  padding: 1.25rem;
-  background: rgba(102, 126, 234, 0.1);
+// ============================================
+// IMPACT CARDS
+// ============================================
+export const ImpactCard = styled(motion.div)`
+  background: var(--bg-secondary);
   border-radius: var(--radius-lg);
-  border-left: 4px solid var(--primary);
+  padding: 1rem;
+  border-left: 4px solid ${(props) => props.$color || "var(--primary)"};
+  cursor: pointer;
   transition: all var(--transition-base);
-  position: relative;
-  overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 
-  &::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 100px;
-    height: 100px;
-    background: radial-gradient(circle, rgba(102, 126, 234, 0.2), transparent);
-    border-radius: 50%;
-    transform: translate(30%, -30%);
+  &:hover {
+    transform: scale(1.02);
+    background: var(--bg-hover);
+    box-shadow: var(--shadow-md);
+  }
+
+  @media (max-width: 480px) {
+    padding: 0.875rem;
+  }
+`;
+
+export const ImpactIcon = styled.div`
+  font-size: 1.75rem;
+  flex-shrink: 0;
+
+  @media (max-width: 480px) {
+    font-size: 1.5rem;
+  }
+`;
+
+export const ImpactContent = styled.div`
+  flex: 1;
+
+  .impact-label {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.25rem;
+  }
+
+  .impact-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  @media (max-width: 480px) {
+    .impact-label {
+      font-size: 0.8rem;
+    }
+
+    .impact-value {
+      font-size: 1.25rem;
+    }
+  }
+`;
+
+// ============================================
+// QUICK LINKS
+// ============================================
+export const QuickLinksGrid = styled(motion.div)`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-top: 2rem;
+
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+export const QuickLinkButton = styled(motion.button)`
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  padding: 1.25rem;
+  color: var(--text-primary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: all var(--transition-base);
+  box-shadow: var(--shadow-sm);
+
+  span {
+    font-size: 1.5rem;
   }
 
   &:hover {
-    transform: translateX(4px);
-    box-shadow: var(--shadow-sm);
+    background: var(--gradient-primary);
+    color: var(--text-inverse);
+    border-color: var(--primary);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg);
+
+    span {
+      transform: scale(1.1);
+    }
   }
-`;
 
-export const InsightIcon = styled.div`
-  font-size: 2rem;
-  flex-shrink: 0;
-  position: relative;
-  z-index: 1;
-`;
-
-export const InsightContent = styled.div`
-  flex: 1;
-  position: relative;
-  z-index: 1;
-
-  h3 {
-    font-weight: 600;
-    color: var(--text-primary);
-    margin-bottom: 0.25rem;
+  @media (max-width: 480px) {
+    padding: 1rem;
     font-size: 0.95rem;
-  }
 
-  p {
-    color: var(--text-secondary);
-    font-size: 0.85rem;
-    line-height: 1.4;
-    margin: 0;
+    span {
+      font-size: 1.3rem;
+    }
   }
 `;
 
+// ============================================
+// FAB
+// ============================================
+export const FAB = styled(motion.button)`
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--gradient-primary);
+  border: none;
+  color: var(--text-inverse);
+  font-size: 2rem;
+  cursor: pointer;
+  box-shadow: 0 10px 40px rgba(27, 60, 83, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  transition: all var(--transition-base);
+
+  &:hover {
+    box-shadow: 0 15px 50px rgba(27, 60, 83, 0.5);
+    transform: scale(1.1);
+  }
+
+  @media (max-width: 768px) {
+    bottom: 1.5rem;
+    right: 1.5rem;
+    width: 56px;
+    height: 56px;
+    font-size: 1.75rem;
+  }
+
+  @media (max-width: 480px) {
+    width: 50px;
+    height: 50px;
+    font-size: 1.5rem;
+  }
+`;
+
+// ============================================
+// EMPTY STATE
+// ============================================
 export const EmptyState = styled.div`
   text-align: center;
   padding: 3rem 2rem;
   color: var(--text-secondary);
-  background: var(--bg-secondary);
-  border-radius: var(--radius-lg);
-  border: 2px dashed var(--border-color);
 
   .icon {
     font-size: 4rem;
@@ -553,37 +714,38 @@ export const EmptyState = styled.div`
   }
 
   @keyframes float {
-    0%,
-    100% {
-      transform: translateY(0px);
-    }
-    50% {
-      transform: translateY(-10px);
-    }
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
   }
 
   p {
     font-size: 1rem;
-    margin-bottom: 1.5rem;
-    margin-top: 0;
+    margin: 0.5rem 0;
+    color: var(--text-secondary);
   }
 
-  @media (max-width: 768px) {
-    padding: 2rem 1.5rem;
+  @media (max-width: 480px) {
+    padding: 2rem 1rem;
 
     .icon {
       font-size: 3rem;
     }
+
+    p {
+      font-size: 0.9rem;
+    }
   }
 `;
 
+// ============================================
+// LOADING
+// ============================================
 export const LoadingContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   min-height: 60vh;
-  color: var(--text-primary);
   gap: 1rem;
 
   p {
@@ -592,290 +754,35 @@ export const LoadingContainer = styled.div`
     color: var(--text-secondary);
   }
 
-  @media (max-width: 768px) {
+  @media (max-width: 480px) {
     p {
       font-size: 1rem;
     }
   }
 `;
 
-// ========== NEW ENHANCED COMPONENTS ==========
-
-export const QuickActionCard = styled(motion.div)`
-  background: linear-gradient(135deg, ${(props) => props.$gradient});
-  padding: 2rem;
-  border-radius: var(--radius-xl);
-  color: white;
-  cursor: pointer;
-  position: relative;
-  overflow: hidden;
-  box-shadow: var(--shadow-lg);
-  min-height: 180px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-
-  &::before {
-    content: "";
-    position: absolute;
-    top: -50%;
-    right: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(
-      circle,
-      rgba(255, 255, 255, 0.2) 0%,
-      transparent 70%
-    );
-    opacity: 0;
-    transition: opacity 0.3s;
-  }
-
-  &:hover::before {
-    opacity: 1;
-  }
-
-  &:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.3);
-  }
-
-  h3 {
-    font-size: 1.3rem;
-    margin: 0.5rem 0;
-    font-weight: 700;
-  }
-
-  p {
-    font-size: 0.9rem;
-    opacity: 0.9;
-    margin: 0;
-  }
-
-  .icon {
-    font-size: 3rem;
-    margin-bottom: 0.5rem;
-  }
-
-  @media (max-width: 768px) {
-    padding: 1.1rem;
-    min-height: 120px;
-
-    .icon {
-      font-size: 2rem;
-    }
-
-    h3 {
-      font-size: 1rem;
-    }
-  }
-
-  @media (max-width: 480px) {
-    padding: 0.7rem;
-    min-height: 90px;
-    border-radius: var(--radius-lg);
-    h3 {
-      font-size: 0.95rem;
-    }
-    .icon {
-      font-size: 1.3rem;
-    }
-  }
-`;
-
-export const QuickActionsGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-
-  @media (max-width: 768px) {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.7rem;
-  }
-
-  @media (max-width: 480px) {
-    grid-template-columns: 1fr;
-    gap: 0.4rem;
-    margin-bottom: 1rem;
-  }
-`;
-
-export const Timeline = styled.div`
-  position: relative;
-  padding-left: 2rem;
-
-  &::before {
-    content: "";
-    position: absolute;
-    left: 0.5rem;
-    top: 0;
-    bottom: 0;
-    width: 2px;
-    background: linear-gradient(180deg, var(--primary), transparent);
-  }
-`;
-
-export const TimelineItem = styled(motion.div)`
-  position: relative;
-  padding-bottom: 2rem;
-
-  &:last-child {
-    padding-bottom: 0;
-  }
-
-  &::before {
-    content: "${(props) => props.$icon}";
-    position: absolute;
-    left: -1.75rem;
-    width: 2rem;
-    height: 2rem;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1rem;
-    box-shadow: 0 0 0 4px var(--bg-card);
-    z-index: 1;
-  }
-
-  &:hover::before {
-    transform: scale(1.2);
-    transition: transform 0.3s;
-  }
-`;
-
-export const BadgeContainer = styled.div`
-  display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
-  justify-content: center;
-`;
-
-export const Badge = styled(motion.div)`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 1rem;
-  background: var(--bg-card);
-  border-radius: var(--radius-lg);
-  border: 2px solid
-    ${(props) => (props.$unlocked ? props.$color : "var(--border-color)")};
-  opacity: ${(props) => (props.$unlocked ? 1 : 0.5)};
-  cursor: pointer;
-  min-width: 100px;
-  transition: all var(--transition-base);
-
-  &:hover {
-    transform: scale(1.1);
-  }
-
-  .badge-icon {
-    font-size: 2.5rem;
-    filter: ${(props) => (props.$unlocked ? "none" : "grayscale(100%)")};
-  }
-
-  .badge-label {
-    font-size: 0.8rem;
-    font-weight: 600;
-    text-align: center;
-    color: var(--text-primary);
-  }
-
-  @media (max-width: 768px) {
-    min-width: 80px;
-    padding: 0.75rem;
-
-    .badge-icon {
-      font-size: 2rem;
-    }
-  }
-`;
-
-export const ProgressRing = styled.div`
-  width: ${(props) => props.$size || "100px"};
-  height: ${(props) => props.$size || "100px"};
-  border-radius: 50%;
-  background: conic-gradient(
-    var(--primary) ${(props) => props.$progress * 3.6}deg,
-    var(--border-color) ${(props) => props.$progress * 3.6}deg
-  );
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  margin: 0 auto;
-
-  &::before {
-    content: "";
-    position: absolute;
-    width: 80%;
-    height: 80%;
-    border-radius: 50%;
-    background: var(--bg-card);
-  }
-
-  .progress-value {
-    position: relative;
-    z-index: 1;
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--text-primary);
-  }
-`;
-
-export const FAB = styled(motion.button)`
-  position: fixed;
-  bottom: 2rem;
-  right: 2rem;
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  color: white;
+// ============================================
+// EXPORT BUTTON
+// ============================================
+export const ExportButton = styled(motion.button)`
+  background: var(--success);
   border: none;
-  font-size: 1.5rem;
+  border-radius: var(--radius-md);
+  padding: 0.4rem 0.8rem;
+  color: var(--text-inverse);
+  font-size: 0.8rem;
+  font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
-  z-index: 100;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  transition: all var(--transition-fast);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
 
   &:hover {
-    box-shadow: 0 12px 35px rgba(102, 126, 234, 0.6);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(16, 185, 129, 0.3);
   }
 
-  @media (max-width: 768px) {
-    bottom: 1.5rem;
-    right: 1.5rem;
-    width: 50px;
-    height: 50px;
-    font-size: 1.3rem;
-  }
-`;
-
-export const GradientHeader = styled.h2`
-  font-size: 2rem;
-  font-weight: 800;
-  background: linear-gradient(135deg, #667eea, #764ba2, #f093fb);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  margin-bottom: 1.5rem;
-
-  &::after {
-    content: "";
-    display: block;
-    width: 60px;
-    height: 4px;
-    background: linear-gradient(90deg, #667eea, #764ba2);
-    margin-top: 0.5rem;
-    border-radius: 2px;
-  }
-
-  @media (max-width: 768px) {
-    font-size: 1.6rem;
+  @media (max-width: 480px) {
+    padding: 0.35rem 0.7rem;
+    font-size: 0.75rem;
   }
 `;

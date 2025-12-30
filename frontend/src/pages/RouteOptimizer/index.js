@@ -12,7 +12,6 @@ import {
   Popup,
   Polyline,
 } from "react-leaflet";
-import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 
 // Framer Motion props that should not be forwarded to the DOM
@@ -76,7 +75,7 @@ const Card = styled(motion.div)`
 
 const Button = styled.button.withConfig({ shouldForwardProp })`
   background: var(--gradient-primary);
-  color: var(--text-button);
+  color: ${({ $primary }) => ($primary ? "#fff" : "var(--text-button)")};
   padding: 1rem 2rem;
   border: none;
   border-radius: 12px;
@@ -165,10 +164,13 @@ const RouteCard = styled.div`
 
   .pickup-item {
     padding: 0.75rem;
-    background: white;
+    background: var(--bg-card-alt, #f3f4f6);
+    color: var(--text-primary, #222);
     border-radius: 8px;
     margin-bottom: 0.5rem;
     font-size: 0.95rem;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+    transition: background 0.2s, color 0.2s;
   }
 `;
 
@@ -383,7 +385,11 @@ const RouteOptimizer = () => {
                 {/* Map showing all routes, highlight selected */}
                 <MapWrapper>
                   <MapContainer
-                    center={[depot.lat, depot.lon]}
+                    center={
+                      depot && depot.lat && depot.lon
+                        ? [depot.lat, depot.lon]
+                        : [0, 0]
+                    }
                     zoom={12}
                     style={{
                       height: "100%",
@@ -397,78 +403,92 @@ const RouteOptimizer = () => {
                       url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     />
                     {/* Depot marker */}
-                    <Marker
-                      position={[depot.lat, depot.lon]}
-                      icon={L.divIcon({
-                        html: '<div style="background:#4299e1;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;font-size:18px;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.2);">🏢</div>',
-                        className: "depot-marker",
-                        iconSize: [28, 28],
-                        iconAnchor: [14, 14],
-                      })}
-                    >
-                      <Popup>Depot: {depot.name}</Popup>
-                    </Marker>
-                    {/* Draw all routes as polylines, highlight selected */}
-                    {optimizedRoutes.routes.map((route, idx) => {
-                      // Build polyline: depot -> pickups (in order) -> depot (optional)
-                      const points = [
-                        [depot.lat, depot.lon],
-                        ...route.pickups.map((p) => [
-                          p.location.lat,
-                          p.location.lon,
-                        ]),
-                        // Optionally, return to depot:
-                        //[depot.lat, depot.lon]
-                      ];
-                      return (
-                        <Polyline
-                          key={idx}
-                          positions={points}
-                          pathOptions={{
-                            color: routeColors[idx % routeColors.length],
-                            weight:
-                              selectedRouteIdx === null ||
-                              selectedRouteIdx === idx
-                                ? 7
-                                : 3,
-                            opacity:
-                              selectedRouteIdx === null ||
-                              selectedRouteIdx === idx
-                                ? 0.9
-                                : 0.3,
-                            dashArray: selectedRouteIdx === idx ? null : "6 12",
-                          }}
-                        />
-                      );
-                    })}
-                    {/* Pickup markers for selected route */}
-                    {selectedRouteIdx !== null &&
-                      optimizedRoutes.routes[selectedRouteIdx].pickups.map(
-                        (pickup, i) => (
-                          <Marker
-                            key={i}
-                            position={[
-                              pickup.location.lat,
-                              pickup.location.lon,
-                            ]}
-                            icon={L.divIcon({
-                              html: `<div style="background:#48bb78;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:15px;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.2);">${
-                                i + 1
-                              }</div>`,
-                              className: "pickup-marker",
-                              iconSize: [24, 24],
-                              iconAnchor: [12, 12],
-                            })}
-                          >
-                            <Popup>
-                              <strong>{pickup.donorName}</strong>
-                              <br />
-                              {pickup.itemTitle} ({pickup.quantity}{" "}
-                              {pickup.unit || "items"})
-                            </Popup>
-                          </Marker>
-                        )
+                    <>
+                      {depot && depot.lat && depot.lon && (
+                        <Marker
+                          position={[depot.lat, depot.lon]}
+                          icon={L.divIcon({
+                            html: '<div style="background:#4299e1;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;font-size:18px;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.2);">🏢</div>',
+                            className: "depot-marker",
+                            iconSize: [28, 28],
+                            iconAnchor: [14, 14],
+                          })}
+                        >
+                          <Popup>Depot: {depot.name}</Popup>
+                        </Marker>
                       )}
+                      {/* Draw all routes as polylines, highlight selected */}
+                      {optimizedRoutes.routes.map((route, idx) => {
+                        // Build polyline: depot -> pickups (in order) -> depot (optional)
+                        const points = [
+                          depot && depot.lat && depot.lon
+                            ? [depot.lat, depot.lon]
+                            : [0, 0],
+                          ...route.pickups
+                            .filter(
+                              (p) =>
+                                p.location && p.location.lat && p.location.lon
+                            )
+                            .map((p) => [p.location.lat, p.location.lon]),
+                          // Optionally, return to depot:
+                          //depot && depot.lat && depot.lon ? [depot.lat, depot.lon] : [0, 0]
+                        ];
+                        return (
+                          <Polyline
+                            key={idx}
+                            positions={points}
+                            pathOptions={{
+                              color: routeColors[idx % routeColors.length],
+                              weight:
+                                selectedRouteIdx === null ||
+                                selectedRouteIdx === idx
+                                  ? 7
+                                  : 3,
+                              opacity:
+                                selectedRouteIdx === null ||
+                                selectedRouteIdx === idx
+                                  ? 0.9
+                                  : 0.3,
+                              dashArray:
+                                selectedRouteIdx === idx ? null : "6 12",
+                            }}
+                          />
+                        );
+                      })}
+                      {/* Pickup markers for selected route */}
+                      {selectedRouteIdx !== null &&
+                        optimizedRoutes.routes[selectedRouteIdx].pickups
+                          .filter(
+                            (pickup) =>
+                              pickup.location &&
+                              pickup.location.lat &&
+                              pickup.location.lon
+                          )
+                          .map((pickup, i) => (
+                            <Marker
+                              key={i}
+                              position={[
+                                pickup.location.lat,
+                                pickup.location.lon,
+                              ]}
+                              icon={L.divIcon({
+                                html: `<div style="background:#48bb78;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:15px;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.2);">${
+                                  i + 1
+                                }</div>`,
+                                className: "pickup-marker",
+                                iconSize: [24, 24],
+                                iconAnchor: [12, 12],
+                              })}
+                            >
+                              <Popup>
+                                <strong>{pickup.donorName}</strong>
+                                <br />
+                                {pickup.itemTitle} ({pickup.quantity}{" "}
+                                {pickup.unit || "items"})
+                              </Popup>
+                            </Marker>
+                          ))}
+                    </>
                   </MapContainer>
                 </MapWrapper>
               </>

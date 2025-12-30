@@ -1,4 +1,5 @@
 import LoadingSkeleton from "../../components/Common/LoadingSkeleton";
+import { useCallback } from "react";
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
@@ -50,39 +51,20 @@ import {
   MotivationBanner,
   LoadingOverlay,
   LoadingCard,
-  HiddenInput,
+  // HiddenInput,
 } from "./styledComponents";
 
 // =====================
 // Main Component
 // =====================
 const WasteAnalyzer = () => {
-  const navigate = useNavigate();
-  const fileInputRef = useRef(null);
-  const [model, setModel] = useState(null);
-  const [analyzing, setAnalyzing] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [isDragging, setIsDragging] = useState(false);
-  const [uploadedImages, setUploadedImages] = useState([]);
-  const [imagePreviews, setImagePreviews] = useState([]);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [result, setResult] = useState(null);
-  const [showConfetti, setShowConfetti] = useState(false);
-
-  // ✅ NEW: AI Upcycling state
-  const [showUpcycleModal, setShowUpcycleModal] = useState(false);
-  const [upcycleIdeas, setUpcycleIdeas] = useState([]);
-  const [loadingIdeas, setLoadingIdeas] = useState(false);
-
-  // Load TensorFlow model
+  // Load TensorFlow model on mount
   useEffect(() => {
     const loadModel = async () => {
       try {
-        console.log("🤖 Loading AI model...");
         await tf.ready();
         const loadedModel = await mobilenet.load();
         setModel(loadedModel);
-        console.log("✅ Model loaded!");
         toast.success("🤖 AI Ready to Analyze!");
       } catch (error) {
         console.error("Model error:", error);
@@ -93,8 +75,7 @@ const WasteAnalyzer = () => {
     };
     loadModel();
   }, []);
-
-  // Create confetti effect
+  // Confetti effect function
   const createConfetti = () => {
     const colors = [
       "var(--primary)",
@@ -120,66 +101,77 @@ const WasteAnalyzer = () => {
     }
     return confettiElements;
   };
-
+  // State and refs
+  const [model, setModel] = useState(null);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [isDragging, setIsDragging] = useState(false);
+  const [uploadedImages, setUploadedImages] = useState([]);
+  const [imagePreviews, setImagePreviews] = useState([]);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [result, setResult] = useState(null);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [showUpcycleModal, setShowUpcycleModal] = useState(false);
+  const [upcycleIdeas, setUpcycleIdeas] = useState([]);
+  const [loadingIdeas, setLoadingIdeas] = useState(false);
+  const fileInputRef = useRef(null);
+  const navigate = useNavigate();
+  const handleShowCenters = useCallback(async () => {
+    setShowCenters(true);
+    setCenters(await fetchCenters("recycling"));
+  }, []);
   const handleDragOver = (e) => {
     e.preventDefault();
     setIsDragging(true);
   };
-
   const handleDragLeave = () => {
     setIsDragging(false);
   };
-
-  const handleImageFile = (files) => {
-    const fileArray = Array.isArray(files) ? files : [files];
-
-    if (fileArray.length > 5) {
-      toast.warning("Maximum 5 images allowed. Using first 5.");
-      fileArray.splice(5);
-    }
-
-    const newImages = [];
-    const newPreviews = [];
-
-    fileArray.forEach((file) => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        newPreviews.push(e.target.result);
-        newImages.push(file);
-
-        if (newPreviews.length === fileArray.length) {
-          setImagePreviews(newPreviews);
-          setUploadedImages(newImages);
-          setResult(null);
-          toast.success(`✅ ${fileArray.length} image(s) uploaded!`);
-        }
-      };
-      reader.readAsDataURL(file);
-    });
-  };
-
-  const handleFileSelect = (e) => {
-    const files = Array.from(e.target.files);
-    if (files.length > 0) handleImageFile(files);
-  };
-
   const handleDrop = (e) => {
     e.preventDefault();
     setIsDragging(false);
     const files = Array.from(e.dataTransfer.files).filter((f) =>
       f.type.startsWith("image/")
     );
-
     if (files.length > 0) {
       handleImageFile(files);
     } else {
       toast.error("Please upload image files only");
     }
   };
-
-  // Map MobileNet classes to waste categories
+  // handleFileSelect is not needed; file input is handled via onClick and handleImageFile
+  const handleImageFile = (files) => {
+    const fileArray = Array.isArray(files) ? files : [files];
+    // Filter out files already uploaded (by name and size)
+    const existingFiles = uploadedImages;
+    const newFiles = fileArray.filter(
+      (file) =>
+        !existingFiles.some((f) => f.name === file.name && f.size === file.size)
+    );
+    // Only add up to 5 total
+    const filesToAdd = newFiles.slice(0, 5 - existingFiles.length);
+    if (filesToAdd.length === 0) {
+      toast.info("No new images to add.");
+      return;
+    }
+    let loadedCount = 0;
+    const newPreviews = [];
+    filesToAdd.forEach((file, idx) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        newPreviews[idx] = e.target.result;
+        loadedCount++;
+        if (loadedCount === filesToAdd.length) {
+          setImagePreviews((prev) => [...prev, ...newPreviews].slice(0, 5));
+          setUploadedImages((prev) => [...prev, ...filesToAdd].slice(0, 5));
+          setResult(null);
+          toast.success(`✅ ${filesToAdd.length} new image(s) added!`);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  };
   const classToWasteCategory = {
-    // Add more mappings as needed
     can: "Metal",
     "water bottle": "Plastic",
     "plastic bag": "Plastic",
@@ -263,6 +255,19 @@ const WasteAnalyzer = () => {
     fruit: "Organic",
     vegetable: "Organic",
     // fallback
+  };
+  const [centers, setCenters] = useState([]);
+  const [showCenters, setShowCenters] = useState(false);
+
+  const fetchCenters = async (type = "recycling") => {
+    try {
+      const res = await fetch(`/api/centers?type=${type}`);
+      if (!res.ok) throw new Error("Failed to fetch centers");
+      return await res.json();
+    } catch (e) {
+      toast.error("Could not load centers");
+      return [];
+    }
   };
 
   const CONFIDENCE_THRESHOLD = 0.6; // 60%
@@ -568,6 +573,31 @@ const WasteAnalyzer = () => {
           >
             {imagePreviews.length === 0 ? (
               <>
+                {/* Show nearby centers if AI recommends recycling */}
+                {result && result.advice === "Recycle" && (
+                  <section>
+                    <h3>Nearby Recycling Centers</h3>
+                    <button
+                      onClick={handleShowCenters}
+                      style={{ marginBottom: 8 }}
+                    >
+                      Show Centers
+                    </button>
+                    {showCenters &&
+                      (centers.length === 0 ? (
+                        <p>No centers found nearby.</p>
+                      ) : (
+                        <ul>
+                          {centers.map((center) => (
+                            <li key={center._id}>
+                              <strong>{center.name}</strong> - {center.address}{" "}
+                              ({center.type})
+                            </li>
+                          ))}
+                        </ul>
+                      ))}
+                  </section>
+                )}
                 <UploadZone
                   $isDragging={isDragging}
                   onDragOver={handleDragOver}
@@ -588,14 +618,6 @@ const WasteAnalyzer = () => {
                     💡 More photos = Better AI analysis!
                   </p>
                 </UploadZone>
-                <HiddenInput
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  capture="environment"
-                  multiple
-                  onChange={handleFileSelect}
-                />
               </>
             ) : (
               <>
@@ -635,7 +657,10 @@ const WasteAnalyzer = () => {
                     🗑️ Remove All
                   </Button>
                   <Button
-                    onClick={() => fileInputRef.current?.click()}
+                    onClick={() => {
+                      if (fileInputRef.current) fileInputRef.current.value = "";
+                      fileInputRef.current?.click();
+                    }}
                     disabled={imagePreviews.length >= 5}
                   >
                     ➕ Add More Photos
@@ -784,7 +809,7 @@ const WasteAnalyzer = () => {
                   <h3>Reuse Ideas</h3>
                 </div>
                 <ul>
-                  {result.reuseIdeas.map((idea, i) => (
+                  {(result.reuseIdeas || []).map((idea, i) => (
                     <motion.li
                       key={i}
                       initial={{ x: -20, opacity: 0 }}
@@ -809,7 +834,7 @@ const WasteAnalyzer = () => {
                     <h3>Upcycle Ideas</h3>
                   </div>
                   <ul>
-                    {result.upcycleIdeas.map((idea, i) => (
+                    {(result.upcycleIdeas || []).map((idea, i) => (
                       <motion.li
                         key={i}
                         initial={{ x: -20, opacity: 0 }}
@@ -858,7 +883,7 @@ const WasteAnalyzer = () => {
                     animate={{ opacity: 1 }}
                     transition={{ delay: 1.5 }}
                   >
-                    {result.impact.carbonSaved}
+                    {result.impact?.carbonSaved ?? 0}
                   </motion.div>
                   <div className="label">kg CO₂ Saved</div>
                 </ImpactCard>
@@ -875,7 +900,7 @@ const WasteAnalyzer = () => {
                     animate={{ opacity: 1 }}
                     transition={{ delay: 1.6 }}
                   >
-                    {result.impact.wasteDiverted}
+                    {result.impact?.wasteDiverted ?? 0}
                   </motion.div>
                   <div className="label">kg Waste Diverted</div>
                 </ImpactCard>
@@ -892,7 +917,7 @@ const WasteAnalyzer = () => {
                     animate={{ opacity: 1 }}
                     transition={{ delay: 1.7 }}
                   >
-                    +{result.impact.ecoScore}
+                    +{result.impact?.ecoScore ?? 0}
                   </motion.div>
                   <div className="label">Eco Points 🏆</div>
                 </ImpactCard>

@@ -1,74 +1,50 @@
-// src/pages/Dashboard/index.js - COMPLETE ENHANCED VERSION
+// src/pages/Dashboard/index.js - Updated with new color scheme
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { toast } from "react-toastify";
 import { useAuth } from "../../context/AuthContext";
 import { listingsAPI } from "../../services/api";
-import { exportDonationsToCSV, downloadJSON } from "../../utils/exportUtils";
+import { exportDonationsToCSV } from "../../utils/exportUtils";
 
 import {
   DashboardWrapper,
   Container,
-  WelcomeCard,
-  WelcomeHeader,
-  WelcomeText,
-  QuickActions,
-  ActionBtn,
+  HeroCard,
+  HeroContent,
+  HeroText,
+  PrimaryButton,
   StatsGrid,
   StatCard,
   StatIcon,
   StatValue,
   StatLabel,
+  ProgressRing,
   ContentGrid,
   MainContent,
   Sidebar,
-  Card,
+  GlassCard,
   CardHeader,
-  ViewAllBtn,
+  ViewAllButton,
   ItemsList,
   ItemCard,
   ItemIcon,
   ItemInfo,
   ItemName,
   ItemMeta,
-  ItemCategory,
   StatusBadge,
-  EmptyState,
-  InsightsList,
-  InsightCard,
-  InsightIcon,
-  InsightContent,
-  LoadingContainer,
-  QuickActionCard,
-  QuickActionsGrid,
-  Timeline,
-  TimelineItem,
-  BadgeContainer,
-  Badge,
-  ProgressRing,
+  ImpactCard,
+  ImpactIcon,
+  ImpactContent,
+  QuickLinksGrid,
+  QuickLinkButton,
   FAB,
-  GradientHeader,
+  EmptyState,
+  LoadingContainer,
+  ExportButton,
 } from "./styledComponents";
 import LoadingSkeleton from "../../components/Common/LoadingSkeleton";
 
-// Motion variants for animations
-const containerVariants = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-    },
-  },
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 },
-};
-
-// Component
 const Dashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -80,8 +56,6 @@ const Dashboard = () => {
     wastePrevented: 0,
   });
   const [recentItems, setRecentItems] = useState([]);
-  const [aiInsights, setAiInsights] = useState([]);
-  const [recentActivity, setRecentActivity] = useState([]);
 
   const isDonor = user?.userType === "donor" || user?.userType === "both";
   const isRecipient = user?.userType === "recipient";
@@ -89,17 +63,15 @@ const Dashboard = () => {
   const fetchDashboardData = useCallback(async () => {
     try {
       setLoading(true);
-
-      // Fetch user's listings
       const listingsResponse = await listingsAPI.getUserListings();
       const listings =
         listingsResponse.data.listings || listingsResponse.data.data || [];
 
-      // Calculate stats from real data
       const completed = listings.filter((l) => l.status === "completed").length;
-      const totalWeight = listings.reduce((sum, listing) => {
-        return sum + (listing.quantity || 1) * 2;
-      }, 0);
+      const totalWeight = listings.reduce(
+        (sum, listing) => sum + (listing.quantity || 1) * 2,
+        0
+      );
 
       setStats({
         itemsAnalyzed: listings.length,
@@ -108,70 +80,7 @@ const Dashboard = () => {
         wastePrevented: totalWeight,
       });
 
-      // Get recent items (last 5)
       setRecentItems(listings.slice(0, 5));
-
-      // Generate recent activity
-      const activity = listings.slice(0, 3).map((item) => ({
-        icon:
-          item.status === "completed"
-            ? "✅"
-            : item.status === "pending"
-            ? "⏳"
-            : "📸",
-        title:
-          item.status === "completed"
-            ? `Completed: ${item.title}`
-            : item.status === "pending"
-            ? `Pending: ${item.title}`
-            : `Uploaded: ${item.title}`,
-        time: formatDate(item.createdAt),
-      }));
-      setRecentActivity(activity);
-
-      // Generate AI insights
-      const insights = [];
-
-      if (listings.length > 0) {
-        const categories = [...new Set(listings.map((l) => l.category))];
-        insights.push({
-          icon: "♻️",
-          title: "Diverse Contributions",
-          desc: `You've shared items across ${categories.length} different categories`,
-        });
-      }
-
-      if (completed > 0) {
-        insights.push({
-          icon: "🌱",
-          title: "Environmental Champion",
-          desc: `You've saved ${Math.round(
-            totalWeight * 1.5
-          )}kg CO₂ - equivalent to ${Math.round(
-            (totalWeight * 1.5) / 13
-          )} trees planted!`,
-        });
-      }
-
-      const available = listings.filter((l) => l.status === "available").length;
-      if (available > 0) {
-        insights.push({
-          icon: "🎯",
-          title: "Active Impact",
-          desc: `${available} items are currently helping your community`,
-        });
-      }
-
-      // Add motivational insight
-      if (listings.length >= 5) {
-        insights.push({
-          icon: "⭐",
-          title: "Rising Star",
-          desc: "You're in the top 20% of active contributors!",
-        });
-      }
-
-      setAiInsights(insights);
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
       setStats({
@@ -181,8 +90,6 @@ const Dashboard = () => {
         wastePrevented: 0,
       });
       setRecentItems([]);
-      setAiInsights([]);
-      setRecentActivity([]);
     } finally {
       setLoading(false);
     }
@@ -204,273 +111,228 @@ const Dashboard = () => {
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     const now = new Date();
-    const diffMs = now - date;
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
+    const diffDays = Math.floor((now - date) / 86400000);
 
-    if (diffMins < 1) return "Just now";
-    if (diffMins < 60) return `${diffMins} min${diffMins > 1 ? "s" : ""} ago`;
-    if (diffHours < 24)
-      return `${diffHours} hour${diffHours > 1 ? "s" : ""} ago`;
+    if (diffDays === 0) return "Today";
     if (diffDays === 1) return "Yesterday";
     if (diffDays < 7) return `${diffDays} days ago`;
     return date.toLocaleDateString();
   };
-  const handleUploadItem = () => {
-    navigate("/create-listing");
-  };
-  const handleBrowseItems = () => {
-    navigate("/listings");
-  };
-  const handleViewItem = (item) => {
-    navigate(`/listings/${item._id}`);
-  };
-  const handleViewAllItems = () => {
-    navigate("/my-items");
-  };
-  // Calculate completion rate
+
   const completionRate =
     stats.itemsAnalyzed > 0
       ? Math.round((stats.itemsShared / stats.itemsAnalyzed) * 100)
       : 0;
+
   if (loading) {
     return (
       <DashboardWrapper>
         <LoadingContainer>
           <LoadingSkeleton width="100%" height="8rem" />
-          <p aria-live="polite">Loading your dashboard...</p>
+          <p>Loading your dashboard...</p>
         </LoadingContainer>
       </DashboardWrapper>
     );
   }
+
   return (
     <DashboardWrapper>
       <Container>
-        {/* Welcome Section */}
-        <WelcomeCard
-          as={motion.div}
-          initial={{ opacity: 0, y: 20 }}
+        {/* Hero Section */}
+        <HeroCard
+          initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <WelcomeHeader>
-            <WelcomeText>
-              <h1>
+          <HeroContent>
+            <HeroText>
+              <motion.h1
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.1 }}
+              >
                 {getGreeting()}, {user?.firstName}! 👋
-              </h1>
-              <p>
+              </motion.h1>
+              <motion.p
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2 }}
+              >
                 {isDonor
-                  ? `Ready to make more impact? You've rescued ${stats.itemsShared} items!`
+                  ? `You've rescued ${stats.itemsShared} items and saved ${stats.co2Saved}kg CO₂. Keep up the amazing work!`
                   : isRecipient
                   ? "Browse and claim items available for you to receive."
                   : "Discover items that need a second chance in your community"}
-              </p>
-            </WelcomeText>
-            <QuickActions>
-              {isDonor && (
-                <>
-                  <ActionBtn
-                    as={motion.button}
-                    $primary
-                    onClick={handleUploadItem}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    <span>📸</span> Upload Item
-                  </ActionBtn>
-                  <ActionBtn
-                    as={motion.button}
-                    onClick={() => navigate("/schedules")}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    <span>📅</span> Schedules
-                  </ActionBtn>
-                  <ActionBtn
-                    as={motion.button}
-                    onClick={() => navigate("/my-pickups")}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    <span>📦</span> Pickups
-                  </ActionBtn>
-                </>
-              )}
-              {isRecipient && (
-                <>
-                  <ActionBtn
-                    as={motion.button}
-                    $primary
-                    onClick={() => navigate("/listings")}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    <span>🔍</span> Browse Items
-                  </ActionBtn>
-                  <ActionBtn
-                    as={motion.button}
-                    onClick={() => navigate("/schedules")}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    <span>📅</span> My Schedules
-                  </ActionBtn>
-                  <ActionBtn
-                    as={motion.button}
-                    onClick={() => navigate("/my-pickups")}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    <span>📦</span> My Pickups
-                  </ActionBtn>
-                </>
-              )}
-              <ActionBtn
-                as={motion.button}
-                onClick={handleBrowseItems}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <span>🔍</span> Browse
-              </ActionBtn>
-            </QuickActions>
-          </WelcomeHeader>
-        </WelcomeCard>
-        {/* Quick Action Cards */}
-        <QuickActionsGrid>
-          {/* Schedules Card - For all users */}
-          <QuickActionCard
-            $gradient="#667eea, #764ba2"
-            onClick={() => navigate("/schedules")}
-            whileHover={{ scale: 1.05, y: -5 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <div className="icon">📅</div>
-            <div>
-              <h3>My Schedules</h3>
-              <p>View and manage pickup appointments</p>
-            </div>
-          </QuickActionCard>
+              </motion.p>
+            </HeroText>
 
-          {/* Pickups Card - For all users */}
-          <QuickActionCard
-            $gradient="#f093fb, #f5576c"
-            onClick={() => navigate("/my-pickups")}
-            whileHover={{ scale: 1.05, y: -5 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <div className="icon">📦</div>
-            <div>
-              <h3>My Pickups</h3>
-              <p>
-                {isDonor
-                  ? "Track your donations"
-                  : "Track items you're receiving"}
-              </p>
-            </div>
-          </QuickActionCard>
+            <PrimaryButton
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() =>
+                isDonor ? navigate("/create-listing") : navigate("/listings")
+              }
+            >
+              <span>📸</span>
+              {isDonor ? "Upload Item" : "Browse Items"}
+            </PrimaryButton>
+          </HeroContent>
+        </HeroCard>
 
-          <QuickActionCard
-            $gradient="#43e97b, #38f9d7"
+        {/* Quick Links - Now Below Hero Section */}
+        <QuickLinksGrid
+          style={{ marginBottom: "1rem" }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+        >
+          <QuickLinkButton
+            whileHover={{ y: -3 }}
+            whileTap={{ scale: 0.97 }}
             onClick={() => navigate("/waste-analyzer")}
-            whileHover={{ scale: 1.05, y: -5 }}
-            whileTap={{ scale: 0.95 }}
           >
-            <div className="icon">🤖</div>
-            <div>
-              <h3>AI Analyzer</h3>
-              <p>Get smart suggestions for your items</p>
-            </div>
-          </QuickActionCard>
+            <span>🤖</span>
+            AI Analyzer
+          </QuickLinkButton>
 
-          <QuickActionCard
-            $gradient="#fa709a, #fee140"
-            onClick={() => navigate("/impact/personal")}
-            whileHover={{ scale: 1.05, y: -5 }}
-            whileTap={{ scale: 0.95 }}
+          <QuickLinkButton
+            whileHover={{ y: -3 }}
+            whileTap={{ scale: 0.97 }}
+            onClick={() => navigate("/schedules")}
           >
-            <div className="icon">🌟</div>
-            <div>
-              <h3>My Impact</h3>
-              <p>View your environmental contribution</p>
-            </div>
-          </QuickActionCard>
+            <span>📅</span>
+            Schedules
+          </QuickLinkButton>
 
-          <QuickActionCard
-            $gradient="#11998e, #38ef7d"
-            onClick={() => navigate("/listings")}
-            whileHover={{ scale: 1.05, y: -5 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <div className="icon">🔍</div>
-            <div>
-              <h3>Discover</h3>
-              <p>Find items in your area</p>
-            </div>
-          </QuickActionCard>
-
-          <QuickActionCard
-            $gradient="#ee0979, #ff6a00"
+          <QuickLinkButton
+            whileHover={{ y: -3 }}
+            whileTap={{ scale: 0.97 }}
             onClick={() => navigate("/chat")}
-            whileHover={{ scale: 1.05, y: -5 }}
-            whileTap={{ scale: 0.95 }}
           >
-            <div className="icon">💬</div>
-            <div>
-              <h3>Messages</h3>
-              <p>Connect with the community</p>
-            </div>
-          </QuickActionCard>
-        </QuickActionsGrid>
+            <span>💬</span>
+            Messages
+          </QuickLinkButton>
 
-        {/* Stats Grid with Progress */}
+          <QuickLinkButton
+            whileHover={{ y: -3 }}
+            whileTap={{ scale: 0.97 }}
+            onClick={() => navigate("/create-listing")}
+          >
+            <span>📸</span>
+            Create Listing
+          </QuickLinkButton>
+        </QuickLinksGrid>
+
+        {/* Stats Grid */}
         <StatsGrid
-          as={motion.div}
-          variants={containerVariants}
           initial="hidden"
           animate="show"
+          variants={{
+            hidden: { opacity: 0 },
+            show: {
+              opacity: 1,
+              transition: { staggerChildren: 0.1 },
+            },
+          }}
         >
           {isDonor && (
             <>
+              {/* Items Uploaded */}
               <StatCard
-                as={motion.div}
-                variants={itemVariants}
-                $color="linear-gradient(90deg, #667eea, #764ba2)"
+                variants={{
+                  hidden: { opacity: 0, y: 20 },
+                  show: { opacity: 1, y: 0 },
+                }}
                 whileHover={{ y: -5 }}
+                $color="#1B3C53"
               >
-                <StatIcon>📸</StatIcon>
-                <StatValue>{stats.itemsAnalyzed}</StatValue>
+                <StatIcon>📦</StatIcon>
+                <StatValue
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 0.2, type: "spring" }}
+                >
+                  {stats.itemsAnalyzed}
+                </StatValue>
                 <StatLabel>Items Uploaded</StatLabel>
               </StatCard>
+
+              {/* Items Rescued */}
               <StatCard
-                as={motion.div}
-                variants={itemVariants}
-                $color="linear-gradient(90deg, #22c55e, #16a34a)"
+                variants={{
+                  hidden: { opacity: 0, y: 20 },
+                  show: { opacity: 1, y: 0 },
+                }}
                 whileHover={{ y: -5 }}
+                $color="#234C6A"
               >
-                <StatIcon>🔄</StatIcon>
-                <StatValue>{stats.itemsShared}</StatValue>
+                <StatIcon>✅</StatIcon>
+                <StatValue
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 0.3, type: "spring" }}
+                >
+                  {stats.itemsShared}
+                </StatValue>
                 <StatLabel>Items Rescued</StatLabel>
               </StatCard>
+
+              {/* CO₂ Saved */}
               <StatCard
-                as={motion.div}
-                variants={itemVariants}
-                $color="linear-gradient(90deg, #06b6d4, #0891b2)"
+                variants={{
+                  hidden: { opacity: 0, y: 20 },
+                  show: { opacity: 1, y: 0 },
+                }}
                 whileHover={{ y: -5 }}
+                $color="#456882"
               >
                 <StatIcon>🌍</StatIcon>
-                <StatValue>{stats.co2Saved}kg</StatValue>
+                <StatValue
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 0.4, type: "spring" }}
+                >
+                  {stats.co2Saved}kg
+                </StatValue>
                 <StatLabel>CO₂ Saved</StatLabel>
               </StatCard>
+
+              {/* Completion Rate */}
               <StatCard
-                as={motion.div}
-                variants={itemVariants}
-                $color="linear-gradient(90deg, #f093fb, #f5576c)"
+                variants={{
+                  hidden: { opacity: 0, y: 20 },
+                  show: { opacity: 1, y: 0 },
+                }}
                 whileHover={{ y: -5 }}
+                $color="#10b981"
                 style={{ cursor: "default" }}
               >
-                <ProgressRing $progress={completionRate} $size="80px">
+                <StatIcon>🎯</StatIcon>
+                <ProgressRing>
+                  <svg width="80" height="80">
+                    <circle
+                      cx="40"
+                      cy="40"
+                      r="36"
+                      fill="none"
+                      stroke="var(--border-color)"
+                      strokeWidth="8"
+                    />
+                    <motion.circle
+                      cx="40"
+                      cy="40"
+                      r="36"
+                      fill="none"
+                      stroke="#234C6A"
+                      strokeWidth="8"
+                      strokeLinecap="round"
+                      initial={{ strokeDasharray: "0 226" }}
+                      animate={{
+                        strokeDasharray: `${(completionRate / 100) * 226} 226`,
+                      }}
+                      transition={{ duration: 1, ease: "easeOut" }}
+                    />
+                  </svg>
                   <div className="progress-value">{completionRate}%</div>
                 </ProgressRing>
                 <StatLabel style={{ marginTop: "1rem" }}>
@@ -479,368 +341,199 @@ const Dashboard = () => {
               </StatCard>
             </>
           )}
+
           {isRecipient && (
-            <>
-              <StatCard
-                as={motion.div}
-                variants={itemVariants}
-                $color="linear-gradient(90deg, #667eea, #764ba2)"
-                whileHover={{ y: -5 }}
+            <StatCard
+              variants={{
+                hidden: { opacity: 0, y: 20 },
+                show: { opacity: 1, y: 0 },
+              }}
+              whileHover={{ y: -5 }}
+              $color="#234C6A"
+            >
+              <StatIcon>📦</StatIcon>
+              <StatValue
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.2, type: "spring" }}
               >
-                <StatIcon>📦</StatIcon>
-                <StatValue>{stats.itemsShared}</StatValue>
-                <StatLabel>Items Received</StatLabel>
-              </StatCard>
-            </>
+                {stats.itemsShared}
+              </StatValue>
+              <StatLabel>Items Received</StatLabel>
+            </StatCard>
           )}
         </StatsGrid>
 
         {/* Main Content Grid */}
         <ContentGrid>
-          <MainContent>
-            {/* Recent Items */}
-            <Card
-              as={motion.div}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.3 }}
+          {/* Recent Items - Full Width */}
+          <GlassCard
+            $fullWidth
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            <CardHeader>
+              <h2>
+                <span>📦</span> Recent Items
+              </h2>
+              <div style={{ display: "flex", gap: "0.5rem" }}>
+                {recentItems.length > 0 && (
+                  <>
+                    <ExportButton
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => {
+                        try {
+                          exportDonationsToCSV(
+                            recentItems,
+                            `donations-${
+                              new Date().toISOString().split("T")[0]
+                            }`
+                          );
+                          toast.success("Exported to CSV!");
+                        } catch (err) {
+                          toast.error("Export failed");
+                        }
+                      }}
+                    >
+                      📊 Export
+                    </ExportButton>
+                    <ViewAllButton
+                      whileHover={{ scale: 1.05 }}
+                      onClick={() => navigate("/my-items")}
+                    >
+                      View All →
+                    </ViewAllButton>
+                  </>
+                )}
+              </div>
+            </CardHeader>
+
+            {recentItems.length > 0 ? (
+              <ItemsList>
+                {recentItems.map((item, index) => (
+                  <ItemCard
+                    key={item._id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 20 }}
+                    transition={{ delay: index * 0.1 }}
+                    whileHover={{ x: 5 }}
+                    onClick={() => navigate(`/listings/${item._id}`)}
+                  >
+                    <ItemIcon>
+                      {item.images && item.images[0] ? (
+                        <img src={item.images[0]} alt={item.title} />
+                      ) : (
+                        <span>📦</span>
+                      )}
+                    </ItemIcon>
+                    <ItemInfo>
+                      <ItemName>{item.title}</ItemName>
+                      <ItemMeta>
+                        <span>📂 {item.category || "General"}</span>
+                        <span>•</span>
+                        <span>{formatDate(item.createdAt)}</span>
+                      </ItemMeta>
+                    </ItemInfo>
+                    <StatusBadge $status={item.status}>
+                      {item.status}
+                    </StatusBadge>
+                  </ItemCard>
+                ))}
+              </ItemsList>
+            ) : (
+              <EmptyState>
+                <div className="icon">📭</div>
+                <p>No items yet</p>
+                <p style={{ fontSize: "0.9rem", marginTop: "-0.5rem" }}>
+                  {isDonor
+                    ? "Start your journey by uploading your first item"
+                    : "Items you receive will appear here"}
+                </p>
+                {isDonor && (
+                  <PrimaryButton
+                    whileHover={{ scale: 1.05 }}
+                    onClick={() => navigate("/create-listing")}
+                    style={{ marginTop: "1rem" }}
+                  >
+                    <span>📸</span> Upload First Item
+                  </PrimaryButton>
+                )}
+              </EmptyState>
+            )}
+          </GlassCard>
+
+          {/* Impact Summary - Sidebar */}
+          <GlassCard
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.4 }}
+          >
+            <CardHeader>
+              <h2>
+                <span>🌟</span> Your Impact
+              </h2>
+            </CardHeader>
+
+            <div
+              style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
             >
-              <CardHeader>
-                <h2>
-                  <span>📦</span> Recent Items
-                </h2>
-                <div
-                  style={{
-                    display: "flex",
-                    gap: "0.5rem",
-                    alignItems: "center",
-                  }}
-                >
-                  {recentItems.length > 0 && (
-                    <>
-                      <motion.button
-                        onClick={() => {
-                          try {
-                            exportDonationsToCSV(
-                              recentItems,
-                              `donations-${
-                                new Date().toISOString().split("T")[0]
-                              }`
-                            );
-                            toast.success("Donations exported to CSV!");
-                          } catch (err) {
-                            toast.error("Export failed");
-                          }
-                        }}
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        style={{
-                          background:
-                            "linear-gradient(135deg, #48bb78 0%, #38a169 100%)",
-                          border: "none",
-                          borderRadius: "6px",
-                          padding: "0.4rem 0.8rem",
-                          color: "white",
-                          fontSize: "0.8rem",
-                          fontWeight: 600,
-                          cursor: "pointer",
-                        }}
-                        title="Export to CSV"
-                      >
-                        📊 Export
-                      </motion.button>
-                      <ViewAllBtn
-                        as={motion.button}
-                        onClick={handleViewAllItems}
-                        whileHover={{ scale: 1.05 }}
-                      >
-                        View All →
-                      </ViewAllBtn>
-                    </>
-                  )}
-                </div>
-              </CardHeader>
-
-              {recentItems.length > 0 ? (
-                <ItemsList>
-                  <AnimatePresence>
-                    {recentItems.map((item, index) => (
-                      <ItemCard
-                        as={motion.div}
-                        key={item._id}
-                        $status={item.status}
-                        onClick={() => handleViewItem(item)}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: 20 }}
-                        transition={{ delay: index * 0.1 }}
-                        whileHover={{ scale: 1.02 }}
-                      >
-                        <ItemIcon>
-                          {item.images && item.images[0] ? (
-                            <img src={item.images[0]} alt={item.title} />
-                          ) : (
-                            <span>📦</span>
-                          )}
-                        </ItemIcon>
-                        <ItemInfo>
-                          <ItemName>{item.title}</ItemName>
-                          <ItemMeta>
-                            {formatDate(item.createdAt)} •{" "}
-                            <StatusBadge $status={item.status}>
-                              {item.status}
-                            </StatusBadge>
-                          </ItemMeta>
-                          <ItemCategory>
-                            📂 {item.category || "General"}
-                          </ItemCategory>
-                        </ItemInfo>
-                      </ItemCard>
-                    ))}
-                  </AnimatePresence>
-                </ItemsList>
-              ) : (
-                <EmptyState>
-                  <div className="icon">📭</div>
-                  <p>No items yet</p>
-                  {isDonor ? (
-                    <>
-                      <p style={{ fontSize: "0.9rem", marginTop: "-1rem" }}>
-                        Start your journey by uploading your first item
-                      </p>
-                      <ActionBtn
-                        as={motion.button}
-                        $primary
-                        onClick={handleUploadItem}
-                        whileHover={{ scale: 1.05 }}
-                        style={{ marginTop: "1rem" }}
-                      >
-                        <span>📸</span> Upload First Item
-                      </ActionBtn>
-                    </>
-                  ) : (
-                    <p style={{ fontSize: "0.9rem", marginTop: "-1rem" }}>
-                      Items you receive will appear here.
-                    </p>
-                  )}
-                </EmptyState>
-              )}
-            </Card>
-
-            {/* Achievement Badges (Donor only) */}
-            {isDonor && stats.itemsAnalyzed > 0 && (
-              <Card
-                as={motion.div}
-                initial={{ opacity: 0, y: 20 }}
+              <ImpactCard
+                $color="#10b981"
+                initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
+                transition={{ delay: 0.5 }}
+                whileHover={{ scale: 1.02 }}
               >
-                <CardHeader>
-                  <h2>
-                    <span>🏆</span> Achievements
-                  </h2>
-                </CardHeader>
-                <BadgeContainer>
-                  <Badge
-                    as={motion.div}
-                    $unlocked={stats.itemsShared >= 1}
-                    $color="#22c55e"
-                    whileHover={{ scale: 1.1 }}
-                  >
-                    <div className="badge-icon">🌱</div>
-                    <div className="badge-label">First Share</div>
-                  </Badge>
-                  <Badge
-                    as={motion.div}
-                    $unlocked={stats.itemsShared >= 5}
-                    $color="#667eea"
-                    whileHover={{ scale: 1.1 }}
-                  >
-                    <div className="badge-icon">⭐</div>
-                    <div className="badge-label">5 Shares</div>
-                  </Badge>
-                  <Badge
-                    as={motion.div}
-                    $unlocked={stats.itemsShared >= 10}
-                    $color="#f59e0b"
-                    whileHover={{ scale: 1.1 }}
-                  >
-                    <div className="badge-icon">🏅</div>
-                    <div className="badge-label">10 Shares</div>
-                  </Badge>
-                  <Badge
-                    as={motion.div}
-                    $unlocked={stats.co2Saved >= 100}
-                    $color="#8b5cf6"
-                    whileHover={{ scale: 1.1 }}
-                  >
-                    <div className="badge-icon">🌍</div>
-                    <div className="badge-label">Eco Warrior</div>
-                  </Badge>
-                  <Badge
-                    as={motion.div}
-                    $unlocked={stats.itemsShared >= 20}
-                    $color="#ec4899"
-                    whileHover={{ scale: 1.1 }}
-                  >
-                    <div className="badge-icon">👑</div>
-                    <div className="badge-label">Champion</div>
-                  </Badge>
-                </BadgeContainer>
-              </Card>
-            )}
-          </MainContent>
+                <ImpactIcon>🌱</ImpactIcon>
+                <ImpactContent>
+                  <div className="impact-label">Trees Equivalent</div>
+                  <div className="impact-value">
+                    {Math.round(stats.co2Saved / 13)}
+                  </div>
+                </ImpactContent>
+              </ImpactCard>
 
-          {/* Sidebar */}
-          <Sidebar>
-            {/* AI Insights (Donor only) */}
-            {isDonor && aiInsights.length > 0 && (
-              <Card
-                as={motion.div}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.3 }}
+              <ImpactCard
+                $color="#234C6A"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 }}
+                whileHover={{ scale: 1.02 }}
               >
-                <CardHeader>
-                  <h2>
-                    <span>💡</span> Insights
-                  </h2>
-                </CardHeader>
+                <ImpactIcon>♻️</ImpactIcon>
+                <ImpactContent>
+                  <div className="impact-label">Waste Prevented</div>
+                  <div className="impact-value">{stats.wastePrevented}kg</div>
+                </ImpactContent>
+              </ImpactCard>
 
-                <InsightsList>
-                  {aiInsights.map((insight, index) => (
-                    <InsightCard
-                      as={motion.div}
-                      key={index}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.4 + index * 0.1 }}
-                      whileHover={{ x: 4 }}
-                    >
-                      <InsightIcon>{insight.icon}</InsightIcon>
-                      <InsightContent>
-                        <h3>{insight.title}</h3>
-                        <p>{insight.desc}</p>
-                      </InsightContent>
-                    </InsightCard>
-                  ))}
-                </InsightsList>
-              </Card>
-            )}
-
-            {/* Recent Activity Timeline */}
-            {recentActivity.length > 0 && (
-              <Card
-                as={motion.div}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.4 }}
+              <ImpactCard
+                $color="#456882"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.7 }}
+                whileHover={{ scale: 1.02 }}
               >
-                <CardHeader>
-                  <h2>
-                    <span>📅</span> Recent Activity
-                  </h2>
-                </CardHeader>
-
-                <Timeline>
-                  {recentActivity.map((activity, index) => (
-                    <TimelineItem
-                      as={motion.div}
-                      key={index}
-                      $icon={activity.icon}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.5 + index * 0.1 }}
-                    >
-                      <ItemName>{activity.title}</ItemName>
-                      <ItemMeta>{activity.time}</ItemMeta>
-                    </TimelineItem>
-                  ))}
-                </Timeline>
-              </Card>
-            )}
-
-            {/* Impact Summary */}
-            <Card
-              as={motion.div}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.5 }}
-              style={{
-                background:
-                  "linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1))",
-                border: "2px solid var(--primary)",
-              }}
-            >
-              <GradientHeader>Your Impact</GradientHeader>
-
-              <InsightsList>
-                <InsightCard
-                  as={motion.div}
-                  style={{
-                    background: "rgba(34, 197, 94, 0.15)",
-                    borderColor: "#22c55e",
-                  }}
-                  whileHover={{ x: 4 }}
-                >
-                  <InsightIcon>🌱</InsightIcon>
-                  <InsightContent>
-                    <h3>Trees Equivalent</h3>
-                    <p>
-                      Your efforts equal planting{" "}
-                      <strong>{Math.round(stats.co2Saved / 13)}</strong> trees!
-                    </p>
-                  </InsightContent>
-                </InsightCard>
-
-                <InsightCard
-                  as={motion.div}
-                  style={{
-                    background: "rgba(102, 126, 234, 0.15)",
-                    borderColor: "#667eea",
-                  }}
-                  whileHover={{ x: 4 }}
-                >
-                  <InsightIcon>🤝</InsightIcon>
-                  <InsightContent>
-                    <h3>Community Hero</h3>
-                    <p>
-                      Helped <strong>{stats.itemsShared}</strong> people find
-                      what they need
-                    </p>
-                  </InsightContent>
-                </InsightCard>
-
-                <InsightCard
-                  as={motion.div}
-                  style={{
-                    background: "rgba(245, 158, 11, 0.15)",
-                    borderColor: "#f59e0b",
-                  }}
-                  whileHover={{ x: 4 }}
-                >
-                  <InsightIcon>♻️</InsightIcon>
-                  <InsightContent>
-                    <h3>Waste Warrior</h3>
-                    <p>
-                      Prevented <strong>{stats.wastePrevented}kg</strong> from
-                      landfills
-                    </p>
-                  </InsightContent>
-                </InsightCard>
-              </InsightsList>
-            </Card>
-          </Sidebar>
+                <ImpactIcon>🤝</ImpactIcon>
+                <ImpactContent>
+                  <div className="impact-label">People Helped</div>
+                  <div className="impact-value">{stats.itemsShared}</div>
+                </ImpactContent>
+              </ImpactCard>
+            </div>
+          </GlassCard>
         </ContentGrid>
       </Container>
 
-      {/* Floating Action Button (Donor only) */}
+      {/* Floating Action Button */}
       {isDonor && (
         <FAB
-          as={motion.button}
-          onClick={handleUploadItem}
           whileHover={{ scale: 1.1, rotate: 90 }}
           whileTap={{ scale: 0.9 }}
+          onClick={() => navigate("/create-listing")}
           title="Upload new item"
         >
           ➕
@@ -849,4 +542,5 @@ const Dashboard = () => {
     </DashboardWrapper>
   );
 };
+
 export default Dashboard;

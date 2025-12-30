@@ -3,9 +3,9 @@ import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { impactAPI } from "../../services/api";
 import { io } from "socket.io-client";
-import styled from "styled-components";
 import { toast } from "react-toastify";
 import LoadingSkeleton from "../../components/Common/LoadingSkeleton";
+import { Container, Header, Title, Stats, Stat, Value, Label, MapContainer, LoadingOverlay } from "./styledComponents";
 
 mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_TOKEN;
 
@@ -190,64 +190,4 @@ const DigitalTwin = () => {
     </Container>
   );
 };
-
-// Styled components (same as before, plus:)
-const LoadingOverlay = styled.div`
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-          {loading && (
-            <LoadingOverlay>
-              <LoadingSkeleton width="100%" height="8rem" />
-              <span aria-live="polite">Loading digital twin...</span>
-            </LoadingOverlay>
-          )}
-  color: white;
-  padding: 2rem;
-  border-radius: var(--radius-lg);
-  font-size: 1.2rem;
-  z-index: 1000;
-`;
-
-const Container = styled.div`
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-`;
-
-const Header = styled.div`
-  background: var(--gradient-primary);
-  padding: 2rem;
-  color: white;
-`;
-
-const Title = styled.h1`
-  font-size: 2rem;
-  margin: 0 0 1rem 0;
-`;
-
-const Stats = styled.div`
-  display: flex;
-  gap: 2rem;
-`;
-
-const Stat = styled.div`
-  text-align: center;
-`;
-
-const Value = styled.div`
-  font-size: 2rem;
-  font-weight: 800;
-`;
-
-const Label = styled.div`
-  font-size: 0.9rem;
-  opacity: 0.9;
-`;
-
-const MapContainer = styled.div`
-  flex: 1;
-`;
-
 export default DigitalTwin;

@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { motion } from "framer-motion";
 import api from "../../services/api";
-import LoadingSpinner from "../../components/Common/LoadingSpinner";
+import LoadingSkeleton from "../../components/Common/LoadingSkeleton";
 import { toast } from "react-toastify";
 import QRGenerator from "../../components/QR/QRCode";
 

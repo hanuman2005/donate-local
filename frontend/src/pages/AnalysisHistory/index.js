@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { wasteAPI } from "../../services/api";
+import LoadingSkeleton from "../../components/Common/LoadingSkeleton";
 import {
   PageContainer,
   Container,

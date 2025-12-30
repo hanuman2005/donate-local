@@ -7,7 +7,7 @@ import { listingsAPI } from "../../services/api";
 import Map from "../../components/Map";
 import ListingCard from "../../components/Listings/ListingCard";
 import FiltersPanel from "../../components/Listings/FilterPanel";
-import LoadingSpinner from "../../components/Common/LoadingSpinner";
+import LoadingSkeleton from "../../components/Common/LoadingSkeleton";
 import { toast } from "react-toastify";
 import {
   motionVariants,
@@ -35,6 +35,19 @@ import {
 } from "./styledComponents";
 
 const Listings = () => {
+  const [centers, setCenters] = useState([]);
+  const [showCenters, setShowCenters] = useState(false);
+
+  const fetchCenters = async () => {
+    try {
+      const res = await fetch("/api/centers?type=donation");
+      if (!res.ok) throw new Error("Failed to fetch centers");
+      setCenters(await res.json());
+    } catch (e) {
+      toast.error("Could not load centers");
+      setCenters([]);
+    }
+  };
   const [allListings, setAllListings] = useState([]);
   const [filteredListings, setFilteredListings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -157,6 +170,9 @@ const Listings = () => {
       </LoadingContainer>
     );
   }
+
+  // Show donation centers if no listings are claimed
+  const showDonationCenters = filteredListings.length === 0;
 
   return (
     <ListingsContainer
@@ -352,6 +368,34 @@ const Listings = () => {
                         onClick={() => handlePageChange(currentPage - 1)}
                         disabled={currentPage === 1}
                       >
+                        {/* Show donation centers if no listings are available */}
+                        {showDonationCenters && (
+                          <div
+                            style={{ margin: "2rem 0", textAlign: "center" }}
+                          >
+                            <button
+                              onClick={() => {
+                                setShowCenters(true);
+                                fetchCenters();
+                              }}
+                            >
+                              Show Nearby Donation Centers
+                            </button>
+                            {showCenters &&
+                              (centers.length === 0 ? (
+                                <p>No centers found nearby.</p>
+                              ) : (
+                                <ul style={{ marginTop: 16 }}>
+                                  {centers.map((center) => (
+                                    <li key={center._id}>
+                                      <strong>{center.name}</strong> -{" "}
+                                      {center.address} ({center.type})
+                                    </li>
+                                  ))}
+                                </ul>
+                              ))}
+                          </div>
+                        )}
                         ← Previous
                       </PageButton>
 

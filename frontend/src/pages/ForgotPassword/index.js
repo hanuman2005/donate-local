@@ -1,4 +1,4 @@
-// frontend/src/pages/ForgotPassword/index.js
+// frontend/src/pages/ForgotPassword/index.js - Updated with CSS Variables
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { useTheme } from "../../context/ThemeContext";
@@ -9,7 +9,7 @@ const ForgotPassword = () => {
   const isDark = theme === "dark";
 
   const [email, setEmail] = useState("");
-  const [loading, setLoading] = useState(false); // Keeping the state for loading
+  const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
 
@@ -39,11 +39,12 @@ const ForgotPassword = () => {
     },
     card: {
       background: "var(--bg-card)",
-      borderRadius: "var(--radius-lg)",
+      borderRadius: "var(--radius-xl)",
       padding: "2.5rem",
       width: "100%",
       maxWidth: "420px",
       boxShadow: "var(--shadow-xl)",
+      border: "1px solid var(--border-color)",
     },
     header: {
       textAlign: "center",
@@ -53,12 +54,13 @@ const ForgotPassword = () => {
       width: "64px",
       height: "64px",
       background: "var(--gradient-primary)",
-      borderRadius: "16px",
+      borderRadius: "var(--radius-xl)",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
       margin: "0 auto 1rem",
       fontSize: "2rem",
+      boxShadow: "var(--shadow-lg)",
     },
     title: {
       fontSize: "1.75rem",
@@ -69,6 +71,7 @@ const ForgotPassword = () => {
     subtitle: {
       color: "var(--text-secondary)",
       fontSize: "0.95rem",
+      lineHeight: "1.5",
     },
     form: {
       display: "flex",
@@ -82,45 +85,48 @@ const ForgotPassword = () => {
     },
     label: {
       fontSize: "0.875rem",
-      fontWeight: "500",
-      color: isDark ? "#e2e8f0" : "#374151",
+      fontWeight: "600",
+      color: "var(--text-secondary)",
     },
     input: {
       padding: "0.875rem 1rem",
-      border: `2px solid ${isDark ? "#334155" : "#e5e7eb"}`,
-      borderRadius: "10px",
+      border: "2px solid var(--border-color)",
+      borderRadius: "var(--radius-lg)",
       fontSize: "1rem",
-      background: isDark ? "#0f172a" : "#f9fafb",
-      color: isDark ? "#f1f5f9" : "#1f2937",
+      background: "var(--bg-secondary)",
+      color: "var(--text-primary)",
       outline: "none",
-      transition: "border-color 0.2s, box-shadow 0.2s",
+      transition: "all var(--transition-base)",
     },
     button: {
       padding: "0.875rem 1.5rem",
-      background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-      color: "#ffffff",
+      background: "var(--gradient-primary)",
+      color: "var(--text-inverse)",
       border: "none",
-      borderRadius: "10px",
+      borderRadius: "var(--radius-lg)",
       fontSize: "1rem",
       fontWeight: "600",
       cursor: loading ? "not-allowed" : "pointer",
       opacity: loading ? 0.7 : 1,
-      transition: "transform 0.2s, box-shadow 0.2s",
+      transition: "all var(--transition-base)",
+      boxShadow: "var(--shadow-md)",
     },
     error: {
-      background: isDark ? "#7f1d1d" : "#fee2e2",
-      color: isDark ? "#fca5a5" : "#991b1b",
+      background: "var(--error-bg)",
+      color: "var(--error)",
       padding: "0.875rem",
-      borderRadius: "10px",
+      borderRadius: "var(--radius-md)",
       fontSize: "0.875rem",
       textAlign: "center",
+      border: "1px solid var(--error)",
     },
     success: {
-      background: isDark ? "#166534" : "#dcfce7",
-      color: isDark ? "#86efac" : "#166534",
+      background: "var(--success-bg)",
+      color: "var(--success)",
       padding: "1.25rem",
-      borderRadius: "10px",
+      borderRadius: "var(--radius-lg)",
       textAlign: "center",
+      border: "1px solid var(--success)",
     },
     successIcon: {
       fontSize: "3rem",
@@ -130,20 +136,24 @@ const ForgotPassword = () => {
       fontSize: "1.25rem",
       fontWeight: "600",
       marginBottom: "0.5rem",
+      color: "var(--success)",
     },
     successText: {
       fontSize: "0.95rem",
       opacity: 0.9,
+      color: "var(--success)",
+      lineHeight: "1.5",
     },
     link: {
-      color: "#667eea",
+      color: "var(--primary)",
       textDecoration: "none",
       fontWeight: "500",
+      transition: "color var(--transition-fast)",
     },
     footer: {
       textAlign: "center",
       marginTop: "1.5rem",
-      color: isDark ? "#94a3b8" : "#6b7280",
+      color: "var(--text-secondary)",
       fontSize: "0.875rem",
     },
   };
@@ -198,11 +208,7 @@ const ForgotPassword = () => {
           </div>
 
           <button type="submit" style={styles.button} disabled={loading}>
-            {loading ? (
-              <LoadingSkeleton width="100%" height="6rem" />
-            ) : (
-              "Send Reset Link"
-            )}
+            {loading ? "Sending..." : "Send Reset Link"}
           </button>
         </form>
 

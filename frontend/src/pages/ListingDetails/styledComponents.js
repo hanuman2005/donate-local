@@ -1,4 +1,4 @@
-// src/pages/ListingDetails/styledComponents.js - FIXED FOR SIDEBAR LAYOUT
+// src/pages/ListingDetails/styledComponents.js - Updated with Theme Variables
 import styled from "styled-components";
 
 // Framer Motion props that should not be forwarded to the DOM
@@ -58,7 +58,7 @@ export const BackButton = styled.button.withConfig({ shouldForwardProp })`
   transition: all var(--transition-base);
 
   &:hover {
-    background: rgba(102, 126, 234, 0.1);
+    background: var(--bg-hover);
     transform: translateX(-4px);
   }
 
@@ -123,13 +123,13 @@ export const StatusBadge = styled.span`
       case "expired":
         return "var(--error)";
       default:
-        return "#a0aec0";
+        return "var(--text-muted)";
     }
   }};
-  color: white;
+  color: var(--text-inverse);
   margin-bottom: 1.5rem;
   text-transform: capitalize;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-md);
 
   @media (max-width: 768px) {
     font-size: 0.9rem;
@@ -226,35 +226,37 @@ export const ActionButton = styled.button.withConfig({ shouldForwardProp })`
 `;
 
 export const WantButton = styled(ActionButton)`
-  background: var(--gradient-success);
-  color: white;
+  background: var(--success);
+  color: var(--text-inverse);
 
   &:hover:not(:disabled) {
-    box-shadow: 0 8px 25px rgba(72, 187, 120, 0.4);
+    background: var(--success-light);
+    box-shadow: 0 8px 25px rgba(var(--primary-rgb), 0.3);
   }
 `;
 
 export const ContactButton = styled(ActionButton)`
-  background: var(--gradient-info);
-  color: white;
+  background: var(--info);
+  color: var(--text-inverse);
 
   &:hover:not(:disabled) {
-    box-shadow: 0 8px 25px rgba(79, 172, 254, 0.4);
+    background: var(--info-light);
+    box-shadow: 0 8px 25px rgba(var(--primary-rgb), 0.3);
   }
 `;
 
 export const EditButton = styled(ActionButton)`
-  background: var(--success);
-  color: white;
+  background: var(--primary);
+  color: var(--text-inverse);
 
   &:hover:not(:disabled) {
-    background: var(--success-light);
+    background: var(--primary-light);
   }
 `;
 
 export const DeleteButton = styled(ActionButton)`
   background: var(--error);
-  color: white;
+  color: var(--text-inverse);
 
   &:hover:not(:disabled) {
     background: var(--error-light);
@@ -306,7 +308,7 @@ export const QRSection = styled.div`
   background: var(--gradient-primary);
   border-radius: var(--radius-xl);
   padding: 2rem;
-  color: white;
+  color: var(--text-inverse);
   margin-top: 2rem;
   box-shadow: var(--shadow-lg);
   text-align: center;
@@ -401,7 +403,7 @@ export const PositionBadge = styled.span`
   font-weight: 700;
   font-size: 0.9rem;
   white-space: nowrap;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-md);
 `;
 
 export const ErrorState = styled.div`

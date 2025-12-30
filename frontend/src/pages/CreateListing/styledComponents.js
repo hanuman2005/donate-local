@@ -1,4 +1,4 @@
-// src/pages/CreateListing/styledComponents.js - COMPLETE FILE FOR SIDEBAR LAYOUT
+// src/pages/CreateListing/styledComponents.js - Updated with Theme Variables
 
 import styled from "styled-components";
 
@@ -57,7 +57,7 @@ export const CreateListingCard = styled.div`
 
 export const Header = styled.div`
   background: var(--gradient-primary);
-  color: white;
+  color: var(--text-inverse);
   padding: 3rem 2rem;
   text-align: center;
   position: relative;
@@ -186,17 +186,17 @@ export const Input = styled.input`
     outline: none;
     border-color: var(--primary);
     background: var(--bg-card);
-    box-shadow: 0 0 0 3px var(--shadow-focus);
+    box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.1);
   }
 
   &::placeholder {
-    color: var(--text-secondary);
+    color: var(--text-muted);
     opacity: 0.6;
   }
 
   @media (max-width: 768px) {
     padding: 12px 14px;
-    font-size: 16px; /* Prevents zoom on iOS */
+    font-size: 16px;
   }
 `;
 
@@ -217,17 +217,17 @@ export const TextArea = styled.textarea`
     outline: none;
     border-color: var(--primary);
     background: var(--bg-card);
-    box-shadow: 0 0 0 3px var(--shadow-focus);
+    box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.1);
   }
 
   &::placeholder {
-    color: var(--text-secondary);
+    color: var(--text-muted);
     opacity: 0.6;
   }
 
   @media (max-width: 768px) {
     padding: 12px 14px;
-    font-size: 16px; /* Prevents zoom on iOS */
+    font-size: 16px;
   }
 `;
 
@@ -246,7 +246,7 @@ export const Select = styled.select`
     outline: none;
     border-color: var(--primary);
     background: var(--bg-card);
-    box-shadow: 0 0 0 3px var(--shadow-focus);
+    box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.1);
   }
 
   @media (max-width: 768px) {
@@ -327,7 +327,7 @@ export const RemoveImageButton = styled.button.withConfig({
   right: 8px;
   width: 28px;
   height: 28px;
-  background: var(--bg-modal);
+  background: var(--bg-overlay);
   color: var(--error);
   border: none;
   border-radius: var(--radius-full);
@@ -342,7 +342,7 @@ export const RemoveImageButton = styled.button.withConfig({
 
   &:hover {
     background: var(--error);
-    color: white;
+    color: var(--text-inverse);
     transform: scale(1.1);
   }
 
@@ -368,7 +368,7 @@ export const ButtonRow = styled.div`
 
 export const SubmitButton = styled.button.withConfig({ shouldForwardProp })`
   background: var(--gradient-primary);
-  color: white;
+  color: var(--text-inverse);
   font-size: 1.1rem;
   font-weight: 700;
   padding: 14px 28px;
@@ -501,7 +501,7 @@ export const Switch = styled.label`
       width: 22px;
       left: 4px;
       bottom: 4px;
-      background-color: white;
+      background-color: var(--text-inverse);
       transition: var(--transition-base);
       border-radius: var(--radius-full);
     }
@@ -555,7 +555,7 @@ export const BulkItem = styled.div`
     &:focus {
       outline: none;
       border-color: var(--primary);
-      box-shadow: 0 0 0 3px var(--shadow-focus);
+      box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.1);
     }
   }
 
@@ -577,7 +577,7 @@ export const BulkItem = styled.div`
 
     &:not(:disabled):hover {
       background: var(--error);
-      color: white;
+      color: var(--text-inverse);
       transform: scale(1.05);
     }
 
