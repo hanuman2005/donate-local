@@ -1,7 +1,7 @@
 // ============================================
-// src/components/ListingCard/index.jsx - WITH MOTION
+// src/components/ListingCard/index.jsx - THEME UPDATED
 // ============================================
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAuth } from "../../../context/AuthContext";
@@ -10,6 +10,7 @@ import { toast } from "react-toastify";
 import { calculateDistance, formatDistance } from "../../../utils/helpers";
 import { motionVariants } from "../../../animations/motionVariants";
 import TrustBadges from "../../Common/TrustBadges";
+import RatingModal from "../../Modals/RatingModal";
 
 import {
   CardContainer,
@@ -33,6 +34,7 @@ import {
   DeleteButton,
   LoadingSpinner,
   QuickClaimButton,
+  QRScanButton,
 } from "./styledComponents";
 
 const ListingCard = ({
@@ -48,6 +50,7 @@ const ListingCard = ({
   const [isLoading, setIsLoading] = useState(false);
   const [isClaiming, setIsClaiming] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [showRating, setShowRating] = useState(false);
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
@@ -206,11 +209,11 @@ const ListingCard = ({
 
   const getStatusColor = (status) => {
     const colors = {
-      available: "#48bb78",
-      pending: "#ed8936",
-      completed: "#4299e1",
-      cancelled: "#e53e3e",
-      expired: "#e53e3e",
+      available: "var(--success)",
+      pending: "var(--warning)",
+      completed: "var(--info, #4299e1)",
+      cancelled: "var(--danger)",
+      expired: "var(--danger)",
     };
     return colors[status] || colors.available;
   };
@@ -226,7 +229,6 @@ const ListingCard = ({
       initial="hidden"
       whileInView="show"
       viewport={{ once: true, amount: 0.3 }}
-      whileHover={{ y: -5, boxShadow: "0 8px 30px rgba(0,0,0,0.12)" }}
     >
       <ImageContainer as={motion.div}>
         {hasImage ? (
@@ -313,6 +315,7 @@ const ListingCard = ({
             </MetaText>
           </MetaItem>
         </CardMeta>
+
         {typeof listing.donor === "object" && listing.donor && (
           <div style={{ marginTop: "0.75rem" }}>
             <TrustBadges
@@ -354,8 +357,8 @@ const ListingCard = ({
             <ViewButton
               as={motion.button}
               onClick={handleViewDetails}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
             >
               👁️ View Details
             </ViewButton>
@@ -365,9 +368,8 @@ const ListingCard = ({
                 as={motion.button}
                 onClick={handleQuickClaim}
                 disabled={isClaiming || !user}
-                style={{ marginTop: "0.5rem" }}
-                whileHover={{ scale: 1.05, y: -2 }}
-                whileTap={{ scale: 0.95 }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
               >
                 {isClaiming ? (
                   <>
@@ -381,7 +383,10 @@ const ListingCard = ({
             )}
 
             {authLoading ? (
-              <ContactButton disabled>⏳ Loading...</ContactButton>
+              <ContactButton disabled>
+                <LoadingSpinner />
+                Loading...
+              </ContactButton>
             ) : !user ? (
               <ContactButton
                 as={motion.button}
@@ -389,8 +394,8 @@ const ListingCard = ({
                   toast.info("Please login first");
                   navigate("/login");
                 }}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
               >
                 🔒 Login to Contact
               </ContactButton>
@@ -400,42 +405,72 @@ const ListingCard = ({
                 onClick={handleContact}
                 disabled={isLoading}
                 title="Contact donor"
-                whileHover={{ scale: 1.05, y: -2 }}
-                whileTap={{ scale: 0.95 }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
               >
-                {isLoading ? <LoadingSpinner /> : "💬 Contact"}
+                {isLoading ? (
+                  <>
+                    <LoadingSpinner />
+                    Connecting...
+                  </>
+                ) : (
+                  "💬 Contact Donor"
+                )}
               </ContactButton>
             )}
           </>
         )}
 
-        {/* 📌 QR Scan button: only show when pickup is pending for this user */}
+        {/* QR Scan button: only show when pickup is pending for this user */}
         {listing.status === "pending" &&
           (listing.assignedTo?._id === user?._id ||
             listing.assignedTo === user?._id) && (
-            <motion.button
+            <QRScanButton
+              as={motion.button}
               onClick={(e) => {
                 e.stopPropagation();
                 navigate("/verify-pickup", {
                   state: { listingId: listing._id },
                 });
               }}
-              style={{
-                marginTop: "0.5rem",
-                padding: "0.75rem",
-                background: "linear-gradient(135deg, #48bb78 0%, #38a169 100%)",
-                color: "white",
-                border: "none",
-                borderRadius: "8px",
-                cursor: "pointer",
-                fontWeight: 600,
-                width: "100%",
-              }}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
             >
               📷 Scan Pickup QR
-            </motion.button>
+            </QRScanButton>
+          )}
+        {/* Rate User Button and Modal (only if not owner and donor is object) */}
+        {!isOwner &&
+          typeof listing.donor === "object" &&
+          listing.donor &&
+          user &&
+          user._id !== listing.donor._id && (
+            <>
+              <button
+                style={{
+                  marginTop: "0.5rem",
+                  padding: "0.5rem 1rem",
+                  borderRadius: 6,
+                  background: "var(--primary)",
+                  color: "#fff",
+                  border: "none",
+                  cursor: "pointer",
+                }}
+                onClick={() => setShowRating(true)}
+              >
+                Rate User
+              </button>
+              <RatingModal
+                isOpen={showRating}
+                onClose={() => setShowRating(false)}
+                user={listing.donor}
+                listingId={listing._id}
+                onSuccess={() => {
+                  // Refresh ratings or update UI
+                  setShowRating(false);
+                }}
+              />
+            </>
           )}
       </CardFooter>
     </CardContainer>

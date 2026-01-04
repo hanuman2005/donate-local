@@ -1,9 +1,17 @@
-// src/components/ReportModal/index.js
+// src/components/ReportModal/index.js - THEME INTEGRATED
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-toastify';
 import axios from 'axios';
+
+const motionProps = [
+  "initial", "animate", "exit", "variants", "transition", "whileHover",
+  "whileTap", "whileFocus", "whileDrag", "whileInView", "drag",
+  "dragConstraints", "dragElastic", "dragMomentum", "layout", "layoutId",
+  "onAnimationStart", "onAnimationComplete",
+];
+const shouldForwardProp = (prop) => !motionProps.includes(prop);
 
 const Overlay = styled(motion.div)`
   position: fixed;
@@ -21,20 +29,21 @@ const Overlay = styled(motion.div)`
 `;
 
 const Modal = styled(motion.div)`
-  background: white;
-  border-radius: 20px;
+  background: var(--bg-card);
+  border-radius: 24px;
   max-width: 500px;
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--shadow-xl);
+  border: 2px solid var(--border);
 `;
 
 const Header = styled.div`
   background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
-  color: white;
+  color: var(--text-on-primary);
   padding: 2rem;
-  border-radius: 20px 20px 0 0;
+  border-radius: 22px 22px 0 0;
   
   h2 {
     font-size: 1.5rem;
@@ -44,13 +53,25 @@ const Header = styled.div`
   
   p {
     margin: 0;
-    opacity: 0.9;
+    opacity: 0.95;
     font-size: 0.95rem;
+  }
+
+  @media (max-width: 768px) {
+    padding: 1.5rem;
+    
+    h2 {
+      font-size: 1.3rem;
+    }
   }
 `;
 
 const Content = styled.div`
   padding: 2rem;
+
+  @media (max-width: 768px) {
+    padding: 1.5rem;
+  }
 `;
 
 const FormGroup = styled.div`
@@ -59,57 +80,70 @@ const FormGroup = styled.div`
 
 const Label = styled.label`
   display: block;
-  font-weight: 600;
-  color: #2d3748;
+  font-weight: 700;
+  color: var(--text-primary);
   margin-bottom: 0.5rem;
   font-size: 0.95rem;
 `;
 
 const Select = styled.select`
   width: 100%;
-  padding: 0.75rem;
-  border: 2px solid #e2e8f0;
-  border-radius: 10px;
+  padding: 0.875rem;
+  border: 2px solid var(--border);
+  border-radius: 12px;
   font-size: 1rem;
   transition: all 0.3s ease;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  cursor: pointer;
   
   &:focus {
     outline: none;
-    border-color: #f56565;
+    border-color: var(--danger);
     box-shadow: 0 0 0 3px rgba(245, 101, 101, 0.1);
+    background: var(--bg-card);
   }
 `;
 
 const TextArea = styled.textarea`
   width: 100%;
-  padding: 0.75rem;
-  border: 2px solid #e2e8f0;
-  border-radius: 10px;
+  padding: 0.875rem;
+  border: 2px solid var(--border);
+  border-radius: 12px;
   font-size: 1rem;
   min-height: 120px;
   resize: vertical;
   font-family: inherit;
   transition: all 0.3s ease;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  
+  &::placeholder {
+    color: var(--text-placeholder);
+  }
   
   &:focus {
     outline: none;
-    border-color: #f56565;
+    border-color: var(--danger);
     box-shadow: 0 0 0 3px rgba(245, 101, 101, 0.1);
+    background: var(--bg-card);
   }
 `;
 
 const WarningBox = styled.div`
-  background: #fff5f5;
-  border-left: 4px solid #f56565;
+  background: var(--bg-warning, #fff5f5);
+  border-left: 4px solid var(--danger);
   padding: 1rem;
-  border-radius: 8px;
+  border-radius: 12px;
   margin-bottom: 1.5rem;
+  border: 2px solid var(--danger);
   
   p {
     margin: 0;
-    color: #742a2a;
+    color: var(--danger);
     font-size: 0.9rem;
     line-height: 1.5;
+    font-weight: 600;
   }
 `;
 
@@ -117,14 +151,19 @@ const ButtonGroup = styled.div`
   display: flex;
   gap: 1rem;
   padding: 1.5rem 2rem;
-  border-top: 1px solid #e2e8f0;
+  border-top: 2px solid var(--border);
+
+  @media (max-width: 768px) {
+    padding: 1.25rem 1.5rem;
+    flex-direction: column-reverse;
+  }
 `;
 
-const Button = styled(motion.button)`
+const Button = styled(motion.button).withConfig({ shouldForwardProp })`
   flex: 1;
   padding: 0.875rem 1.5rem;
-  border-radius: 10px;
-  font-weight: 600;
+  border-radius: 12px;
+  font-weight: 700;
   font-size: 1rem;
   cursor: pointer;
   border: none;
@@ -132,10 +171,11 @@ const Button = styled(motion.button)`
   
   ${props => props.$primary ? `
     background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
-    color: white;
+    color: var(--text-on-primary);
+    box-shadow: var(--shadow-button);
     
-    &:hover {
-      box-shadow: 0 4px 12px rgba(245, 101, 101, 0.4);
+    &:hover:not(:disabled) {
+      box-shadow: var(--shadow-button-hover);
     }
     
     &:disabled {
@@ -143,11 +183,13 @@ const Button = styled(motion.button)`
       cursor: not-allowed;
     }
   ` : `
-    background: #f7fafc;
-    color: #4a5568;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 2px solid var(--border);
     
     &:hover {
-      background: #edf2f7;
+      background: var(--bg-hover);
+      border-color: var(--primary);
     }
   `}
 `;
@@ -155,8 +197,9 @@ const Button = styled(motion.button)`
 const CharCount = styled.div`
   text-align: right;
   font-size: 0.85rem;
-  color: #a0aec0;
+  color: var(--text-secondary);
   margin-top: 0.25rem;
+  font-weight: 600;
 `;
 
 const ReportModal = ({ type = 'listing', targetId, targetTitle, onClose, onSuccess }) => {

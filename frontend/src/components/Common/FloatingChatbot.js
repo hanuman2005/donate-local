@@ -28,11 +28,9 @@ const FloatingChatbot = () => {
     "Find items near me",
   ];
 
-  // Fallback responses for when API is unavailable
   const getFallbackResponse = (userMessage) => {
     const msg = userMessage.toLowerCase();
 
-    // AI Analysis questions
     if (
       msg.includes("ai") ||
       msg.includes("analyze") ||
@@ -41,7 +39,6 @@ const FloatingChatbot = () => {
       return "🤖 Our AI Analysis feature is amazing!\n\n1. Upload a photo of your unwanted item\n2. AI detects what it is (phone, chair, clothes, etc.)\n3. Get 3 smart suggestions:\n   ✅ REUSE - Repair guides & tips\n   ♻️ RECYCLE - Nearby centers\n   🎁 DONATE - High demand items\n\n4. Choose your option and create a listing if you want to donate!\n\nThis helps you make the most sustainable choice! 🌍";
     }
 
-    // What can be donated
     if (
       msg.includes("what") &&
       (msg.includes("donate") || msg.includes("list"))
@@ -49,7 +46,6 @@ const FloatingChatbot = () => {
       return "You can donate almost anything! 📦\n\nPopular categories:\n📱 Electronics (phones, laptops, appliances)\n🪑 Furniture (chairs, tables, sofas)\n👕 Clothing (clothes, shoes, accessories)\n📚 Books & Media\n🍎 Food (packaged & fresh)\n🧸 Toys & Baby Items\n🏠 Household Items\n🌱 Plants & Garden\n🎨 Hobby & Sports gear\n🔧 Tools\n\nIf it's in good condition, someone probably needs it!";
     }
 
-    // Donation process
     if (
       msg.includes("donate") ||
       msg.includes("create listing") ||
@@ -58,7 +54,6 @@ const FloatingChatbot = () => {
       return "To donate an item:\n\n1. 🤖 Use AI Analysis (optional but recommended!)\n   - Upload photo → Get suggestions\n\n2. 📝 Click 'Create Listing'\n   - Choose category\n   - Add title & description\n   - Upload photos\n   - Set pickup location\n\n3. 📍 Your listing goes live!\n\n4. 🔔 Get notified when someone's interested\n\n5. 💬 Chat to coordinate pickup\n\n6. 📱 Exchange using QR verification\n\nIt's that simple!";
     }
 
-    // Finding items
     if (
       msg.includes("find") ||
       msg.includes("nearby") ||
@@ -68,7 +63,6 @@ const FloatingChatbot = () => {
       return "To find items near you:\n\n1. 🗺️ Use the interactive map view\n   - See all nearby donations\n   - Filter by category\n   - Set distance radius (1-100km)\n\n2. 📋 Browse listings page\n   - Sort by distance, date, category\n   - Use search bar for specific items\n\n3. 🔔 Enable notifications\n   - Get alerts for new items nearby\n\n4. Click any listing to view full details!";
     }
 
-    // QR Code verification
     if (
       msg.includes("qr") ||
       msg.includes("verify") ||
@@ -78,7 +72,6 @@ const FloatingChatbot = () => {
       return "🔒 QR Code Verification keeps exchanges safe!\n\nHow it works:\n1. After scheduling pickup, both users get QR codes\n\n2. At pickup location:\n   - Recipient scans donor's QR code\n   - Confirms item matches listing\n   - Both verify identity\n\n3. Exchange completes automatically\n\n4. Listing marked as completed\n\nThis prevents fraud and ensures safety! No personal info shared until verified. 📱✅";
     }
 
-    // Scheduling
     if (
       msg.includes("schedule") ||
       msg.includes("pickup") ||
@@ -88,7 +81,6 @@ const FloatingChatbot = () => {
       return "📅 Pickup Scheduling:\n\n1. After someone shows interest, open the chat\n\n2. Click 'Propose Pickup Time'\n\n3. Select date & time from calendar\n\n4. Recipient accepts or suggests alternative\n\n5. Both get confirmation with:\n   - Pickup time\n   - Location details\n   - QR codes for verification\n\n6. Automatic reminders sent!\n\nCoordinate details in chat before meeting.";
     }
 
-    // Rating system
     if (
       msg.includes("rating") ||
       msg.includes("review") ||
@@ -97,7 +89,6 @@ const FloatingChatbot = () => {
       return "⭐ Rating System builds trust!\n\nAfter completing exchange:\n1. Both users rate each other (1-5 stars)\n2. Optional written review\n3. Ratings appear on profiles\n\nHigh ratings = trusted community member!\n\nBenefits:\n- Better matches from AI\n- More responses to your listings\n- Priority notifications\n- Community recognition\n\nBe respectful and reliable to build your reputation!";
     }
 
-    // Chat/messaging
     if (
       msg.includes("chat") ||
       msg.includes("message") ||
@@ -106,7 +97,6 @@ const FloatingChatbot = () => {
       return "💬 Real-time Chat:\n\n1. Click 'I Want This' on any listing\n\n2. Chat opens automatically\n   - Ask questions about the item\n   - Discuss condition\n   - Coordinate pickup\n\n3. Features:\n   - Instant messaging\n   - Typing indicators\n   - Message history saved\n   - Notifications when they reply\n\n4. Stay anonymous until pickup is scheduled!\n\nBe polite and responsive for best results.";
     }
 
-    // Categories
     if (
       msg.includes("category") ||
       msg.includes("categories") ||
@@ -115,7 +105,6 @@ const FloatingChatbot = () => {
       return "📂 Item Categories:\n\n📱 Electronics\n🪑 Furniture\n👕 Clothing & Accessories\n📚 Books & Media\n🍎 Food Items\n🧸 Toys & Baby Items\n🏠 Household & Kitchen\n🌱 Plants & Garden\n🎨 Hobbies & Sports\n🔧 Tools & Equipment\n\nEach category has specific fields to help describe your item accurately!";
     }
 
-    // Safety
     if (
       msg.includes("safe") ||
       msg.includes("safety") ||
@@ -124,7 +113,6 @@ const FloatingChatbot = () => {
       return "🔒 Your Safety Matters!\n\nSafety features:\n✅ No personal info until scheduled\n✅ QR code verification\n✅ Rating system filters bad actors\n✅ Report/block functionality\n✅ Public meeting spots recommended\n\nTips:\n- Meet in public places\n- Bring a friend if uncomfortable\n- Check user ratings first\n- Trust your instincts\n- Use QR verification always\n\nStay safe while helping others! 🛡️";
     }
 
-    // Profile/account
     if (
       msg.includes("profile") ||
       msg.includes("account") ||
@@ -133,7 +121,6 @@ const FloatingChatbot = () => {
       return "👤 Manage Your Profile:\n\n1. Click avatar (top right)\n2. Go to 'Profile'\n\nYou can update:\n- Name & bio\n- Profile picture\n- Location\n- Contact preferences\n- Notification settings\n\nGood profiles get more responses!\n\nTips:\n✨ Add a clear photo\n✨ Write a friendly bio\n✨ Keep info updated\n✨ Build your rating";
     }
 
-    // Impact/statistics
     if (
       msg.includes("impact") ||
       msg.includes("stats") ||
@@ -143,7 +130,6 @@ const FloatingChatbot = () => {
       return "🌍 Your Impact Matters!\n\nView your dashboard to see:\n📦 Items donated/received\n💚 CO2 emissions prevented\n💰 Money saved by community\n🤝 Successful exchanges\n\nEach donation:\n- Keeps items from landfills\n- Reduces carbon footprint\n- Helps people save money\n- Builds community connections\n\nTogether we're making a difference! ♻️";
     }
 
-    // Help/general
     if (
       msg.includes("help") ||
       msg.includes("support") ||
@@ -152,7 +138,6 @@ const FloatingChatbot = () => {
       return "I can help you with:\n\n🤖 AI item analysis\n📝 Creating donations\n🔍 Finding items nearby\n💬 Chat & messaging\n📅 Pickup scheduling\n📱 QR verification\n⭐ Rating system\n🔒 Safety tips\n👤 Profile management\n\nJust ask me anything! What would you like to know?";
     }
 
-    // Default response
     return "I'm here to help! You can ask me about:\n\n🤖 How AI analysis works\n📦 What you can donate\n🔍 Finding items near you\n📱 QR code verification\n💬 Chat & coordination\n⭐ Rating system\n🔒 Safety features\n\nWhat would you like to know?";
   };
 
@@ -171,7 +156,6 @@ const FloatingChatbot = () => {
     setIsTyping(true);
 
     try {
-      // Try Gemini API first
       const response = await fetch("http://localhost:5000/api/chatbot/ask", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -195,7 +179,6 @@ const FloatingChatbot = () => {
     } catch (error) {
       console.error("Chat error:", error);
 
-      // Use fallback response if API fails
       const botResponse = {
         text: getFallbackResponse(currentInput),
         sender: "bot",
@@ -213,6 +196,14 @@ const FloatingChatbot = () => {
     setTimeout(() => handleSend(), 100);
   };
 
+  // Get computed styles from CSS variables
+  const getCSSVar = (varName) => {
+    if (typeof window === "undefined") return "";
+    return getComputedStyle(document.documentElement)
+      .getPropertyValue(varName)
+      .trim();
+  };
+
   return (
     <div
       style={{
@@ -225,20 +216,20 @@ const FloatingChatbot = () => {
       role="complementary"
       aria-label="Chat assistant"
     >
-      {/* Chat Window */}
       {isOpen && (
         <div
           style={{
             width: "380px",
             height: "600px",
-            background: "white",
-            borderRadius: "20px",
-            boxShadow: "0 20px 60px rgba(0, 0, 0, 0.2)",
+            background: "var(--bg-card)",
+            borderRadius: "var(--radius-2xl)",
+            boxShadow: "var(--shadow-xl)",
             display: "flex",
             flexDirection: "column",
             marginBottom: "10px",
             overflow: "hidden",
             animation: "slideUp 0.3s ease-out",
+            border: "1px solid var(--border-color)",
           }}
           role="dialog"
           aria-modal="true"
@@ -247,8 +238,8 @@ const FloatingChatbot = () => {
           {/* Header */}
           <div
             style={{
-              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-              color: "white",
+              background: "var(--gradient-primary)",
+              color: "var(--text-inverse)",
               padding: "20px",
               display: "flex",
               alignItems: "center",
@@ -285,7 +276,7 @@ const FloatingChatbot = () => {
               style={{
                 background: "none",
                 border: "none",
-                color: "white",
+                color: "var(--text-inverse)",
                 fontSize: "24px",
                 cursor: "pointer",
                 padding: "0",
@@ -304,7 +295,7 @@ const FloatingChatbot = () => {
               flex: 1,
               overflowY: "auto",
               padding: "20px",
-              background: "#f8fafc",
+              background: "var(--bg-secondary)",
             }}
             role="log"
             aria-label="Chat messages"
@@ -325,16 +316,19 @@ const FloatingChatbot = () => {
                     maxWidth: "70%",
                     background:
                       msg.sender === "user"
-                        ? "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)"
-                        : "white",
-                    color: msg.sender === "user" ? "white" : "#2d3748",
+                        ? "var(--gradient-primary)"
+                        : "var(--bg-card)",
+                    color:
+                      msg.sender === "user"
+                        ? "var(--text-inverse)"
+                        : "var(--text-primary)",
                     padding: "12px 16px",
-                    borderRadius: "18px",
+                    borderRadius: "var(--radius-lg)",
                     borderBottomLeftRadius:
-                      msg.sender === "bot" ? "4px" : "18px",
+                      msg.sender === "bot" ? "4px" : "var(--radius-lg)",
                     borderBottomRightRadius:
-                      msg.sender === "user" ? "4px" : "18px",
-                    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+                      msg.sender === "user" ? "4px" : "var(--radius-lg)",
+                    boxShadow: "var(--shadow-sm)",
                     whiteSpace: "pre-line",
                     fontSize: "14px",
                     lineHeight: "1.5",
@@ -357,11 +351,11 @@ const FloatingChatbot = () => {
               >
                 <div
                   style={{
-                    background: "white",
+                    background: "var(--bg-card)",
                     padding: "12px 16px",
-                    borderRadius: "18px",
+                    borderRadius: "var(--radius-lg)",
                     borderBottomLeftRadius: "4px",
-                    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+                    boxShadow: "var(--shadow-sm)",
                     display: "flex",
                     gap: "4px",
                   }}
@@ -371,7 +365,7 @@ const FloatingChatbot = () => {
                       width: "8px",
                       height: "8px",
                       borderRadius: "50%",
-                      background: "#cbd5e0",
+                      background: "var(--text-muted)",
                       animation: "bounce 1.4s infinite ease-in-out both",
                       animationDelay: "0s",
                     }}
@@ -381,7 +375,7 @@ const FloatingChatbot = () => {
                       width: "8px",
                       height: "8px",
                       borderRadius: "50%",
-                      background: "#cbd5e0",
+                      background: "var(--text-muted)",
                       animation: "bounce 1.4s infinite ease-in-out both",
                       animationDelay: "0.16s",
                     }}
@@ -391,7 +385,7 @@ const FloatingChatbot = () => {
                       width: "8px",
                       height: "8px",
                       borderRadius: "50%",
-                      background: "#cbd5e0",
+                      background: "var(--text-muted)",
                       animation: "bounce 1.4s infinite ease-in-out both",
                       animationDelay: "0.32s",
                     }}
@@ -411,8 +405,8 @@ const FloatingChatbot = () => {
                 display: "flex",
                 flexWrap: "wrap",
                 gap: "8px",
-                background: "white",
-                borderTop: "1px solid #e2e8f0",
+                background: "var(--bg-card)",
+                borderTop: "1px solid var(--border-color)",
               }}
               role="group"
               aria-label="Suggested questions"
@@ -422,25 +416,25 @@ const FloatingChatbot = () => {
                   key={index}
                   onClick={() => handleQuickReply(reply)}
                   style={{
-                    background: "#f8fafc",
-                    border: "1px solid #e2e8f0",
-                    borderRadius: "20px",
+                    background: "var(--bg-secondary)",
+                    border: "1px solid var(--border-color)",
+                    borderRadius: "var(--radius-full)",
                     padding: "8px 14px",
                     fontSize: "13px",
                     cursor: "pointer",
-                    color: "#4a5568",
-                    transition: "all 0.2s",
+                    color: "var(--text-secondary)",
+                    transition: "all var(--transition-fast)",
                     fontWeight: "500",
                   }}
                   onMouseEnter={(e) => {
-                    e.target.style.background = "#667eea";
-                    e.target.style.color = "white";
-                    e.target.style.borderColor = "#667eea";
+                    e.target.style.background = "var(--primary)";
+                    e.target.style.color = "var(--text-inverse)";
+                    e.target.style.borderColor = "var(--primary)";
                   }}
                   onMouseLeave={(e) => {
-                    e.target.style.background = "#f8fafc";
-                    e.target.style.color = "#4a5568";
-                    e.target.style.borderColor = "#e2e8f0";
+                    e.target.style.background = "var(--bg-secondary)";
+                    e.target.style.color = "var(--text-secondary)";
+                    e.target.style.borderColor = "var(--border-color)";
                   }}
                   aria-label={`Ask: ${reply}`}
                 >
@@ -454,8 +448,8 @@ const FloatingChatbot = () => {
           <div
             style={{
               padding: "16px 20px",
-              background: "white",
-              borderTop: "1px solid #e2e8f0",
+              background: "var(--bg-card)",
+              borderTop: "1px solid var(--border-color)",
               display: "flex",
               gap: "8px",
             }}
@@ -471,23 +465,27 @@ const FloatingChatbot = () => {
               style={{
                 flex: 1,
                 padding: "12px 16px",
-                border: "2px solid #e2e8f0",
-                borderRadius: "25px",
+                border: "2px solid var(--border-color)",
+                borderRadius: "var(--radius-full)",
                 fontSize: "14px",
                 outline: "none",
-                transition: "border-color 0.3s",
+                transition: "border-color var(--transition-base)",
+                background: "var(--bg-secondary)",
+                color: "var(--text-primary)",
               }}
-              onFocus={(e) => (e.target.style.borderColor = "#667eea")}
-              onBlur={(e) => (e.target.style.borderColor = "#e2e8f0")}
+              onFocus={(e) => (e.target.style.borderColor = "var(--primary)")}
+              onBlur={(e) =>
+                (e.target.style.borderColor = "var(--border-color)")
+              }
             />
             <button
               onClick={handleSend}
               disabled={!input.trim()}
               style={{
                 background: input.trim()
-                  ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
-                  : "#e2e8f0",
-                color: "white",
+                  ? "var(--gradient-primary)"
+                  : "var(--bg-secondary)",
+                color: "var(--text-inverse)",
                 border: "none",
                 borderRadius: "50%",
                 width: "48px",
@@ -497,8 +495,9 @@ const FloatingChatbot = () => {
                 alignItems: "center",
                 justifyContent: "center",
                 fontSize: "20px",
-                transition: "all 0.3s",
+                transition: "all var(--transition-base)",
                 flexShrink: 0,
+                boxShadow: "var(--shadow-sm)",
               }}
               onMouseEnter={(e) => {
                 if (input.trim()) {
@@ -524,25 +523,23 @@ const FloatingChatbot = () => {
           width: "60px",
           height: "60px",
           borderRadius: "50%",
-          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-          color: "white",
+          background: "var(--gradient-primary)",
+          color: "var(--text-inverse)",
           border: "none",
           cursor: "pointer",
-          boxShadow: "0 8px 25px rgba(102, 126, 234, 0.4)",
+          boxShadow: "var(--shadow-xl)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           fontSize: "28px",
-          transition: "all 0.3s",
+          transition: "all var(--transition-base)",
           position: "relative",
         }}
         onMouseEnter={(e) => {
           e.target.style.transform = "scale(1.1)";
-          e.target.style.boxShadow = "0 12px 35px rgba(102, 126, 234, 0.5)";
         }}
         onMouseLeave={(e) => {
           e.target.style.transform = "scale(1)";
-          e.target.style.boxShadow = "0 8px 25px rgba(102, 126, 234, 0.4)";
         }}
         aria-label={isOpen ? "Close chat assistant" : "Open chat assistant"}
         aria-expanded={isOpen}
@@ -556,9 +553,9 @@ const FloatingChatbot = () => {
               right: "-4px",
               width: "20px",
               height: "20px",
-              background: "#ff6b6b",
+              background: "var(--error)",
               borderRadius: "50%",
-              border: "3px solid white",
+              border: "3px solid var(--bg-card)",
               animation: "pulse 2s infinite",
             }}
             aria-hidden="true"

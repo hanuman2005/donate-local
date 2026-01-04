@@ -1,10 +1,10 @@
 // src/pages/Schedules/index.js - Enhanced with Advanced UI
 import React, { useState, useEffect, useMemo } from "react";
-import styled from "styled-components";
 import { motion, AnimatePresence } from "framer-motion";
 import { scheduleAPI } from "../../services/api";
 import { toast } from "react-toastify";
 import ScheduleCard from "../../components/Schedule/ScheduleCard";
+import { useNavigate } from "react-router-dom";
 import TrackingModal from "../../components/Tracking/TrackingModal.js";
 import { useAuth } from "../../context/AuthContext";
 import { useTheme } from "../../context/ThemeContext";
@@ -55,6 +55,7 @@ const STATUS_FILTERS = [
 ];
 
 const SchedulesPage = () => {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { isDark } = useTheme();
   const [schedules, setSchedules] = useState([]);
@@ -65,6 +66,15 @@ const SchedulesPage = () => {
   const [sortBy, setSortBy] = useState("date-desc");
   const [trackingScheduleId, setTrackingScheduleId] = useState(null);
 
+  const handleCancel = async (scheduleId) => {
+    try {
+      await scheduleAPI.cancelSchedule(scheduleId);
+      toast.success("Schedule cancelled");
+      fetchSchedules();
+    } catch (error) {
+      toast.error("Failed to cancel schedule");
+    }
+  };
   useEffect(() => {
     fetchSchedules();
   }, [activeTab, statusFilter]);
@@ -345,6 +355,8 @@ const SchedulesPage = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
+                style={{ cursor: "pointer" }}
+                onClick={() => navigate(`/schedules/${schedule._id}`)}
               >
                 <ScheduleCard
                   schedule={schedule}
@@ -363,6 +375,8 @@ const SchedulesPage = () => {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.05 }}
+                style={{ cursor: "pointer" }}
+                onClick={() => navigate(`/schedules/${schedule._id}`)}
               >
                 <ListItemImage $image={schedule.listing?.images?.[0]}>
                   {!schedule.listing?.images?.[0] && "📦"}

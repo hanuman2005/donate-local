@@ -12,11 +12,6 @@ import {
 // =====================
 // Animations
 // =====================
-const shimmer = keyframes`
-  0% { background-position: -1000px 0; }
-  100% { background-position: 1000px 0; }
-`;
-
 const pulse = keyframes`
   0%, 100% { opacity: 1; }
   50% { opacity: 0.5; }
@@ -26,16 +21,17 @@ const pulse = keyframes`
 // Styled Components
 // =====================
 const Section = styled(motion.div)`
-  background: white;
+  background: var(--bg-card);
   border-radius: 24px;
   padding: 2rem;
   margin-bottom: 2rem;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
-  border: 2px solid #f0f9ff;
+  box-shadow: var(--shadow-card);
+  border: 2px solid var(--border);
   
   @media (max-width: 768px) {
     padding: 1.5rem;
     border-radius: 20px;
+    margin-bottom: 1.5rem;
   }
 `;
 
@@ -45,19 +41,19 @@ const SectionHeader = styled.div`
   gap: 1rem;
   margin-bottom: 1.5rem;
   padding-bottom: 1rem;
-  border-bottom: 2px solid #f0f9ff;
+  border-bottom: 2px solid var(--border);
 `;
 
 const SectionIcon = styled.div`
   width: 50px;
   height: 50px;
-  background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+  background: var(--gradient-primary);
   border-radius: 15px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.75rem;
-  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+  box-shadow: var(--shadow-button);
   
   @media (max-width: 768px) {
     width: 45px;
@@ -69,7 +65,7 @@ const SectionIcon = styled.div`
 const SectionTitle = styled.h3`
   font-size: 1.5rem;
   font-weight: 800;
-  color: #1e293b;
+  color: var(--text-primary);
   margin: 0;
   
   @media (max-width: 768px) {
@@ -85,8 +81,8 @@ const LoadingContainer = styled.div`
 const LoadingSpinner = styled.div`
   width: 50px;
   height: 50px;
-  border: 4px solid #e2e8f0;
-  border-top-color: #3B82F6;
+  border: 4px solid var(--border);
+  border-top-color: var(--primary);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin: 0 auto 1rem;
@@ -97,7 +93,7 @@ const LoadingSpinner = styled.div`
 `;
 
 const LoadingText = styled.p`
-  color: #64748b;
+  color: var(--text-secondary);
   font-size: 1rem;
   margin: 0;
   animation: ${pulse} 2s ease-in-out infinite;
@@ -110,17 +106,22 @@ const CentersGrid = styled.div`
 
 const CenterCard = styled(motion.div)`
   padding: 1.5rem;
-  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  background: var(--bg-secondary);
   border-radius: 16px;
-  border-left: 4px solid #3B82F6;
+  border-left: 4px solid var(--primary);
   transition: all 0.3s ease;
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  box-shadow: var(--shadow-sm);
   
   &:hover {
     transform: translateX(5px);
-    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.15);
+    box-shadow: var(--shadow-lg);
+  }
+
+  @media (max-width: 768px) {
+    padding: 1.25rem;
   }
 `;
 
@@ -129,16 +130,18 @@ const CenterHeader = styled.div`
   justify-content: space-between;
   align-items: start;
   gap: 1rem;
+  flex-wrap: wrap;
 `;
 
 const CenterInfo = styled.div`
   flex: 1;
+  min-width: 200px;
 `;
 
 const CenterName = styled.h4`
   font-size: 1.1rem;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--text-primary);
   margin: 0 0 0.5rem 0;
   line-height: 1.3;
 `;
@@ -147,13 +150,14 @@ const CenterDistance = styled.div`
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  background: white;
+  background: var(--bg-card);
   padding: 0.4rem 0.8rem;
   border-radius: 50px;
   font-size: 0.85rem;
   font-weight: 600;
-  color: #3B82F6;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  color: var(--primary);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
 `;
 
 const NavigateButton = styled(motion.a)`
@@ -161,29 +165,35 @@ const NavigateButton = styled(motion.a)`
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1.25rem;
-  background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
-  color: white;
+  background: var(--gradient-primary);
+  color: var(--text-on-primary);
   border-radius: 12px;
   font-weight: 700;
   font-size: 0.95rem;
   text-decoration: none;
-  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+  box-shadow: var(--shadow-button);
   transition: all 0.3s ease;
+  align-self: flex-start;
   
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+    box-shadow: var(--shadow-button-hover);
   }
   
   &:active {
     transform: translateY(0);
+  }
+
+  @media (max-width: 768px) {
+    font-size: 0.9rem;
+    padding: 0.65rem 1rem;
   }
 `;
 
 const EmptyState = styled.div`
   text-align: center;
   padding: 3rem 2rem;
-  color: #64748b;
+  color: var(--text-secondary);
   
   .icon {
     font-size: 4rem;
@@ -196,11 +206,23 @@ const EmptyState = styled.div`
     margin: 0;
     line-height: 1.6;
   }
+
+  @media (max-width: 768px) {
+    padding: 2rem 1rem;
+    
+    .icon {
+      font-size: 3rem;
+    }
+    
+    p {
+      font-size: 0.95rem;
+    }
+  }
 `;
 
 const ErrorState = styled.div`
-  background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
-  border-left: 4px solid #F59E0B;
+  background: var(--bg-warning, #FEF3C7);
+  border-left: 4px solid var(--warning);
   border-radius: 16px;
   padding: 1.5rem;
   display: flex;
@@ -216,15 +238,15 @@ const ErrorState = styled.div`
     flex: 1;
     
     p {
-      color: #78350f;
+      color: var(--text-primary);
       font-weight: 600;
       margin: 0 0 0.5rem 0;
     }
     
     button {
-      background: white;
-      color: #F59E0B;
-      border: 2px solid #F59E0B;
+      background: var(--bg-card);
+      color: var(--warning);
+      border: 2px solid var(--warning);
       padding: 0.5rem 1rem;
       border-radius: 8px;
       font-weight: 600;
@@ -232,9 +254,21 @@ const ErrorState = styled.div`
       transition: all 0.3s ease;
       
       &:hover {
-        background: #F59E0B;
-        color: white;
+        background: var(--warning);
+        color: var(--text-on-primary);
       }
+    }
+  }
+
+  @media (max-width: 768px) {
+    padding: 1.25rem;
+    
+    .icon {
+      font-size: 1.5rem;
+    }
+    
+    .content p {
+      font-size: 0.9rem;
     }
   }
 `;
@@ -243,13 +277,15 @@ const MaterialBadge = styled.div`
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  background: rgba(59, 130, 246, 0.1);
-  color: #2563EB;
+  background: var(--bg-secondary);
+  color: var(--primary);
   padding: 0.5rem 1rem;
   border-radius: 50px;
   font-size: 0.9rem;
   font-weight: 600;
   margin-bottom: 1rem;
+  border: 2px solid var(--border);
+  box-shadow: var(--shadow-sm);
 `;
 
 // =====================

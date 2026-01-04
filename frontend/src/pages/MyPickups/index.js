@@ -17,7 +17,7 @@ import {Container,
         Button,
         SecondaryButton,
         EmptyState,
-        QRSection} from "./MyPickups.styles";
+        QRSection} from "./styledComponents";
 
 
 const MyPickups = () => {

@@ -1,5 +1,5 @@
 // ============================================
-// src/components/Chat/index.js - FIXED DUPLICATES
+// src/components/Chat/index.js - FIXED MESSAGE DISPLAY
 // ============================================
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -101,7 +101,6 @@ const getLastMessage = (chat) => {
   return content.length > 40 ? `${content.substring(0, 40)}...` : content;
 };
 
-// ✅ NEW: Deduplicate chats helper
 const deduplicateChats = (chats) => {
   const seen = new Set();
   return chats.filter((chat) => {
@@ -137,12 +136,10 @@ const Chat = ({
   const { user } = useAuth();
   const { socket, isConnected } = useSocket();
 
-  // ✅ FIXED: Deduplicate chats when they change
   useEffect(() => {
     if (!compact && chats.length === 0) {
       fetchChats();
     } else {
-      // ✅ Remove duplicates before setting
       const uniqueChats = deduplicateChats(chats);
       setAllChats(uniqueChats);
     }
@@ -152,8 +149,6 @@ const Chat = ({
     try {
       const response = await chatAPI.getUserChats();
       const fetchedChats = response.data.chats || response.data.data || [];
-
-      // ✅ Deduplicate fetched chats
       const uniqueChats = deduplicateChats(fetchedChats);
       setAllChats(uniqueChats);
     } catch (error) {
@@ -194,11 +189,15 @@ const Chat = ({
         message.chat?._id === currentChat._id
       ) {
         setMessages((prev) => {
-          // ✅ Prevent duplicates
+          // ✅ FIXED: Improved duplicate prevention
           const exists = prev.some((m) => {
-            if (m._id && message._id) return m._id === message._id;
-            if (m.tempId && message.tempId) return m.tempId === message.tempId;
+            // Check by actual message ID first
+            if (m._id && message._id && m._id === message._id) return true;
 
+            // Don't check temp messages here - they're replaced by handleSendMessage
+            if (m.tempId || m.pending) return false;
+
+            // Check for duplicates based on content and time
             const isSameSender =
               m.sender === message.sender ||
               m.sender?._id === message.sender ||
@@ -208,17 +207,12 @@ const Chat = ({
               new Date(m.timestamp) - new Date(message.timestamp)
             );
 
-            return isSameSender && isSameContent && timeDiff < 2000;
+            return isSameSender && isSameContent && timeDiff < 1000;
           });
 
           if (exists) {
             console.log("⚠️ Duplicate message prevented");
-            return prev.map((m) => {
-              if (m.tempId && m.content === message.content) {
-                return { ...message, _id: message._id };
-              }
-              return m;
-            });
+            return prev;
           }
 
           console.log("✅ Adding new message");
@@ -327,9 +321,14 @@ const Chat = ({
         content: messageText,
       });
 
-      if (response.data.message) {
-        setMessages((prev) => prev.filter((m) => m.tempId !== tempId));
-      }
+      const serverMessage = response.data.message || response.data;
+
+      // ✅ FIXED: Replace temp message with server message immediately
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.tempId === tempId ? { ...serverMessage, _id: serverMessage._id } : m
+        )
+      );
     } catch (error) {
       console.error("Error sending message:", error);
 
@@ -341,7 +340,6 @@ const Chat = ({
     }
   };
 
-  // ✅ FIXED: Deduplicate before filtering
   const chatsToDisplay = compact ? chats : allChats;
   const uniqueChatsToDisplay = deduplicateChats(chatsToDisplay);
 

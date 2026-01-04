@@ -288,7 +288,7 @@ const CalendarMenuItem = styled.a`
   }
 `;
 
-const ScheduleCard = ({ schedule, userRole, onUpdate }) => {
+const ScheduleCard = ({ schedule, userRole, onUpdate, onTrack }) => {
   const [loading, setLoading] = useState(false);
   const [confirmNotes, setConfirmNotes] = useState("");
   const [showConfirmInput, setShowConfirmInput] = useState(false);
@@ -583,20 +583,38 @@ const ScheduleCard = ({ schedule, userRole, onUpdate }) => {
         </>
       )}
 
-      {schedule.status === "confirmed" && userRole === "donor" && (
+      {schedule.status === "confirmed" && (
         <ButtonGroup>
-          <Button onClick={handleCancel} disabled={loading}>
-            Cancel
-          </Button>
-          <Button
-            $variant="primary"
-            onClick={handleComplete}
-            disabled={loading}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            🎉 Mark Complete
-          </Button>
+          {userRole === "donor" && (
+            <>
+              <Button onClick={handleCancel} disabled={loading}>
+                Cancel
+              </Button>
+              <Button
+                $variant="primary"
+                onClick={handleComplete}
+                disabled={loading}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                🎉 Mark Complete
+              </Button>
+            </>
+          )}
+          {onTrack && (
+            <Button
+              $variant="primary"
+              onClick={(e) => {
+                e.stopPropagation();
+                onTrack();
+              }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              style={{ marginLeft: userRole === "donor" ? 8 : 0 }}
+            >
+              🚗 Track
+            </Button>
+          )}
         </ButtonGroup>
       )}
 

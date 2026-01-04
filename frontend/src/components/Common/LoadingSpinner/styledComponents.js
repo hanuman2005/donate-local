@@ -28,32 +28,24 @@ export const FullPageSpinner = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.8);
+  background: var(--bg-overlay);
   backdrop-filter: blur(4px);
   z-index: 9999;
-  gap: 1rem;
-`;
+  gap: 1rem;`
+;
 
+// Update to use theme variables:
 export const Spinner = styled.div`
   width: ${props => getSizeValue(props.size)};
   height: ${props => getSizeValue(props.size)};
-  border: 3px solid rgba(0, 0, 0, 0.1);
-  border-top: 3px solid ${props => props.color || '#4facfe'};
-  border-radius: 50%;
+  border: 3px solid var(--border-color);
+  border-top: 3px solid ${props => props.color || 'var(--primary)'};
+  border-radius: var(--radius-full);
   animation: spin 1s linear infinite;
-
-  @keyframes spin {
-    0% {
-      transform: rotate(0deg);
-    }
-    100% {
-      transform: rotate(360deg);
-    }
-  }
 `;
 
 export const SpinnerText = styled.div`
-  color: #64748b;
+  color: var(--text-secondary);
   font-size: 0.95rem;
   font-weight: 500;
   text-align: center;

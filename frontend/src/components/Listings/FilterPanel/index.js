@@ -28,6 +28,7 @@ import {
   MultiSelectContainer,
   CategoryTag,
   AdvancedToggle,
+  AdvancedFiltersContainer,
   SearchHistoryDropdown,
   HistoryItem,
   ClearHistoryButton,
@@ -508,124 +509,126 @@ const FiltersPanel = ({ onResults, autoSearch = false, userLocation }) => {
         {/* ========== ADVANCED FILTERS ========== */}
         <AnimatePresence>
           {showAdvanced && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              {/* Condition */}
-              <FilterGroup
-                as={motion.div}
-                variants={motionVariants.fadeSlideUp}
+            <AdvancedFiltersContainer>
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.3 }}
               >
-                <Label>
-                  <span>✨</span> Condition
-                </Label>
-                <Select
-                  value={condition}
-                  onChange={(e) => setCondition(e.target.value)}
+                {/* Condition */}
+                <FilterGroup
+                  as={motion.div}
+                  variants={motionVariants.fadeSlideUp}
                 >
-                  <option value="">Any Condition</option>
-                  <option value="new">🆕 Brand New</option>
-                  <option value="like-new">✨ Like New</option>
-                  <option value="good">👍 Good</option>
-                  <option value="fair">👌 Fair</option>
-                </Select>
-              </FilterGroup>
+                  <Label>
+                    <span>✨</span> Condition
+                  </Label>
+                  <Select
+                    value={condition}
+                    onChange={(e) => setCondition(e.target.value)}
+                  >
+                    <option value="">Any Condition</option>
+                    <option value="new">🆕 Brand New</option>
+                    <option value="like-new">✨ Like New</option>
+                    <option value="good">👍 Good</option>
+                    <option value="fair">👌 Fair</option>
+                  </Select>
+                </FilterGroup>
 
-              {/* Urgency */}
-              <FilterGroup
-                as={motion.div}
-                variants={motionVariants.fadeSlideUp}
-              >
-                <Label>
-                  <span>⚡</span> Urgency
-                </Label>
-                <Select
-                  value={urgency}
-                  onChange={(e) => setUrgency(e.target.value)}
+                {/* Urgency */}
+                <FilterGroup
+                  as={motion.div}
+                  variants={motionVariants.fadeSlideUp}
                 >
-                  <option value="">Any Urgency</option>
-                  <option value="3">🔴 High (Expires Soon)</option>
-                  <option value="2">🟡 Medium</option>
-                  <option value="1">🟢 Low</option>
-                </Select>
-              </FilterGroup>
+                  <Label>
+                    <span>⚡</span> Urgency
+                  </Label>
+                  <Select
+                    value={urgency}
+                    onChange={(e) => setUrgency(e.target.value)}
+                  >
+                    <option value="">Any Urgency</option>
+                    <option value="3">🔴 High (Expires Soon)</option>
+                    <option value="2">🟡 Medium</option>
+                    <option value="1">🟢 Low</option>
+                  </Select>
+                </FilterGroup>
 
-              {/* Expiry Date */}
-              <FilterGroup
-                as={motion.div}
-                variants={motionVariants.fadeSlideUp}
-              >
-                <Label>
-                  <span>📅</span> Expiry Before
-                </Label>
-                <Input
-                  type="date"
-                  value={expiryBefore}
-                  onChange={(e) => setExpiryBefore(e.target.value)}
-                  min={new Date().toISOString().split("T")[0]}
-                />
-              </FilterGroup>
-
-              {/* Quantity Range */}
-              <FilterGroup
-                as={motion.div}
-                variants={motionVariants.fadeSlideUp}
-              >
-                <Label>
-                  <span>📦</span> Quantity Range
-                </Label>
-                <div style={{ display: "flex", gap: "0.5rem" }}>
+                {/* Expiry Date */}
+                <FilterGroup
+                  as={motion.div}
+                  variants={motionVariants.fadeSlideUp}
+                >
+                  <Label>
+                    <span>📅</span> Expiry Before
+                  </Label>
                   <Input
-                    type="number"
-                    placeholder="Min"
-                    value={minQuantity}
-                    onChange={(e) => setMinQuantity(e.target.value)}
-                    min="1"
+                    type="date"
+                    value={expiryBefore}
+                    onChange={(e) => setExpiryBefore(e.target.value)}
+                    min={new Date().toISOString().split("T")[0]}
                   />
-                  <span style={{ alignSelf: "center" }}>to</span>
-                  <Input
-                    type="number"
-                    placeholder="Max"
-                    value={maxQuantity}
-                    onChange={(e) => setMaxQuantity(e.target.value)}
-                    min="1"
-                  />
-                </div>
-              </FilterGroup>
+                </FilterGroup>
 
-              {/* Date Range - When Posted */}
-              <FilterGroup
-                as={motion.div}
-                variants={motionVariants.fadeSlideUp}
-              >
-                <Label>
-                  <span>🗓️</span> Posted Date Range
-                </Label>
-                <DateRangeContainer>
-                  <DateInputGroup>
-                    <DateLabel>From</DateLabel>
-                    <DateInput
-                      type="date"
-                      value={postedAfter}
-                      onChange={(e) => setPostedAfter(e.target.value)}
-                      max={new Date().toISOString().split("T")[0]}
+                {/* Quantity Range */}
+                <FilterGroup
+                  as={motion.div}
+                  variants={motionVariants.fadeSlideUp}
+                >
+                  <Label>
+                    <span>📦</span> Quantity Range
+                  </Label>
+                  <div style={{ display: "flex", gap: "0.5rem" }}>
+                    <Input
+                      type="number"
+                      placeholder="Min"
+                      value={minQuantity}
+                      onChange={(e) => setMinQuantity(e.target.value)}
+                      min="1"
                     />
-                  </DateInputGroup>
-                  <DateInputGroup>
-                    <DateLabel>To</DateLabel>
-                    <DateInput
-                      type="date"
-                      value={postedBefore}
-                      onChange={(e) => setPostedBefore(e.target.value)}
-                      max={new Date().toISOString().split("T")[0]}
+                    <span style={{ alignSelf: "center" }}>to</span>
+                    <Input
+                      type="number"
+                      placeholder="Max"
+                      value={maxQuantity}
+                      onChange={(e) => setMaxQuantity(e.target.value)}
+                      min="1"
                     />
-                  </DateInputGroup>
-                </DateRangeContainer>
-              </FilterGroup>
-            </motion.div>
+                  </div>
+                </FilterGroup>
+
+                {/* Date Range - When Posted */}
+                <FilterGroup
+                  as={motion.div}
+                  variants={motionVariants.fadeSlideUp}
+                >
+                  <Label>
+                    <span>🗓️</span> Posted Date Range
+                  </Label>
+                  <DateRangeContainer>
+                    <DateInputGroup>
+                      <DateLabel>From</DateLabel>
+                      <DateInput
+                        type="date"
+                        value={postedAfter}
+                        onChange={(e) => setPostedAfter(e.target.value)}
+                        max={new Date().toISOString().split("T")[0]}
+                      />
+                    </DateInputGroup>
+                    <DateInputGroup>
+                      <DateLabel>To</DateLabel>
+                      <DateInput
+                        type="date"
+                        value={postedBefore}
+                        onChange={(e) => setPostedBefore(e.target.value)}
+                        max={new Date().toISOString().split("T")[0]}
+                      />
+                    </DateInputGroup>
+                  </DateRangeContainer>
+                </FilterGroup>
+              </motion.div>
+            </AdvancedFiltersContainer>
           )}
         </AnimatePresence>
 

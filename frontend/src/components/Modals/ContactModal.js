@@ -1,10 +1,16 @@
-// ============================================
-// src/components/ContactModal/index.jsx - WITH MOTION
-// ============================================
+// src/components/ContactModal/index.jsx - THEME INTEGRATED
 import { useState } from 'react';
 import styled from 'styled-components';
 import { motion, AnimatePresence } from 'framer-motion';
 import { motionVariants } from '../../animations/motionVariants';
+
+const motionProps = [
+  "initial", "animate", "exit", "variants", "transition", "whileHover",
+  "whileTap", "whileFocus", "whileDrag", "whileInView", "drag",
+  "dragConstraints", "dragElastic", "dragMomentum", "layout", "layoutId",
+  "onAnimationStart", "onAnimationComplete",
+];
+const shouldForwardProp = (prop) => !motionProps.includes(prop);
 
 const ModalOverlay = styled(motion.div)`
   position: fixed;
@@ -13,6 +19,7 @@ const ModalOverlay = styled(motion.div)`
   right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -21,15 +28,21 @@ const ModalOverlay = styled(motion.div)`
 `;
 
 const ModalContent = styled(motion.div)`
-  background: white;
-  border-radius: 20px;
+  background: var(--bg-card);
+  border-radius: 24px;
   padding: 2.5rem;
   max-width: 500px;
   width: 100%;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--shadow-xl);
   position: relative;
   max-height: 90vh;
   overflow-y: auto;
+  border: 2px solid var(--border);
+
+  @media (max-width: 768px) {
+    padding: 2rem;
+    border-radius: 20px;
+  }
 `;
 
 const CloseButton = styled(motion.button)`
@@ -40,7 +53,7 @@ const CloseButton = styled(motion.button)`
   border: none;
   font-size: 2rem;
   cursor: pointer;
-  color: #718096;
+  color: var(--text-secondary);
   width: 40px;
   height: 40px;
   display: flex;
@@ -50,21 +63,26 @@ const CloseButton = styled(motion.button)`
   transition: all 0.2s;
 
   &:hover {
-    background: #f7fafc;
-    color: #2d3748;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
   }
 `;
 
 const ModalTitle = styled.h2`
   font-size: 2rem;
-  color: #2d3748;
+  color: var(--text-primary);
   margin-bottom: 0.5rem;
   font-weight: 800;
+
+  @media (max-width: 768px) {
+    font-size: 1.75rem;
+  }
 `;
 
 const ModalSubtitle = styled.p`
-  color: #718096;
+  color: var(--text-secondary);
   margin-bottom: 2rem;
+  font-size: 1rem;
 `;
 
 const FormField = styled(motion.div)`
@@ -74,54 +92,75 @@ const FormField = styled(motion.div)`
 const Label = styled.label`
   display: block;
   margin-bottom: 0.5rem;
-  font-weight: 600;
-  color: #4a5568;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-size: 0.95rem;
 `;
 
 const Input = styled.input`
   width: 100%;
   padding: 0.875rem;
-  border: 2px solid #e2e8f0;
-  border-radius: 10px;
+  border: 2px solid var(--border);
+  border-radius: 12px;
   font-size: 1rem;
   font-family: inherit;
-  transition: all 0.2s;
+  transition: all 0.3s;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+
+  &::placeholder {
+    color: var(--text-placeholder);
+  }
 
   &:focus {
     outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    border-color: var(--primary);
+    box-shadow: var(--shadow-input-focus);
+    background: var(--bg-card);
   }
 `;
 
 const TextArea = styled.textarea`
   width: 100%;
   padding: 0.875rem;
-  border: 2px solid #e2e8f0;
-  border-radius: 10px;
+  border: 2px solid var(--border);
+  border-radius: 12px;
   font-size: 1rem;
   font-family: inherit;
   min-height: 120px;
   resize: vertical;
-  transition: all 0.2s;
+  transition: all 0.3s;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+
+  &::placeholder {
+    color: var(--text-placeholder);
+  }
 
   &:focus {
     outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    border-color: var(--primary);
+    box-shadow: var(--shadow-input-focus);
+    background: var(--bg-card);
   }
 `;
 
 const SubmitButton = styled(motion.button)`
   width: 100%;
   padding: 1rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: var(--gradient-primary);
+  color: var(--text-on-primary);
   border: none;
-  border-radius: 10px;
+  border-radius: 12px;
   font-size: 1.1rem;
   font-weight: 700;
   cursor: pointer;
+  box-shadow: var(--shadow-button);
+  transition: all 0.3s;
+
+  &:hover:not(:disabled) {
+    box-shadow: var(--shadow-button-hover);
+  }
 
   &:disabled {
     opacity: 0.6;
@@ -130,24 +169,30 @@ const SubmitButton = styled(motion.button)`
 `;
 
 const SuccessMessage = styled(motion.div)`
-  background: #c6f6d5;
-  color: #2f855a;
+  background: var(--bg-success, #c6f6d5);
+  color: var(--success);
   padding: 1rem;
-  border-radius: 10px;
+  border-radius: 12px;
   text-align: center;
   font-weight: 600;
   margin-bottom: 1rem;
+  border: 2px solid var(--success);
 `;
 
 const ContactInfo = styled(motion.div)`
   margin-top: 2rem;
   padding-top: 2rem;
-  border-top: 2px solid #e2e8f0;
-  color: #4a5568;
+  border-top: 2px solid var(--border);
+  color: var(--text-secondary);
   font-size: 0.95rem;
 
   p {
     margin-bottom: 0.75rem;
+    color: var(--text-primary);
+    
+    strong {
+      color: var(--primary);
+    }
   }
 `;
 

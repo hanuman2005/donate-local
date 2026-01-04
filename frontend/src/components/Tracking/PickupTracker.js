@@ -367,14 +367,24 @@ const Spinner = styled(motion.div)`
 `;
 
 // Map auto-center component
+// Defensive: check coordinates before using (move to top-level)
+const isValidLatLng = (pos) =>
+  Array.isArray(pos) &&
+  pos.length === 2 &&
+  pos.every((v) => typeof v === "number" && !isNaN(v)) &&
+  pos[0] >= -90 &&
+  pos[0] <= 90 &&
+  pos[1] >= -180 &&
+  pos[1] <= 180;
+
 const MapController = ({ driverPosition, destinationPosition }) => {
   const map = useMap();
 
   useEffect(() => {
-    if (driverPosition && destinationPosition) {
+    if (isValidLatLng(driverPosition) && isValidLatLng(destinationPosition)) {
       const bounds = L.latLngBounds([driverPosition, destinationPosition]);
       map.fitBounds(bounds, { padding: [50, 50] });
-    } else if (driverPosition) {
+    } else if (isValidLatLng(driverPosition)) {
       map.setView(driverPosition, 15);
     }
   }, [driverPosition, destinationPosition, map]);
@@ -525,22 +535,24 @@ const PickupTracker = ({ scheduleId, onClose }) => {
     return true;
   };
 
+  // Defensive: get valid destination coordinates
   const destinationCoords =
-    schedule?.pickupLocation?.coordinates &&
+    schedule &&
+    schedule.pickupLocation &&
+    Array.isArray(schedule.pickupLocation.coordinates) &&
     isValidCoords(schedule.pickupLocation.coordinates)
       ? [
-          schedule.pickupLocation.coordinates[1],
-          schedule.pickupLocation.coordinates[0],
+          Number(schedule.pickupLocation.coordinates[1]),
+          Number(schedule.pickupLocation.coordinates[0]),
         ]
       : DEFAULT_COORDS;
 
-  // Validate driver location too
+  // Defensive: get valid driver location
   const validDriverLocation =
     driverLocation &&
     Array.isArray(driverLocation) &&
-    driverLocation.length >= 2 &&
-    !(driverLocation[0] === 0 && driverLocation[1] === 0)
-      ? driverLocation
+    isValidCoords(driverLocation)
+      ? [Number(driverLocation[0]), Number(driverLocation[1])]
       : null;
 
   const currentStageIndex = getStageIndex(currentStage);
@@ -594,14 +606,15 @@ const PickupTracker = ({ scheduleId, onClose }) => {
             attribution="&copy; OpenStreetMap contributors"
           />
 
-          {validDriverLocation && destinationCoords && (
-            <MapController
-              driverPosition={validDriverLocation}
-              destinationPosition={destinationCoords}
-            />
-          )}
+          {isValidLatLng(validDriverLocation) &&
+            isValidLatLng(destinationCoords) && (
+              <MapController
+                driverPosition={validDriverLocation}
+                destinationPosition={destinationCoords}
+              />
+            )}
 
-          {validDriverLocation && (
+          {isValidLatLng(validDriverLocation) && (
             <Marker position={validDriverLocation} icon={driverIcon}>
               <Popup>
                 <strong>Driver Location</strong>
@@ -611,7 +624,7 @@ const PickupTracker = ({ scheduleId, onClose }) => {
             </Marker>
           )}
 
-          {destinationCoords && (
+          {isValidLatLng(destinationCoords) && (
             <Marker position={destinationCoords} icon={destinationIcon}>
               <Popup>
                 <strong>Pickup Location</strong>
@@ -621,15 +634,16 @@ const PickupTracker = ({ scheduleId, onClose }) => {
             </Marker>
           )}
 
-          {driverLocation && destinationCoords && (
-            <Polyline
-              positions={[driverLocation, destinationCoords]}
-              color="var(--primary)"
-              weight={4}
-              opacity={0.7}
-              dashArray="10, 10"
-            />
-          )}
+          {isValidLatLng(validDriverLocation) &&
+            isValidLatLng(destinationCoords) && (
+              <Polyline
+                positions={[validDriverLocation, destinationCoords]}
+                color="var(--primary)"
+                weight={4}
+                opacity={0.7}
+                dashArray="10, 10"
+              />
+            )}
         </MapContainer>
 
         <MapOverlay>

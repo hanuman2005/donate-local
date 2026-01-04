@@ -12,6 +12,12 @@ const Container = styled(motion.div)`
   padding: 2rem;
   margin: 2rem 0;
   color: var(--text-on-primary);
+  box-shadow: var(--shadow-card);
+
+  @media (max-width: 768px) {
+    padding: 1.5rem;
+    margin: 1rem 0;
+  }
 `;
 
 const Header = styled.div`
@@ -19,21 +25,31 @@ const Header = styled.div`
   align-items: center;
   gap: 1rem;
   margin-bottom: 1.5rem;
+  flex-wrap: wrap;
 
   h3 {
     font-size: 1.5rem;
     font-weight: 700;
     margin: 0;
+    color: var(--text-on-primary);
+  }
+
+  @media (max-width: 768px) {
+    h3 {
+      font-size: 1.25rem;
+    }
   }
 `;
 
 const AIBadge = styled(motion.span)`
-  background: var(--ai-badge-bg, rgba(255, 255, 255, 0.2));
+  background: var(--bg-card);
+  color: var(--primary);
   padding: 0.5rem 1rem;
   border-radius: 20px;
   font-size: 0.85rem;
   font-weight: 600;
   backdrop-filter: blur(10px);
+  box-shadow: var(--shadow-sm);
 `;
 
 const MatchList = styled.div`
@@ -43,7 +59,7 @@ const MatchList = styled.div`
 `;
 
 const MatchCard = styled(motion.div)`
-  background: var(--ai-matchcard-bg, rgba(255, 255, 255, 0.15));
+  background: var(--bg-card);
   backdrop-filter: blur(10px);
   border-radius: 16px;
   padding: 1.5rem;
@@ -55,12 +71,17 @@ const MatchCard = styled(motion.div)`
         ? "var(--primary)"
         : props.$score >= 55
         ? "var(--warning)"
-        : "var(--border-color)"};
+        : "var(--border)"};
   transition: all 0.3s ease;
+  box-shadow: var(--shadow-sm);
 
   &:hover {
-    background: var(--ai-matchcard-hover-bg, rgba(255, 255, 255, 0.25));
+    box-shadow: var(--shadow-lg);
     transform: translateX(8px);
+  }
+
+  @media (max-width: 768px) {
+    padding: 1.25rem;
   }
 `;
 
@@ -69,18 +90,23 @@ const MatchHeader = styled.div`
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
+  gap: 1rem;
+  flex-wrap: wrap;
 `;
 
 const UserInfo = styled.div`
   display: flex;
   align-items: center;
   gap: 1rem;
+  flex: 1;
+  min-width: 200px;
 
   img {
     width: 50px;
     height: 50px;
     border-radius: 50%;
-    border: 3px solid var(--bg-card);
+    border: 3px solid var(--primary);
+    object-fit: cover;
   }
 
   div {
@@ -88,12 +114,20 @@ const UserInfo = styled.div`
       margin: 0;
       font-size: 1.1rem;
       font-weight: 700;
+      color: var(--text-primary);
     }
 
     p {
       margin: 0;
       font-size: 0.9rem;
-      opacity: 0.9;
+      color: var(--text-secondary);
+    }
+  }
+
+  @media (max-width: 768px) {
+    img {
+      width: 40px;
+      height: 40px;
     }
   }
 `;
@@ -102,9 +136,11 @@ const ScoreBadge = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: var(--ai-scorebadge-bg, rgba(255, 255, 255, 0.2));
+  background: var(--gradient-primary);
+  color: var(--text-on-primary);
   padding: 0.75rem 1rem;
   border-radius: 12px;
+  box-shadow: var(--shadow-sm);
 
   .score {
     font-size: 1.5rem;
@@ -129,23 +165,39 @@ const Factor = styled.div`
   align-items: center;
   gap: 0.5rem;
   font-size: 0.9rem;
+  color: var(--text-secondary);
+  padding: 0.5rem;
+  background: var(--bg-secondary);
+  border-radius: 8px;
 
   span:first-child {
     font-size: 1.2rem;
+  }
+
+  @media (max-width: 768px) {
+    font-size: 0.85rem;
   }
 `;
 
 const Recommendation = styled.p`
   font-size: 0.95rem;
   line-height: 1.5;
-  opacity: 0.95;
+  color: var(--text-secondary);
   margin-bottom: 1rem;
   font-style: italic;
+  padding: 1rem;
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  border-left: 4px solid var(--primary);
 `;
 
 const ActionButtons = styled.div`
   display: flex;
   gap: 1rem;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+  }
 `;
 
 const Button = styled(motion.button)`
@@ -156,17 +208,25 @@ const Button = styled(motion.button)`
   border: none;
   cursor: pointer;
   transition: all 0.3s ease;
+  font-size: 0.95rem;
 
   ${(props) =>
     props.$primary
       ? `
-    background: var(--bg-card);
-    color: var(--primary);
+    background: var(--gradient-primary);
+    color: var(--text-on-primary);
+    box-shadow: var(--shadow-button);
   `
       : `
-    background: var(--ai-button-bg, rgba(255,255,255,0.2));
-    color: var(--text-on-primary);
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 2px solid var(--border);
   `}
+
+  &:hover:not(:disabled) {
+    box-shadow: var(--shadow-button-hover);
+    transform: translateY(-2px);
+  }
 
   &:disabled {
     opacity: 0.6;
@@ -178,21 +238,24 @@ const LoadingSpinner = styled(motion.div)`
   text-align: center;
   padding: 2rem;
   font-size: 1.5rem;
+  color: var(--text-on-primary);
 `;
 
 const EmptyState = styled.div`
   text-align: center;
   padding: 2rem;
-  opacity: 0.9;
+  color: var(--text-on-primary);
 
   div {
     font-size: 3rem;
     margin-bottom: 1rem;
+    opacity: 0.9;
   }
 
   p {
     font-size: 1.1rem;
     margin: 0;
+    opacity: 0.9;
   }
 `;
 
@@ -370,7 +433,7 @@ const AIMatchSuggestions = ({ listingId, onAssign }) => {
 
                 <Button
                   $primary
-                  onClick={() => handleAssign(match.recipient)}
+                  onClick={() => handleAssign(match.recipient._id, match.score)}
                   disabled={assigning !== null}
                   whileHover={{ scale: 1.02, y: -2 }}
                   whileTap={{ scale: 0.98 }}
