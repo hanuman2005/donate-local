@@ -63,6 +63,7 @@ const ListingDetails = () => {
   useEffect(() => {
     fetchListing();
     if (user) fetchQueueStatus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, user]);
 
   const fetchListing = async () => {

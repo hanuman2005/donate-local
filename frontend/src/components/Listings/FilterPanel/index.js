@@ -183,6 +183,7 @@ const FiltersPanel = ({ onResults, autoSearch = false, userLocation }) => {
         }
       );
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userLocation]);
 
   // Auto-search on mount
@@ -195,6 +196,7 @@ const FiltersPanel = ({ onResults, autoSearch = false, userLocation }) => {
       }, 500);
       return () => clearTimeout(timer);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoSearch]);
 
   // Toggle category selection

@@ -122,9 +122,8 @@ export const SocketProvider = ({ children }) => {
       newSocket.on("connect_error", (error) => {
         console.error("Socket connection error:", error);
         // Only show error toast if not already reconnecting
-        if (reconnectAttempt === 0) {
-          toast.error("Unable to connect to chat server");
-        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        toast.error("Unable to connect to chat server");
       });
 
       newSocket.on("userOnline", (data) => {

@@ -5,8 +5,7 @@ import { useTheme } from "../../context/ThemeContext";
 import api from "../../services/api";
 
 const ForgotPassword = () => {
-  const { theme } = useTheme();
-  const isDark = theme === "dark";
+  useTheme();
 
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);

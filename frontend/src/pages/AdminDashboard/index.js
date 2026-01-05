@@ -21,8 +21,7 @@ const TABS = [
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState(0);
   const { user } = useAuth();
-  const { theme } = useTheme();
-  const isDark = theme === "dark";
+  useTheme();
   const navigate = useNavigate();
 
   // Check if user is admin

@@ -165,6 +165,7 @@ const Chat = ({
         setShowSidebar(false);
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chatId, allChats, currentChat]);
 
   const adjustTextareaHeight = () => {

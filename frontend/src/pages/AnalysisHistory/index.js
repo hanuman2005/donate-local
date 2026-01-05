@@ -1,6 +1,6 @@
 // src/pages/AnalysisHistory/index.js
 import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { wasteAPI } from "../../services/api";
@@ -16,7 +16,6 @@ import {
   CardHeader,
   CardBody,
   EmptyState,
-  LoadingSpinner,
 } from "./styledComponents";
 
 const AnalysisHistory = () => {

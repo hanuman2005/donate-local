@@ -21,8 +21,6 @@ import {
   StatLabel,
   ProgressRing,
   ContentGrid,
-  MainContent,
-  Sidebar,
   GlassCard,
   CardHeader,
   ViewAllButton,

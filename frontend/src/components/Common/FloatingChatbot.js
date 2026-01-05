@@ -196,14 +196,6 @@ const FloatingChatbot = () => {
     setTimeout(() => handleSend(), 100);
   };
 
-  // Get computed styles from CSS variables
-  const getCSSVar = (varName) => {
-    if (typeof window === "undefined") return "";
-    return getComputedStyle(document.documentElement)
-      .getPropertyValue(varName)
-      .trim();
-  };
-
   return (
     <div
       style={{

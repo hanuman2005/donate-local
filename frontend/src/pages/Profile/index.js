@@ -2,11 +2,12 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../../context/AuthContext";
-import { usersAPI, uploadAPI } from "../../services/api";
+import { usersAPI } from "../../services/api";
 import api from "../../services/api";
 import { toast } from "react-toastify";
 import { motionVariants } from "../../animations/motionVariants";
 import TrustBadges from "../../components/Common/TrustBadges";
+import LoadingSkeleton from "../../components/Common/LoadingSkeleton";
 
 import {
   ProfileContainer,
@@ -51,7 +52,6 @@ import {
   RatingComment,
   MessageBox,
   LoadingOverlay,
-  Spinner,
   HistorySection,
   HistoryItem,
   ItemDetails,
@@ -139,6 +139,7 @@ const Profile = () => {
     if (activeTab === "impact") fetchStats();
     if (activeTab === "donations") fetchHistory("donated");
     if (activeTab === "received") fetchHistory("received");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab]);
 
   const fetchRatings = async () => {

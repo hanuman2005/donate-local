@@ -8,8 +8,7 @@ const Reports = () => {
   const [error, setError] = useState(null);
   const [pagination, setPagination] = useState({ page: 1, pages: 1, total: 0 });
   const [statusCounts, setStatusCounts] = useState({});
-  const { theme } = useTheme();
-  const isDark = theme === "dark";
+  useTheme();
 
   // Filters
   const [statusFilter, setStatusFilter] = useState("pending");

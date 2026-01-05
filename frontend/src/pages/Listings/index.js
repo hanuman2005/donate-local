@@ -60,7 +60,7 @@ const Listings = () => {
 
   const { user } = useAuth();
   const navigate = useNavigate();
-  const scrollAnimation = useScrollAnimation();
+  useScrollAnimation();
 
   // ✅ FIX: Fetch all listings immediately on mount
   useEffect(() => {

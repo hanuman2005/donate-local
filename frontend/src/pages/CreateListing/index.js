@@ -129,10 +129,10 @@ const CreateListing = () => {
       ...bulkItems,
       { title: "", quantity: "", unit: "items", category: "produce" },
     ]);
-    
+
   const removeBulkItem = (i) =>
     setBulkItems(bulkItems.filter((_, index) => index !== i));
-    
+
   const updateBulkItem = (i, field, value) => {
     const updated = [...bulkItems];
     updated[i][field] = value;
@@ -165,13 +165,22 @@ const CreateListing = () => {
   };
 
   const validateForm = () => {
-    if (!formData.title.trim()) return setError("Title required"), false;
-    if (!formData.description.trim())
-      return setError("Description required"), false;
-    if (!formData.quantity || formData.quantity <= 0)
-      return setError("Invalid quantity"), false;
-    if (!formData.pickupLocation.trim())
-      return setError("Pickup location required"), false;
+    if (!formData.title.trim()) {
+      setError("Title required");
+      return false;
+    }
+    if (!formData.description.trim()) {
+      setError("Description required");
+      return false;
+    }
+    if (!formData.quantity || formData.quantity <= 0) {
+      setError("Invalid quantity");
+      return false;
+    }
+    if (!formData.pickupLocation.trim()) {
+      setError("Pickup location required");
+      return false;
+    }
     return true;
   };
 
@@ -504,7 +513,11 @@ const CreateListing = () => {
                     whileHover={!loading ? { scale: 1.05, y: -2 } : {}}
                     whileTap={!loading ? { scale: 0.98 } : {}}
                   >
-                    {loading ? <LoadingSpinner size="small" /> : "✨ Create Listing"}
+                    {loading ? (
+                      <LoadingSpinner size="small" />
+                    ) : (
+                      "✨ Create Listing"
+                    )}
                   </SubmitButton>
                 </ButtonRow>
               </Form>
@@ -533,7 +546,11 @@ const CreateListing = () => {
                         variants={motionVariants.listItemSlideUp}
                         initial="hidden"
                         animate="show"
-                        exit={{ opacity: 0, x: -50, transition: { duration: 0.2 } }}
+                        exit={{
+                          opacity: 0,
+                          x: -50,
+                          transition: { duration: 0.2 },
+                        }}
                         layout
                         whileHover={{ scale: 1.01 }}
                       >

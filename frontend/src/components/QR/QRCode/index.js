@@ -40,6 +40,7 @@ const QRGenerator = ({
     if (listingId && recipientId) {
       generateQR();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [listingId, recipientId]);
 
   // Countdown timer

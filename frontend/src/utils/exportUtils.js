@@ -468,7 +468,7 @@ export const exportImpactToCSV = (impactData, filename = "impact-report") => {
   downloadCSV(csv, filename);
 };
 
-export default {
+const exportUtils = {
   arrayToCSV,
   downloadCSV,
   downloadJSON,
@@ -479,3 +479,5 @@ export default {
   exportDonationsToCSV,
   exportImpactToCSV,
 };
+
+export default exportUtils;

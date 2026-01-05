@@ -228,7 +228,7 @@ export const getCalendarLinks = (schedule) => {
   };
 };
 
-export default {
+const calendarUtils = {
   generateGoogleCalendarUrl,
   generateOutlookCalendarUrl,
   generateYahooCalendarUrl,
@@ -237,3 +237,5 @@ export default {
   scheduleToCalendarEvent,
   getCalendarLinks,
 };
+
+export default calendarUtils;

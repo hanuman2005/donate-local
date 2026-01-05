@@ -1,13 +1,13 @@
 // src/components/AIWasteAnalyzer/NearbyCentersSection.jsx
-import React, { useState, useEffect } from 'react';
-import styled, { keyframes } from 'styled-components';
-import { motion, AnimatePresence } from 'framer-motion';
-import { toast } from 'react-toastify';
+import React, { useState, useEffect } from "react";
+import styled, { keyframes } from "styled-components";
+import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "react-toastify";
 import {
   fetchNearbyCenters,
   getUserLocation,
   getMaterialIcon,
-} from '../../utils/recyclingCenters';
+} from "../../utils/recyclingCenters";
 
 // =====================
 // Animations
@@ -27,7 +27,7 @@ const Section = styled(motion.div)`
   margin-bottom: 2rem;
   box-shadow: var(--shadow-card);
   border: 2px solid var(--border);
-  
+
   @media (max-width: 768px) {
     padding: 1.5rem;
     border-radius: 20px;
@@ -54,7 +54,7 @@ const SectionIcon = styled.div`
   justify-content: center;
   font-size: 1.75rem;
   box-shadow: var(--shadow-button);
-  
+
   @media (max-width: 768px) {
     width: 45px;
     height: 45px;
@@ -67,7 +67,7 @@ const SectionTitle = styled.h3`
   font-weight: 800;
   color: var(--text-primary);
   margin: 0;
-  
+
   @media (max-width: 768px) {
     font-size: 1.25rem;
   }
@@ -86,9 +86,11 @@ const LoadingSpinner = styled.div`
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin: 0 auto 1rem;
-  
+
   @keyframes spin {
-    to { transform: rotate(360deg); }
+    to {
+      transform: rotate(360deg);
+    }
   }
 `;
 
@@ -114,7 +116,7 @@ const CenterCard = styled(motion.div)`
   flex-direction: column;
   gap: 1rem;
   box-shadow: var(--shadow-sm);
-  
+
   &:hover {
     transform: translateX(5px);
     box-shadow: var(--shadow-lg);
@@ -174,12 +176,12 @@ const NavigateButton = styled(motion.a)`
   box-shadow: var(--shadow-button);
   transition: all 0.3s ease;
   align-self: flex-start;
-  
+
   &:hover {
     transform: translateY(-2px);
     box-shadow: var(--shadow-button-hover);
   }
-  
+
   &:active {
     transform: translateY(0);
   }
@@ -194,13 +196,13 @@ const EmptyState = styled.div`
   text-align: center;
   padding: 3rem 2rem;
   color: var(--text-secondary);
-  
+
   .icon {
     font-size: 4rem;
     margin-bottom: 1rem;
     opacity: 0.5;
   }
-  
+
   p {
     font-size: 1.05rem;
     margin: 0;
@@ -209,11 +211,11 @@ const EmptyState = styled.div`
 
   @media (max-width: 768px) {
     padding: 2rem 1rem;
-    
+
     .icon {
       font-size: 3rem;
     }
-    
+
     p {
       font-size: 0.95rem;
     }
@@ -221,28 +223,28 @@ const EmptyState = styled.div`
 `;
 
 const ErrorState = styled.div`
-  background: var(--bg-warning, #FEF3C7);
+  background: var(--bg-warning, #fef3c7);
   border-left: 4px solid var(--warning);
   border-radius: 16px;
   padding: 1.5rem;
   display: flex;
   gap: 1rem;
   align-items: start;
-  
+
   .icon {
     font-size: 2rem;
     flex-shrink: 0;
   }
-  
+
   .content {
     flex: 1;
-    
+
     p {
       color: var(--text-primary);
       font-weight: 600;
       margin: 0 0 0.5rem 0;
     }
-    
+
     button {
       background: var(--bg-card);
       color: var(--warning);
@@ -252,7 +254,7 @@ const ErrorState = styled.div`
       font-weight: 600;
       cursor: pointer;
       transition: all 0.3s ease;
-      
+
       &:hover {
         background: var(--warning);
         color: var(--text-on-primary);
@@ -262,11 +264,11 @@ const ErrorState = styled.div`
 
   @media (max-width: 768px) {
     padding: 1.25rem;
-    
+
     .icon {
       font-size: 1.5rem;
     }
-    
+
     .content p {
       font-size: 0.9rem;
     }
@@ -295,12 +297,12 @@ const NearbyCentersSection = ({ material }) => {
   const [loading, setLoading] = useState(true);
   const [centers, setCenters] = useState([]);
   const [error, setError] = useState(null);
-  const [userLocation, setUserLocation] = useState(null);
 
   useEffect(() => {
     if (material) {
       loadNearbyCenters();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [material]);
 
   const loadNearbyCenters = async () => {
@@ -309,7 +311,7 @@ const NearbyCentersSection = ({ material }) => {
 
     try {
       // Get user location
-      toast.info('🗺️ Getting your location...');
+      toast.info("🗺️ Getting your location...");
       const location = await getUserLocation();
       setUserLocation(location);
 
@@ -318,25 +320,31 @@ const NearbyCentersSection = ({ material }) => {
       setCenters(nearbyCenters);
 
       if (nearbyCenters.length > 0) {
-        toast.success(`📍 Found ${nearbyCenters.length} recycling centers nearby!`);
+        toast.success(
+          `📍 Found ${nearbyCenters.length} recycling centers nearby!`
+        );
       }
     } catch (err) {
-      console.error('Error loading centers:', err);
-      
+      console.error("Error loading centers:", err);
+
       if (err.code === 1) {
         // Permission denied
-        setError('Location access denied. Please enable location services to find nearby centers.');
+        setError(
+          "Location access denied. Please enable location services to find nearby centers."
+        );
       } else if (err.code === 2) {
         // Position unavailable
-        setError('Unable to determine your location. Please check your device settings.');
+        setError(
+          "Unable to determine your location. Please check your device settings."
+        );
       } else if (err.code === 3) {
         // Timeout
-        setError('Location request timed out. Please try again.');
+        setError("Location request timed out. Please try again.");
       } else {
-        setError('Failed to load recycling centers. Please try again.');
+        setError("Failed to load recycling centers. Please try again.");
       }
-      
-      toast.error('Could not load recycling centers');
+
+      toast.error("Could not load recycling centers");
     } finally {
       setLoading(false);
     }
@@ -388,7 +396,8 @@ const NearbyCentersSection = ({ material }) => {
           <p>
             No recycling centers found nearby.
             <br />
-            Try expanding your search area or check local waste management services.
+            Try expanding your search area or check local waste management
+            services.
           </p>
         </EmptyState>
       )}

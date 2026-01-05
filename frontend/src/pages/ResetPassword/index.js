@@ -5,8 +5,7 @@ import { useTheme } from "../../context/ThemeContext";
 import api from "../../services/api";
 
 const ResetPassword = () => {
-  const { theme } = useTheme();
-  const isDark = theme === "dark";
+  useTheme();
   const { token } = useParams();
   const navigate = useNavigate();
 

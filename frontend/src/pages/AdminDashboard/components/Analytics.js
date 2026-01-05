@@ -6,8 +6,7 @@ const Analytics = () => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { theme } = useTheme();
-  const isDark = theme === "dark";
+  useTheme();
 
   useEffect(() => {
     const fetchStats = async () => {

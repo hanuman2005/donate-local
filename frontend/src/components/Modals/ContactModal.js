@@ -1,16 +1,8 @@
 // src/components/ContactModal/index.jsx - THEME INTEGRATED
-import { useState } from 'react';
-import styled from 'styled-components';
-import { motion, AnimatePresence } from 'framer-motion';
-import { motionVariants } from '../../animations/motionVariants';
-
-const motionProps = [
-  "initial", "animate", "exit", "variants", "transition", "whileHover",
-  "whileTap", "whileFocus", "whileDrag", "whileInView", "drag",
-  "dragConstraints", "dragElastic", "dragMomentum", "layout", "layoutId",
-  "onAnimationStart", "onAnimationComplete",
-];
-const shouldForwardProp = (prop) => !motionProps.includes(prop);
+import { useState } from "react";
+import styled from "styled-components";
+import { motion, AnimatePresence } from "framer-motion";
+import { motionVariants } from "../../animations/motionVariants";
 
 const ModalOverlay = styled(motion.div)`
   position: fixed;
@@ -189,7 +181,7 @@ const ContactInfo = styled(motion.div)`
   p {
     margin-bottom: 0.75rem;
     color: var(--text-primary);
-    
+
     strong {
       color: var(--primary);
     }
@@ -198,10 +190,10 @@ const ContactInfo = styled(motion.div)`
 
 const ContactModal = ({ isOpen, onClose }) => {
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    subject: '',
-    message: ''
+    name: "",
+    email: "",
+    subject: "",
+    message: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -209,7 +201,7 @@ const ContactModal = ({ isOpen, onClose }) => {
   const handleChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
   };
 
@@ -220,8 +212,8 @@ const ContactModal = ({ isOpen, onClose }) => {
     setTimeout(() => {
       setIsSubmitting(false);
       setIsSuccess(true);
-      setFormData({ name: '', email: '', subject: '', message: '' });
-      
+      setFormData({ name: "", email: "", subject: "", message: "" });
+
       setTimeout(() => {
         setIsSuccess(false);
         onClose();
@@ -243,14 +235,14 @@ const ContactModal = ({ isOpen, onClose }) => {
             variants={motionVariants.modalContent}
             onClick={(e) => e.stopPropagation()}
           >
-            <CloseButton 
+            <CloseButton
               onClick={onClose}
               whileHover={{ scale: 1.1, rotate: 90 }}
               whileTap={{ scale: 0.9 }}
             >
               ×
             </CloseButton>
-            
+
             <ModalTitle>💬 Get in Touch</ModalTitle>
             <ModalSubtitle>We'd love to hear from you!</ModalSubtitle>
 
@@ -267,7 +259,7 @@ const ContactModal = ({ isOpen, onClose }) => {
               )}
             </AnimatePresence>
 
-            <motion.form 
+            <motion.form
               onSubmit={handleSubmit}
               variants={motionVariants.staggerContainerFast}
               initial="hidden"
@@ -324,19 +316,23 @@ const ContactModal = ({ isOpen, onClose }) => {
                 />
               </FormField>
 
-              <SubmitButton 
-                type="submit" 
+              <SubmitButton
+                type="submit"
                 disabled={isSubmitting}
                 whileHover={{ scale: 1.02, y: -2 }}
                 whileTap={{ scale: 0.98 }}
               >
-                {isSubmitting ? '📤 Sending...' : '📨 Send Message'}
+                {isSubmitting ? "📤 Sending..." : "📨 Send Message"}
               </SubmitButton>
             </motion.form>
 
             <ContactInfo variants={motionVariants.fadeSlideUp}>
-              <p><strong>📧 Email:</strong> support@foodshare.com</p>
-              <p><strong>📞 Phone:</strong> +91 98765 43210</p>
+              <p>
+                <strong>📧 Email:</strong> support@foodshare.com
+              </p>
+              <p>
+                <strong>📞 Phone:</strong> +91 98765 43210
+              </p>
             </ContactInfo>
           </ModalContent>
         </ModalOverlay>

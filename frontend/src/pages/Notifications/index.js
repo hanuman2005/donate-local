@@ -46,6 +46,7 @@ const Notifications = () => {
   // Fetch notifications when filter changes
   useEffect(() => {
     fetchNotifications();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filter]);
 
   // Real-time updates
@@ -57,6 +58,7 @@ const Notifications = () => {
       });
       return () => socket.off("newNotification");
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [socket]);
 
   // Fetch all or unread notifications

@@ -1,5 +1,4 @@
 import styled, { keyframes } from "styled-components";
-import { useTheme } from "../../context/ThemeContext";
 import { motion } from "framer-motion";
 
 // Framer Motion props that should not be forwarded to the DOM

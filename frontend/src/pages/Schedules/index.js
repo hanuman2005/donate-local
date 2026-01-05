@@ -57,7 +57,7 @@ const STATUS_FILTERS = [
 const SchedulesPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { isDark } = useTheme();
+  useTheme();
   const [schedules, setSchedules] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("all");
@@ -77,6 +77,7 @@ const SchedulesPage = () => {
   };
   useEffect(() => {
     fetchSchedules();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, statusFilter]);
 
   const fetchSchedules = async () => {

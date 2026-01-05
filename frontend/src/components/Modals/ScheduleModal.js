@@ -10,19 +10,36 @@ import L from "leaflet";
 import { scheduleAPI } from "../../services/api";
 
 const motionProps = [
-  "initial", "animate", "exit", "variants", "transition", "whileHover",
-  "whileTap", "whileFocus", "whileDrag", "whileInView", "drag",
-  "dragConstraints", "dragElastic", "dragMomentum", "layout", "layoutId",
-  "onAnimationStart", "onAnimationComplete",
+  "initial",
+  "animate",
+  "exit",
+  "variants",
+  "transition",
+  "whileHover",
+  "whileTap",
+  "whileFocus",
+  "whileDrag",
+  "whileInView",
+  "drag",
+  "dragConstraints",
+  "dragElastic",
+  "dragMomentum",
+  "layout",
+  "layoutId",
+  "onAnimationStart",
+  "onAnimationComplete",
 ];
 const shouldForwardProp = (prop) => !motionProps.includes(prop);
 
 // Fix Leaflet default marker icon
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
-  iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
-  iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
-  shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
+  iconRetinaUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
+  iconUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
+  shadowUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
 });
 
 // =====================
@@ -78,7 +95,7 @@ const Header = styled.div`
 
   @media (max-width: 768px) {
     padding: 1.5rem;
-    
+
     h2 {
       font-size: 1.3rem;
     }
@@ -114,11 +131,11 @@ const Input = styled.input`
   border-radius: 12px;
   font-size: 1rem;
   transition: all 0.3s ease;
-  
+
   &::placeholder {
     color: var(--text-placeholder);
   }
-  
+
   &:focus {
     outline: none;
     border-color: var(--primary);
@@ -143,11 +160,11 @@ const TextArea = styled.textarea`
   resize: vertical;
   font-family: inherit;
   transition: all 0.3s ease;
-  
+
   &::placeholder {
     color: var(--text-placeholder);
   }
-  
+
   &:focus {
     outline: none;
     border-color: var(--primary);
@@ -265,7 +282,9 @@ const Button = styled(motion.button).withConfig({ shouldForwardProp })`
   border: none;
   transition: all 0.3s ease;
 
-  ${props => props.$primary ? `
+  ${(props) =>
+    props.$primary
+      ? `
     background: var(--gradient-primary);
     color: var(--text-on-primary);
     box-shadow: var(--shadow-button);
@@ -278,7 +297,8 @@ const Button = styled(motion.button).withConfig({ shouldForwardProp })`
       opacity: 0.6;
       cursor: not-allowed;
     }
-  ` : `
+  `
+      : `
     background: var(--bg-secondary);
     color: var(--text-primary);
     border: 2px solid var(--border);
@@ -319,7 +339,7 @@ const InfoBox = styled.div`
     color: var(--text-primary);
     font-size: 0.9rem;
     line-height: 1.5;
-    
+
     strong {
       color: var(--primary);
     }
@@ -357,7 +377,7 @@ const CurrentLocationButton = styled.button.withConfig({ shouldForwardProp })`
 // Map Click Handler Component
 // =====================
 const LocationMarker = ({ position, setPosition, setAddress }) => {
-  const map = useMapEvents({
+  useMapEvents({
     click(e) {
       const newPos = [e.latlng.lat, e.latlng.lng];
       setPosition(newPos);

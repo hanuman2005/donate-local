@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../../context/AuthContext";
-import LoadingSkeleton from "../../components/Common/LoadingSkeleton";
+import LoadingSpinner from "../../components/Common/LoadingSpinner";
 import { motionVariants } from "../../animations/motionVariants";
 import {
   RegisterContainer,

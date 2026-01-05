@@ -4,8 +4,17 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import { impactAPI } from "../../services/api";
 import { io } from "socket.io-client";
 import { toast } from "react-toastify";
-import LoadingSkeleton from "../../components/Common/LoadingSkeleton";
-import { Container, Header, Title, Stats, Stat, Value, Label, MapContainer, LoadingOverlay } from "./styledComponents";
+import {
+  Container,
+  Header,
+  Title,
+  Stats,
+  Stat,
+  Value,
+  Label,
+  MapContainer,
+  LoadingOverlay,
+} from "./styledComponents";
 
 mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_TOKEN;
 
@@ -48,6 +57,7 @@ const DigitalTwin = () => {
     });
 
     return () => socket.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchData = async () => {
