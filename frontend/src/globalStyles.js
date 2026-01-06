@@ -1,5 +1,5 @@
 // src/globalStyles.js - Updated with new color scheme
-import { createGlobalStyle } from 'styled-components';
+import { createGlobalStyle } from "styled-components";
 
 const GlobalStyles = createGlobalStyle`
   /* CSS Variables - Light Theme (Default) */
@@ -73,6 +73,14 @@ const GlobalStyles = createGlobalStyle`
     --radius-xl: 16px;
     --radius-2xl: 24px;
     --radius-full: 9999px;
+    
+    /* Spacing */
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 12px;
+    --spacing-lg: 16px;
+    --spacing-xl: 24px;
+    --spacing-2xl: 32px;
   }
 
   /* Dark Theme */

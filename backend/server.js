@@ -244,7 +244,7 @@ async function connectDB() {
     server.listen(PORT, async () => {
       console.log("");
       console.log("╔═══════════════════════════════════════════╗");
-      console.log("║     🚀 DONATE LOCAL SERVER RUNNING       ║");
+      console.log("║       🚀 LIFELOOP SERVER RUNNING         ║");
       console.log("╚═══════════════════════════════════════════╝");
       console.log("");
       console.log(`✅ Server:        http://localhost:${PORT}`);

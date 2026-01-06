@@ -89,10 +89,10 @@ export const LogoText = styled.span`
 
 export const SidebarNav = styled.nav`
   flex: 1;
-  padding: var(--spacing-md) 0;
+  padding: var(--spacing-lg) 0;
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-xs);
+  gap: var(--spacing-sm);
 `;
 
 export const NavSection = styled.div`
@@ -101,12 +101,12 @@ export const NavSection = styled.div`
 `;
 
 export const NavSectionTitle = styled.div`
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 600;
   color: var(--text-secondary);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  padding: var(--spacing-md) var(--spacing-sm) var(--spacing-sm);
+  letter-spacing: 0.08em;
+  padding: var(--spacing-lg) var(--spacing-sm) var(--spacing-sm);
   margin-bottom: var(--spacing-xs);
 `;
 
@@ -114,8 +114,8 @@ export const NavItem = styled.div.withConfig({ shouldForwardProp })`
   display: flex;
   align-items: center;
   gap: var(--spacing-md);
-  padding: var(--spacing-md) var(--spacing-md);
-  margin: 2px 0;
+  padding: var(--spacing-md) var(--spacing-lg);
+  margin: 4px 0;
   border-radius: var(--radius-md);
   color: ${(props) =>
     props.$active ? "var(--primary)" : "var(--text-primary)"};
@@ -126,6 +126,7 @@ export const NavItem = styled.div.withConfig({ shouldForwardProp })`
   text-decoration: none;
   position: relative;
   user-select: none;
+  min-height: 44px;
 
   &:hover {
     background: var(--bg-hover);

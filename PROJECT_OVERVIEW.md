@@ -1,8 +1,10 @@
-# DonateLocal / LifeLoop Project Overview
+# LifeLoop Project Overview
 
 ## Project Purpose
 
-DonateLocal (also known as LifeLoop) is a full-stack web application designed to facilitate the donation, upcycling, and responsible management of goods within local communities. The platform connects donors, donation centers, and recipients, while also providing analytics, AI-powered features, and real-time communication to optimize the donation process and reduce waste.
+LifeLoop is a **waste intelligence platform** that helps users understand how to reuse, recycle, or donate items instead of discarding them. Users upload an item, AI analyzes it and suggests sustainable actions. If donation is chosen, the system handles listing creation, recipient matching, scheduling, route optimization, QR-based verification, and post-exchange reviews. It's designed as a full end-to-end platform with trust, logistics, and sustainability in mind.
+
+**Key Innovation:** Most donation platforms assume you want to donate. LifeLoop uses AI to help you make the smartest decision first—whether that's reuse, recycle, upcycle, or donate.
 
 ## Key Features
 

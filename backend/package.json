@@ -1,7 +1,7 @@
 {
-  "name": "donate-local-backend",
+  "name": "lifeloop-backend",
   "version": "1.0.0",
-  "description": "Backend API for food donation and resource sharing platform",
+  "description": "Backend API for LifeLoop - AI-powered waste intelligence platform for reuse, recycling, upcycling, and donation",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -9,12 +9,15 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
-    "food-donation",
-    "resource-sharing",
-    "community",
-    "donation"
+    "waste-intelligence",
+    "circular-economy",
+    "ai-analysis",
+    "recycling",
+    "upcycling",
+    "donation",
+    "sustainability"
   ],
-  "author": "Your Name",
+  "author": "Hanumantha Madineni",
   "license": "MIT",
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
@@ -40,8 +43,6 @@
     "nodemailer": "^7.0.12",
     "openai": "^6.9.1",
     "qrcode": "^1.5.4",
-    "rate-limit-redis": "^4.3.1",
-    "redis": "^4.6.7",
     "socket.io": "^4.7.5",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
